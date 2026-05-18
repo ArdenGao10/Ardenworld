@@ -29,11 +29,11 @@ import { HUD, InteractPrompt } from './components/HUD.jsx';
 import Gallery from './components/Gallery.jsx';
 import DoodleWall from './components/DoodleWall.jsx';
 import {
-  initAudio, playStep, playJump, playSplash, playStar, playOpen, playWin,
+  initAudio, startBgm, playStep, playJump, playSplash, playStar, playOpen, playWin,
   isMuted, setMuted,
 } from './world/sound.js';
 
-export default function WalkGame({ onExit }) {
+export default function WalkGame({ onSwitch }) {
   const [charX, setCharX] = useState(420);
   const [charY, setCharY] = useState(0);
   const [vy, setVy] = useState(0);
@@ -78,7 +78,7 @@ export default function WalkGame({ onExit }) {
   const stageRef = useRef(null);
 
   const onStageDown = (e) => {
-    initAudio(); // first tap doubles as the gesture that unlocks audio
+    initAudio(); startBgm(); // first tap unlocks audio + starts the music
     if (overlay || dialog || showEnd || showGallery) return;
     // ignore clicks on the HUD (handled separately)
     if (e.target.closest('.mw-skip, .mw-jump-btn, .mw-tap-zone')) return;
@@ -147,7 +147,9 @@ export default function WalkGame({ onExit }) {
       let isWalking = false;
       let curFacing = facing;
 
-      const blocked = overlay || dialog || showGallery || splashing;
+      // NOTE: splashing is purely cosmetic now — it never blocks walking,
+      // so the puddle can be strolled straight through without jumping.
+      const blocked = overlay || dialog || showGallery;
       const walkBlocked = blocked || showEnd;
 
       // walk toward target
@@ -259,7 +261,7 @@ export default function WalkGame({ onExit }) {
 
   // ----- nearest interactable -----
   const nearest = (() => {
-    if (overlay || dialog || showEnd || showGallery || splashing) return null;
+    if (overlay || dialog || showEnd || showGallery) return null;
     let best = null, bd = INTERACT_RADIUS;
     for (const s of STOPS) {
       const d = Math.abs(s.x - charX);
@@ -453,12 +455,6 @@ export default function WalkGame({ onExit }) {
       <HUD charX={charX} time={time} stars={stars}
            onSkip={() => setShowGallery(true)}/>
 
-      {/* return to title */}
-      <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onExit(); }}
-        style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36 }}>
-        ← 标题
-      </button>
-
       {/* sound toggle */}
       <button className="mw-skip" onClick={(e) => {
           e.stopPropagation();
@@ -467,8 +463,14 @@ export default function WalkGame({ onExit }) {
           setMuted(m);
           setMutedState(m);
         }}
-        style={{ position: "fixed", bottom: 24, left: 104, zIndex: 36 }}>
+        style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36 }}>
         {muted ? "🔇 静音" : "🔊 声音"}
+      </button>
+
+      {/* switch to the climb (hard mode) */}
+      <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onSwitch(); }}
+        style={{ position: "fixed", bottom: 24, right: 24, zIndex: 36 }}>
+        ⛰ 攀岩版 →
       </button>
 
       {/* Achievement panel — fixed overlay so it stays fully on-screen

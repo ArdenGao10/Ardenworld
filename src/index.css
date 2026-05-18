@@ -78,9 +78,9 @@ html, body {
   filter: url(#wobble); cursor: pointer; box-shadow: 1px 2px 0 rgba(0,0,0,.1);
 }
 
-/* Jump button — floating */
+/* Jump button — floating (sits above the bottom-right mode toggle) */
 .mw-jump-btn {
-  position: fixed; bottom: 40px; right: 30px;
+  position: fixed; bottom: 104px; right: 30px;
   width: 80px; height: 80px; border-radius: 50%;
   background: var(--warm); color: var(--paper);
   border: 3px solid var(--ink);

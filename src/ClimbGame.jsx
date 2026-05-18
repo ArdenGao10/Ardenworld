@@ -47,7 +47,7 @@ function makeModel(holdsW) {
   return { torso, limbs };
 }
 
-export default function ClimbGame({ onExit }) {
+export default function ClimbGame({ onSwitch }) {
   const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [, setFrame] = useState(0);
   const [won, setWon] = useState(false);
@@ -402,10 +402,10 @@ export default function ClimbGame({ onExit }) {
         </div>
       </div>
 
-      {/* return to title */}
-      <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onExit(); }}
+      {/* switch back to the walk */}
+      <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onSwitch(); }}
         style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36 }}>
-        ← 标题
+        ← 散步版
       </button>
 
       {/* tutorial hint */}
@@ -458,8 +458,8 @@ export default function ClimbGame({ onExit }) {
               ↺ 再爬一次
             </button>
             <button className="mw-btn" style={{ flex: 1, fontSize: 13, padding: "5px 8px" }}
-              onClick={(e) => { e.stopPropagation(); onExit(); }}>
-              ← 标题
+              onClick={(e) => { e.stopPropagation(); onSwitch(); }}>
+              ← 散步版
             </button>
           </div>
         </div>

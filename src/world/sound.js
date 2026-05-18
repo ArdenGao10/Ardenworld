@@ -123,50 +123,71 @@ export function playWin() {
 }
 
 // ============================================================
-// Background ambience — a slow, soft pentatonic drift
+// Background music — a bright, bouncy little loop in C major
 // ============================================================
-const PENTA = [261.63, 293.66, 349.23, 392.0, 440.0, 523.25, 587.33];
-let bgmTimer = null;
-let bgmStep = 0;
-let bgmOn = false;
+const NOTE = {
+  C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00,
+  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00,
+  A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99,
+};
+// 4 bars × 8 eighth-notes; "." = rest (the note before it just rings on)
+const MELODY = [
+  "G4", "E4", "G4", "C5", ".",  "E4", "D4", ".",
+  "F4", "A4", "G4", "E4", ".",  "C4", ".",  ".",
+  "G4", "E4", "G4", "C5", ".",  "D5", "C5", ".",
+  "E5", "D5", "C5", "G4", "A4", ".",  ".",  ".",
+];
+const BASS = [
+  "C3", ".", ".", "G3", "C3", ".", ".", ".",
+  "F3", ".", ".", "C3", "F3", ".", ".", ".",
+  "C3", ".", ".", "G3", "C3", ".", ".", ".",
+  "G3", ".", ".", "D3", "G3", ".", ".", ".",
+];
+const STEP = 0.19; // seconds per eighth-note — ~158 BPM, sprightly
 
-function softNote(freq, dur, vol) {
-  if (!ctx || muted) return;
-  const t0 = ctx.currentTime + 0.02;
+let bgmTimer = null;
+let bgmOn = false;
+let bgmStep = 0;
+let bgmNextT = 0;
+
+function bgmNote(freq, when, dur, vol, type) {
+  if (!ctx || !freq) return;
   const osc = ctx.createOscillator();
-  const shimmer = ctx.createOscillator();
   const g = ctx.createGain();
-  const sg = ctx.createGain();
-  osc.type = "sine";
-  shimmer.type = "sine";
+  osc.type = type;
   osc.frequency.value = freq;
-  shimmer.frequency.value = freq * 2.002; // gentle octave shimmer
-  sg.gain.value = 0.28;
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.linearRampToValueAtTime(vol, t0 + dur * 0.35);
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.linearRampToValueAtTime(vol, when + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
   osc.connect(g);
-  shimmer.connect(sg);
-  sg.connect(g);
   g.connect(bgmGain);
-  osc.start(t0);
-  shimmer.start(t0);
-  osc.stop(t0 + dur + 0.05);
-  shimmer.stop(t0 + dur + 0.05);
+  osc.start(when);
+  osc.stop(when + dur + 0.04);
 }
 
 export function startBgm() {
   if (!ctx || muted || bgmTimer) return;
   bgmOn = true;
-  const tick = () => {
+  bgmStep = 0;
+  bgmNextT = ctx.currentTime + 0.12;
+  // a small look-ahead scheduler keeps the rhythm tight despite setTimeout jitter
+  const schedule = () => {
     if (!bgmOn) return;
-    const freq = PENTA[bgmStep % PENTA.length];
-    bgmStep += Math.random() < 0.55 ? 1 : 2;
-    softNote(freq, 2.8, 0.13);
-    if (Math.random() < 0.4) softNote(freq * 1.5, 2.8, 0.06); // a soft fifth
-    bgmTimer = setTimeout(tick, 1500 + Math.random() * 1100);
+    while (bgmNextT < ctx.currentTime + 0.3) {
+      const i = bgmStep % MELODY.length;
+      const mel = NOTE[MELODY[i]];
+      const bas = NOTE[BASS[i]];
+      if (mel) {
+        bgmNote(mel, bgmNextT, 0.34, 0.17, "triangle");
+        bgmNote(mel * 2, bgmNextT, 0.16, 0.035, "sine"); // a touch of sparkle
+      }
+      if (bas) bgmNote(bas, bgmNextT, 0.42, 0.13, "sine");
+      bgmNextT += STEP;
+      bgmStep++;
+    }
+    bgmTimer = setTimeout(schedule, 60);
   };
-  tick();
+  schedule();
 }
 
 export function stopBgm() {
