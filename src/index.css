@@ -1,0 +1,327 @@
+:root {
+  --ink: #1b1b1b;
+  --paper: #fffdf6;
+  --warm: #d97757;
+  --moss: #6f8f6a;
+  --moss-light: #cfe0c6;
+  --rose: #c97a83;
+  --sun: #fef3a3;
+  --sky: #6a8ab0;
+}
+html, body {
+  margin: 0; padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "ZCOOL KuaiLe", "Kalam", system-ui, sans-serif;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  overscroll-behavior: none;
+}
+* { box-sizing: border-box; }
+
+/* Type system */
+.mw-title { font-family: "Caveat", "Ma Shan Zheng", "Long Cang", "Noto Serif SC", serif; letter-spacing: .02em; font-weight: 600; }
+.mw-body  { font-family: "ZCOOL KuaiLe", "Kalam", sans-serif; letter-spacing: .01em; }
+.sk-hand  { font-family: "Caveat", "Kalam", cursive; }
+.sk-mono  { font-family: "JetBrains Mono", monospace; }
+.note     { font-family: "Caveat"; font-size: 18px; color: #444; }
+.note-sm  { font-family: "Caveat"; font-size: 15px; color: #555; }
+
+.sk-tag  {
+  display: inline-block; padding: 3px 12px; border: 1.5px solid var(--ink); border-radius: 999px;
+  font-family: "JetBrains Mono"; font-size: 10px; text-transform: uppercase; letter-spacing: .12em;
+  filter: url(#wobble);
+}
+
+/* Stage */
+.mw-stage {
+  position: fixed; inset: 0;
+  overflow: hidden;
+  background: #ebe1cd;
+  cursor: pointer;
+}
+.mw-stage:active { cursor: grabbing; }
+.mw-bg {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+}
+.mw-far, .mw-mid {
+  position: absolute; inset: 0; pointer-events: none;
+  will-change: transform;
+}
+.mw-world {
+  position: absolute; left: 0; top: 0; width: 6800px; height: 100%;
+  will-change: transform;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Buttons */
+.mw-btn {
+  font-family: "ZCOOL KuaiLe"; font-size: 18px; padding: 9px 20px;
+  background: var(--paper); color: var(--ink);
+  border: 2.5px solid var(--ink);
+  cursor: pointer; filter: url(#wobble);
+  box-shadow: 2px 3px 0 rgba(0,0,0,.15);
+  transition: transform .08s, box-shadow .08s;
+  letter-spacing: .02em;
+}
+.mw-btn:hover { transform: translate(-1px, -1px); box-shadow: 3px 4px 0 rgba(0,0,0,.2); }
+.mw-btn:active { transform: translate(1px, 1px); box-shadow: 1px 2px 0 rgba(0,0,0,.15); }
+.mw-btn-primary { background: var(--warm); color: var(--paper); }
+.mw-btn-big { font-size: 22px; padding: 12px 28px; }
+
+/* Skip button */
+.mw-skip {
+  font-family: "JetBrains Mono"; font-size: 11px; letter-spacing: .15em;
+  background: #fffdf6; border: 2px solid #1b1b1b; padding: 6px 14px;
+  filter: url(#wobble); cursor: pointer; box-shadow: 1px 2px 0 rgba(0,0,0,.1);
+}
+
+/* Jump button — floating */
+.mw-jump-btn {
+  position: fixed; bottom: 40px; right: 30px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--warm); color: var(--paper);
+  border: 3px solid var(--ink);
+  filter: url(#wobble);
+  box-shadow: 3px 4px 0 rgba(0,0,0,.2);
+  cursor: pointer; z-index: 35;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: transform .1s;
+  animation: mw-jump-pulse 1.6s ease-in-out infinite;
+}
+.mw-jump-btn:active { transform: scale(.92); animation: none; }
+@keyframes mw-jump-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Interact prompt */
+.mw-prompt {
+  position: fixed; left: 50%; bottom: 130px; transform: translateX(-50%);
+  background: #1b1b1b; color: #fef3a3; padding: 8px 18px;
+  font-family: "JetBrains Mono"; font-size: 11px; letter-spacing: .2em;
+  border: 2px solid #1b1b1b; filter: url(#wobble); z-index: 25;
+  animation: mw-bob 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes mw-bob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-5px); }
+}
+
+/* Start hint */
+.mw-start-hint {
+  position: fixed; left: 50%; top: 18%;
+  transform: translateX(-50%);
+  background: rgba(255,253,246,.92);
+  padding: 10px 18px;
+  border: 2px solid var(--ink);
+  filter: url(#wobble);
+  text-align: center;
+  pointer-events: none;
+  z-index: 20;
+  animation: mw-fadebob 2.4s ease-in-out infinite;
+}
+@keyframes mw-fadebob {
+  0%, 100% { opacity: .7; transform: translate(-50%, 0); }
+  50% { opacity: 1; transform: translate(-50%, -4px); }
+}
+
+/* Twinkle */
+.mw-twinkle { animation: mw-twinkle 1.6s ease-in-out infinite; }
+@keyframes mw-twinkle {
+  0%, 100% { opacity: .6; transform: scale(.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* Clouds */
+.mw-cloud {
+  animation-name: mw-cloud-drift;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  animation-direction: alternate;
+  pointer-events: none;
+}
+.mw-cloud > svg { width: 100%; height: 100%; display: block; }
+@keyframes mw-cloud-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(120px); }
+}
+/* Vinyl spin */
+@keyframes mw-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Birds */
+.mw-bird {
+  position: absolute; left: -50px;
+  animation-name: mw-fly;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  pointer-events: none;
+}
+@keyframes mw-fly {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 100px)); }
+}
+/* Flower bloom */
+.mw-bloom {
+  animation: mw-bloom 0.5s cubic-bezier(.2,1.4,.4,1) both;
+  box-shadow: 1px 1px 0 rgba(0,0,0,.1);
+}
+@keyframes mw-bloom {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+/* Splash drops */
+@keyframes mwsplash {
+  0% { transform: translate(0, 0); opacity: 1; }
+  100% { transform: translate(var(--dx, 0), calc(-1 * var(--dy, 30px))); opacity: 0; }
+}
+
+/* Thought bubble above char */
+.mw-thought {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: #fffdf6;
+  border: 2.5px solid #1b1b1b;
+  padding: 6px 14px;
+  filter: url(#wobble);
+  box-shadow: 2px 3px 0 rgba(0,0,0,.1);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: mw-thought-pop .35s cubic-bezier(.2,1.5,.4,1) both, mw-thought-fade 3.8s ease-out forwards;
+  z-index: 12;
+}
+.mw-thought:after {
+  content: "";
+  position: absolute;
+  top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1b1b1b;
+}
+@keyframes mw-thought-pop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-2px) scale(.7); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1); }
+}
+@keyframes mw-thought-fade {
+  0%, 85% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Night ambient overlay (darkens world a bit, keeps stars/sun layers intact) */
+.mw-night-tint {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(20,30,55,.05) 0%, rgba(15,20,40,.18) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+.mw-dusk-tint {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(217,119,87,.05) 0%, rgba(150,80,60,.1) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Loading dots */
+.mw-dot {
+  width: 12px; height: 12px; border-radius: 50%; background: var(--warm);
+  animation: mw-bounce 0.8s ease-in-out infinite;
+}
+@keyframes mw-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: .5; }
+  40% { transform: scale(1.2); opacity: 1; }
+}
+
+/* === End screen === */
+.mw-end {
+  position: fixed; inset: 0; z-index: 60;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.mw-end-sky {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, #ffd08a 0%, #fef3a3 35%, #ffe9c0 70%, #cfe0c6 100%);
+}
+.mw-end-peak {
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
+  pointer-events: none;
+}
+.mw-end-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  max-width: 720px;
+}
+.mw-end-title {
+  font-size: clamp(72px, 14vw, 140px);
+  line-height: 1;
+  color: var(--ink);
+  margin-top: 10px;
+  text-shadow: 4px 4px 0 var(--warm);
+  animation: mw-pop .9s cubic-bezier(.2,1.2,.4,1) both;
+}
+@keyframes mw-pop {
+  0% { opacity: 0; transform: scale(.5) rotate(-8deg); }
+  60% { opacity: 1; transform: scale(1.1) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.mw-pop { animation: mw-pop-soft 1.2s ease-out both; }
+@keyframes mw-pop-soft {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.mw-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  margin-top: 24px; width: 100%; max-width: 540px;
+}
+@media (max-width: 480px) {
+  .mw-stats { grid-template-columns: 1fr 1fr; }
+}
+.mw-stat {
+  background: var(--paper); border: 2.5px solid var(--ink);
+  filter: url(#wobble); padding: 12px 8px;
+  box-shadow: 2px 3px 0 rgba(0,0,0,.12);
+  transform: rotate(var(--r, -1deg));
+}
+.mw-stat:nth-child(2) { --r: 1deg; }
+.mw-stat:nth-child(3) { --r: -1.5deg; }
+.mw-stat:nth-child(4) { --r: 0.5deg; }
+.mw-stat-num {
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 32px; line-height: 1; color: var(--warm);
+}
+.mw-stat-label {
+  font-family: "ZCOOL KuaiLe", sans-serif;
+  font-size: 13px; color: #555; margin-top: 4px;
+}
+.mw-end-foot {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; letter-spacing: .25em; color: var(--ink); opacity: .6;
+  white-space: nowrap;
+}
+/* Confetti */
+.mw-confetti {
+  position: absolute; top: -20px;
+  width: 10px; height: 14px;
+  animation: mw-confetti-fall linear forwards;
+  z-index: 1;
+}
+@keyframes mw-confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 1; }
+}
+
+/* Scrollbar */
+.mw-stage *::-webkit-scrollbar { width: 6px; }
+.mw-stage *::-webkit-scrollbar-thumb { background: rgba(27,27,27,.3); border-radius: 3px; }
+
+/* No text-select while playing (except inputs) */
+.mw-stage, .mw-stage * { -webkit-user-select: none; user-select: none; }
+.mw-stage textarea, .mw-stage input { user-select: text; -webkit-user-select: text; }
