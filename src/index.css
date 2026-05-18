@@ -325,3 +325,23 @@ html, body {
 /* No text-select while playing (except inputs) */
 .mw-stage, .mw-stage * { -webkit-user-select: none; user-select: none; }
 .mw-stage textarea, .mw-stage input { user-select: text; -webkit-user-select: text; }
+
+/* === Doodle wall toys === */
+.dw-card {
+  transition: transform .08s, box-shadow .08s;
+  font-family: "ZCOOL KuaiLe", sans-serif;
+}
+.dw-card:hover { transform: translate(-1px, -2px); box-shadow: 3px 5px 0 rgba(0,0,0,.18); }
+.dw-card:active { transform: translate(1px, 1px); box-shadow: 1px 2px 0 rgba(0,0,0,.12); }
+
+.dw-fade { animation: dw-fade .35s ease-out both; }
+@keyframes dw-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes dw-rain {
+  0%   { transform: translateY(0) rotate(14deg); }
+  100% { transform: translateY(264px) rotate(14deg); }
+}
+@keyframes dw-snow {
+  0%   { transform: translateY(0) translateX(0); }
+  100% { transform: translateY(252px) translateX(20px); }
+}

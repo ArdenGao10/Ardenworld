@@ -75,14 +75,14 @@ export const NOTES = [
   { date: "4/28", text: "我喜欢「专注」\n胜过「高效」。" },
 ];
 
-// Tiny experiments wall
+// Tiny experiments wall — every one is a real, playable toy (see DoodleWall.jsx)
 export const DOODLES = [
-  { name: "小猫追光机", note: "css-only" },
-  { name: "心情天气", note: "3 行代码" },
-  { name: "字母重力场", note: "type plays" },
-  { name: "夜里的钟", note: "晚 11 点变成蓝色" },
-  { name: "纸鹤生成器", note: "svg + random" },
-  { name: "?", note: "在画" },
+  { id: "cat",     name: "小猫追光机",   note: "动动鼠标" },
+  { id: "weather", name: "心情天气",     note: "点一种天气" },
+  { id: "letters", name: "字母重力场",   note: "打字玩" },
+  { id: "clock",   name: "夜里的钟",     note: "拖到晚 11 点" },
+  { id: "crane",   name: "纸鹤生成器",   note: "折一只" },
+  { id: "collage", name: "拼贴画生成器", note: "我不会画 · 它会" },
 ];
 
 // Tree positions are static — defined once so the click-handler can match them

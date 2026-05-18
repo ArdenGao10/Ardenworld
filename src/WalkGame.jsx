@@ -8,11 +8,11 @@
  * `onExit` returns to the title screen.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
 import {
   WORLD_WIDTH, GROUND_Y, groundLift,
-  STOPS, WORKS, NOTES, DOODLES, TREE_POSITIONS,
+  STOPS, WORKS, NOTES, TREE_POSITIONS,
   WALK_SPEED, JUMP_VEL, GRAVITY, CHAR_BASE_W, INTERACT_RADIUS,
   STORY_THOUGHTS, timeFor,
 } from './world/data.js';
@@ -27,6 +27,11 @@ import WorkModal from './components/WorkModal.jsx';
 import Overlay from './components/Overlay.jsx';
 import { HUD, InteractPrompt } from './components/HUD.jsx';
 import Gallery from './components/Gallery.jsx';
+import DoodleWall from './components/DoodleWall.jsx';
+import {
+  initAudio, playStep, playJump, playSplash, playStar, playOpen, playWin,
+  isMuted, setMuted,
+} from './world/sound.js';
 
 export default function WalkGame({ onExit }) {
   const [charX, setCharX] = useState(420);
@@ -51,9 +56,11 @@ export default function WalkGame({ onExit }) {
   const [splash, setSplash] = useState(null); // {x, y} for splash drops
   const [flowered, setFlowered] = useState({});
   const [thought, setThought] = useState(null); // {id, text}
+  const [muted, setMutedState] = useState(isMuted());
   const firedThoughts = useRef({});
   const thoughtTimer = useRef();
   const startTime = useRef(Date.now());
+  const stepAcc = useRef(0); // footstep cadence accumulator
 
   const time = timeFor(charX);
   const isMobile = viewport.w < 720 || matchMedia("(pointer:coarse)").matches;
@@ -71,6 +78,7 @@ export default function WalkGame({ onExit }) {
   const stageRef = useRef(null);
 
   const onStageDown = (e) => {
+    initAudio(); // first tap doubles as the gesture that unlocks audio
     if (overlay || dialog || showEnd || showGallery) return;
     // ignore clicks on the HUD (handled separately)
     if (e.target.closest('.mw-skip, .mw-jump-btn, .mw-tap-zone')) return;
@@ -160,6 +168,7 @@ export default function WalkGame({ onExit }) {
       if (keys.current.jumpRequested && y === 0 && !blocked) {
         v = JUMP_VEL;
         keys.current.jumpRequested = false;
+        if (!showEnd) playJump();
       }
 
       x = Math.max(80, Math.min(WORLD_WIDTH - 80, x));
@@ -181,6 +190,14 @@ export default function WalkGame({ onExit }) {
         }
       }
 
+      // footsteps — a soft tick paced while walking on the ground
+      if (isWalking && y < 6) {
+        stepAcc.current += dt;
+        if (stepAcc.current >= 0.3) { stepAcc.current = 0; playStep(); }
+      } else {
+        stepAcc.current = 0.3; // so the next step sounds the instant we move
+      }
+
       stateRef.current = { x, y, vy: v };
       setCharX(x); setCharY(y); setVy(v); setWalking(isWalking); setFacing(curFacing);
 
@@ -189,6 +206,7 @@ export default function WalkGame({ onExit }) {
         if (!collectedStars[i] && Math.abs(x - sx) < 50 && Math.abs(y - sy) < 70) {
           setCollectedStars(prev => ({...prev, [i]: true}));
           setStars(s => s + 1);
+          playStar();
         }
       });
 
@@ -203,6 +221,7 @@ export default function WalkGame({ onExit }) {
 
   function triggerSplash(charXNow, puddleX) {
     // Soft splash — just briefly wet, no reset
+    playSplash();
     setSplashing(true);
     setSplash({ x: puddleX, t: Date.now() });
     setTimeout(() => {
@@ -231,6 +250,7 @@ export default function WalkGame({ onExit }) {
   // Bounce in place when showEnd reached (continuously hop)
   useEffect(() => {
     if (!showEnd) return;
+    playWin();
     const id = setInterval(() => {
       if (stateRef.current.y < 5) keys.current.jumpRequested = true;
     }, 80);
@@ -248,8 +268,57 @@ export default function WalkGame({ onExit }) {
     return best;
   })();
 
+  // ----- memoised scene layers -----
+  // The game loop runs ~60×/s. Without this, every frame would re-render
+  // all 22 trees, 12 markers and the hills — even though only the character
+  // moved. These layers only change with `time` (day→dusk→night), blooms,
+  // or which sign is nearest, so React can skip re-rendering them per frame.
+  const skyLayer = useMemo(() => (
+    <>
+      <SkyGradient time={time}/>
+      <Sun time={time} viewW={viewport.w}/>
+      <Stars time={time}/>
+      <Birds time={time}/>
+    </>
+  ), [time, viewport.w]);
+
+  const farLayer = useMemo(() => (
+    <>
+      <FarHills time={time}/>
+      <Clouds time={time} viewW={viewport.w}/>
+    </>
+  ), [time, viewport.w]);
+
+  const midLayer = useMemo(() => <NearHills time={time}/>, [time]);
+
+  const groundLayer = useMemo(() => (
+    <>
+      <Ground time={time}/>
+      <Bushes time={time}/>
+      <Trees time={time} flowered={flowered}/>
+    </>
+  ), [time, flowered]);
+
+  const stopMarkers = useMemo(() => (
+    STOPS.map(s => (
+      <StopMarker key={s.id} stop={s} charNearby={nearest?.id === s.id} time={time}/>
+    ))
+  ), [time, nearest?.id]);
+
+  const starEls = useMemo(() => (
+    [[1700, 60], [1980, 85], [3400, 90], [5300, 70]].map(([sx, sy], i) => (
+      !collectedStars[i] && (
+        <div key={i} className="sk-hand mw-twinkle" style={{
+          position: "absolute", left: sx, bottom: GROUND_Y + groundLift(sx) + sy, fontSize: 22, color: "#fef3a3",
+          textShadow: "0 0 8px rgba(254,243,163,.8)", zIndex: 5
+        }}>✦</div>
+      )
+    ))
+  ), [collectedStars]);
+
   function handleStop(s) {
     setReached(prev => ({ ...prev, [s.id]: true }));
+    if (s.type !== "start" && s.type !== "peak") playOpen();
     switch (s.type) {
       case "start": break;
       case "knock":
@@ -331,35 +400,20 @@ export default function WalkGame({ onExit }) {
     >
       {/* Background */}
       <div className="mw-bg">
-        <SkyGradient time={time}/>
-        <Sun time={time} viewW={viewport.w}/>
-        <Stars time={time}/>
-        <Birds time={time}/>
+        {skyLayer}
         <div className="mw-far"  style={{ transform: `translateX(${-farCamX}px)` }}>
-          <FarHills time={time}/>
-          <Clouds time={time} viewW={viewport.w}/>
+          {farLayer}
         </div>
         <div className="mw-mid" style={{ transform: `translateX(${-midCamX}px)` }}>
-          <NearHills time={time}/>
+          {midLayer}
         </div>
       </div>
 
       {/* World */}
       <div className="mw-world" style={{ transform: `translateX(${-camX}px)` }}>
-        <Ground time={time}/>
-        <Bushes time={time}/>
-        <Trees time={time} flowered={flowered}/>
-        {STOPS.map(s => (
-          <StopMarker key={s.id} stop={s} charNearby={nearest?.id === s.id} time={time}/>
-        ))}
-        {[[1700, 60], [1980, 85], [3400, 90], [5300, 70]].map(([sx, sy], i) => (
-          !collectedStars[i] && (
-            <div key={i} className="sk-hand mw-twinkle" style={{
-              position: "absolute", left: sx, bottom: GROUND_Y + groundLift(sx) + sy, fontSize: 22, color: "#fef3a3",
-              textShadow: "0 0 8px rgba(254,243,163,.8)", zIndex: 5
-            }}>✦</div>
-          )
-        ))}
+        {groundLayer}
+        {stopMarkers}
+        {starEls}
         {/* splash drops */}
         {splash && Array.from({length: 8}).map((_, i) => (
           <div key={i} className="mw-drop" style={{
@@ -405,9 +459,21 @@ export default function WalkGame({ onExit }) {
         ← 标题
       </button>
 
+      {/* sound toggle */}
+      <button className="mw-skip" onClick={(e) => {
+          e.stopPropagation();
+          initAudio();
+          const m = !muted;
+          setMuted(m);
+          setMutedState(m);
+        }}
+        style={{ position: "fixed", bottom: 24, left: 104, zIndex: 36 }}>
+        {muted ? "🔇 静音" : "🔊 声音"}
+      </button>
+
       {/* Achievement panel — fixed overlay so it stays fully on-screen
           (must live outside .mw-world: a transformed ancestor would
-          re-anchor position:fixed). Centered up top on mobile, left on desktop. */}
+          re-anchor position:fixed). Up top on mobile, centred on desktop. */}
       {showEnd && (() => {
         const mins = Math.floor(totalTime / 60);
         const secs = Math.floor(totalTime % 60);
@@ -417,7 +483,7 @@ export default function WalkGame({ onExit }) {
             position: "fixed", width: 250, zIndex: 45,
             ...(isMobile
               ? { left: "50%", top: 84, transform: "translateX(-50%) rotate(-1.5deg)" }
-              : { left: 40, top: "50%", transform: "translateY(-50%) rotate(-1.5deg)" }),
+              : { left: "50%", top: "50%", transform: "translate(-50%, -50%) rotate(-1.5deg)" }),
             background: "#fffdf6", border: "3px solid #1b1b1b",
             filter: "url(#wobble)", padding: "14px 18px",
             boxShadow: "3px 4px 0 rgba(0,0,0,.15)",
@@ -510,23 +576,7 @@ export default function WalkGame({ onExit }) {
       )}
 
       {overlay?.type === "doodle" && (
-        <Overlay title="涂鸦墙" sub="DOODLE · 小实验" onClose={() => setOverlay(null)}>
-          <div className="mw-body" style={{ fontSize: 16, color: "#555", marginBottom: 14 }}>
-            一些 30 分钟以内能做完的小东西。不一定有用，但都好玩。
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10 }}>
-            {DOODLES.map((d, i) => (
-              <div key={i} className="mw-doodle-card" style={{
-                background: ["#cfe0c6","#fef3a3","#f7c5c0","#a8c8e0","#e7d4c4","#fffdf6"][i],
-                border: "2px solid #1b1b1b", filter: "url(#wobble)", padding: 14, minHeight: 110,
-                display: "flex", flexDirection: "column", justifyContent: "space-between"
-              }}>
-                <div className="mw-title" style={{ fontSize: 20, lineHeight: 1.2 }}>{d.name}</div>
-                <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".15em", color: "#555", textTransform: "uppercase" }}>{d.note}</div>
-              </div>
-            ))}
-          </div>
-        </Overlay>
+        <DoodleWall onClose={() => setOverlay(null)}/>
       )}
 
       {overlay?.type === "contact" && (
