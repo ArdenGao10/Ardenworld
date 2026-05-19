@@ -58,6 +58,7 @@ export default function WalkGame({ onSwitch }) {
   const [flowered, setFlowered] = useState({});
   const [thought, setThought] = useState(null); // {id, text}
   const [muted, setMutedState] = useState(isMuted());
+  const [showIntro, setShowIntro] = useState(true); // opening choice card
   const firedThoughts = useRef({});
   const thoughtTimer = useRef();
   const startTime = useRef(Date.now());
@@ -80,7 +81,7 @@ export default function WalkGame({ onSwitch }) {
 
   const onStageDown = (e) => {
     initAudio(); startBgm(); // first tap unlocks audio + starts the music
-    if (overlay || dialog || showEnd || showGallery) return;
+    if (overlay || dialog || showEnd || showGallery || showIntro) return;
     // ignore clicks on the HUD (handled separately)
     if (e.target.closest('.mw-skip, .mw-jump-btn, .mw-tap-zone')) return;
 
@@ -123,7 +124,7 @@ export default function WalkGame({ onSwitch }) {
   useEffect(() => {
     const down = (e) => {
       if (e.key === " " || e.key === "ArrowUp") {
-        if (!dialog && !overlay && !showEnd && !showGallery) {
+        if (!dialog && !overlay && !showEnd && !showGallery && !showIntro) {
           keys.current.jumpRequested = true;
           e.preventDefault();
         }
@@ -398,9 +399,14 @@ export default function WalkGame({ onSwitch }) {
 
   const totalTime = (Date.now() - startTime.current) / 1000;
 
+  // Stops actually visited — start / puddle / peak aren't real "stops"
+  const countedStops = STOPS.filter(s => !["start", "puddle", "peak"].includes(s.type));
+  const visitedStops = countedStops.filter(s => reached[s.id]).length;
+
   return (
     <div className="mw-stage" ref={stageRef}
          onMouseDown={onStageDown}
+         onContextMenu={(e) => e.preventDefault()}
          onTouchStart={(e) => { e.preventDefault(); onStageDown(e); }}
     >
       {/* Background */}
@@ -500,7 +506,7 @@ export default function WalkGame({ onSwitch }) {
             <div className="sk-hand" style={{ fontSize: 14 * k, color: "#666", marginTop: 2 * k }}>你走完了 my world</div>
             <div style={{ marginTop: 12 * k, display: "flex", flexDirection: "column", gap: 4 * k }}>
               {[
-                { label: "停靠点", value: `${STOPS.length}/${STOPS.length}` },
+                { label: "停靠点", value: `${visitedStops}/${countedStops.length}` },
                 { label: "捡到的星", value: `${stars} 颗` },
                 { label: "花的时间", value: timeStr },
                 { label: "通关次数", value: `# ${playCount}` },
@@ -589,14 +595,16 @@ export default function WalkGame({ onSwitch }) {
         <ContactCard onClose={() => setOverlay(null)}/>
       )}
 
-      {/* Start hint */}
-      {showStartHint && charX < 460 && !dialog && !overlay && (
+      {/* Start hint — controls differ between touch and desktop */}
+      {showStartHint && charX < 460 && !dialog && !overlay && !showIntro && (
         <div className="mw-start-hint">
           <div className="sk-hand" style={{ fontSize: isMobile ? 22 : 28, color: "#1b1b1b" }}>
-            点屏幕往那边走 ✦
+            {isMobile ? "点屏幕往那边走 ✦" : "点屏幕走 · 空格跳 ✦"}
           </div>
           <div className="mw-body" style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
-            点招牌 = 互动 · 点 ↑ = 跳
+            {isMobile
+              ? "点招牌 = 互动 · 点 ↑ = 跳"
+              : "点招牌 = 互动 · 空格 = 跳 · 左右键都能走"}
           </div>
         </div>
       )}
@@ -606,6 +614,43 @@ export default function WalkGame({ onSwitch }) {
           onClose={() => setShowGallery(false)}
           onBackToWalk={() => setShowGallery(false)}
         />
+      )}
+
+      {/* Opening choice — play the walk, or skip straight to the works */}
+      {showIntro && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 48, background: "rgba(27,27,27,.42)",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+        }}>
+          <div style={{
+            width: "min(360px, 100%)", background: "#fffdf6", border: "3px solid #1b1b1b",
+            filter: "url(#wobble)", padding: "26px 26px 22px", textAlign: "center",
+            boxShadow: "5px 7px 0 rgba(0,0,0,.18)", transform: "rotate(-1deg)",
+          }}>
+            <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".24em", color: "#888" }}>
+              MY WORLD
+            </div>
+            <div className="mw-title" style={{ fontSize: 40, lineHeight: 1.05, marginTop: 6 }}>
+              散步 60 秒 ✦
+            </div>
+            <div className="mw-body" style={{ fontSize: 16, color: "#555", marginTop: 10, lineHeight: 1.6 }}>
+              往右走一段路 — 路上都是 Arden 做的东西。<br/>不想走?也可以直接看作品。
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
+              <button className="mw-btn mw-btn-primary mw-btn-big"
+                onClick={(e) => { e.stopPropagation(); initAudio(); startBgm(); setShowIntro(false); }}>
+                玩一遍 →
+              </button>
+              <button className="mw-btn"
+                onClick={(e) => {
+                  e.stopPropagation(); initAudio(); startBgm();
+                  setShowIntro(false); setShowGallery(true);
+                }}>
+                直接看作品
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
