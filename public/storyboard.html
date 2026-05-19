@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>散步 · A Stroll Through My World — 作品展示</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=JetBrains+Mono:wght@300;400;500&family=ZCOOL+KuaiLe&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   散步 · A Stroll Through My World — 作品展示 / Portfolio
+   A4 portrait × 7 pages. Print → Save as PDF.
+   ============================================================ */
+
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  html, body { background: #fffdf6 !important; margin: 0 !important; }
+  .page { box-shadow: none !important; margin: 0 !important; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .printbar { display: none !important; }
+}
+
+:root {
+  --ink: #1b1b1b;
+  --ink-2: #4a4a4a;
+  --ink-3: #777;
+  --ink-4: #a0a0a0;
+  --paper: #fffdf6;
+  --paper-2: #f7f2e6;
+  --warm: #d97757;
+  --warm-deep: #b45d3f;
+  --sun: #fef3a3;
+  --moss: #6f8f6a;
+  --moss-soft: #cfe0c6;
+  --sand: #ebe1cd;
+  --sand-soft: #efe5cb;
+  --rose: #f7c5c0;
+  --sky: #6a8ab0;
+  --night: #1E1711;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: #cfc6b5;
+  font-family: "ZCOOL KuaiLe", "Noto Serif SC", system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  margin: 14px auto;
+  background: var(--paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='220' height='220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  box-shadow: 0 6px 28px rgba(0,0,0,.18);
+  padding: 16mm 16mm 14mm;
+  overflow: hidden;
+}
+
+.wobble-svg { position: absolute; width: 0; height: 0; }
+
+/* ─── shared building blocks ─────────────────────────────── */
+.eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8.5pt;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.eyebrow .sep { color: var(--ink-4); margin: 0 4px; }
+
+.section-title {
+  font-family: "Ma Shan Zheng", "Noto Serif SC", serif;
+  font-weight: 400;
+  font-size: 28pt;
+  line-height: 1.1;
+  margin: 2mm 0 1mm;
+  color: var(--ink);
+}
+.section-title .hl {
+  color: var(--warm);
+  background: linear-gradient(transparent 62%, rgba(254,243,163,.7) 62%);
+  padding: 0 2px;
+}
+.section-sub {
+  font-family: "Noto Serif SC", serif;
+  font-size: 10pt;
+  color: var(--ink-3);
+  margin: 0 0 7mm;
+  line-height: 1.5;
+}
+
+.foot {
+  position: absolute;
+  left: 16mm; right: 16mm; bottom: 7mm;
+  display: flex; justify-content: space-between;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 7.5pt;
+  color: var(--ink-3);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(27,27,27,.12);
+  padding-top: 3mm;
+}
+
+.printbar {
+  position: fixed; top: 12px; right: 14px; z-index: 100;
+  display: flex; gap: 8px;
+}
+.printbar button {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px; letter-spacing: .14em;
+  background: var(--paper); border: 2px solid var(--ink);
+  padding: 6px 14px; cursor: pointer;
+  box-shadow: 1px 2px 0 rgba(0,0,0,.15);
+}
+
+/* ─── PAGE 1 · HERO ──────────────────────────────────────── */
+.page-1 {
+  padding-top: 14mm;
+}
+.page-1 .topbar {
+  display: flex; align-items: center; gap: 5mm;
+}
+.page-1 .topbar .dot {
+  width: 8mm; height: 8mm; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--warm), var(--warm-deep) 70%, #5e2a16);
+  border: 1.5px solid var(--ink);
+  filter: url(#wobble);
+}
+
+.hero-stage {
+  position: relative;
+  margin-top: 9mm;
+  height: 100mm;
+  background: linear-gradient(180deg, #a8c6e5 0%, #d3c2a0 55%, #c9b48a 100%);
+  border: 2px solid var(--ink);
+  filter: url(#wobble);
+  box-shadow: 3px 4px 0 rgba(0,0,0,.15);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.hero-stage .ground {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 30%;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 4mm, rgba(27,27,27,.05) 4mm 5mm),
+    linear-gradient(180deg, #d6b88a 0%, #b9986a 100%);
+  border-top: 1.5px solid rgba(27,27,27,.5);
+}
+.hero-stage .hero-phone {
+  position: relative;
+  height: 88%;
+  aspect-ratio: 1218 / 2216;
+  border: 2px solid var(--ink);
+  border-radius: 6mm;
+  overflow: hidden;
+  background: var(--paper);
+  box-shadow: 4px 6px 0 rgba(0,0,0,.2);
+  z-index: 2;
+}
+.hero-stage .hero-phone img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center;
+  display: block;
+}
+.hero-stage .sun {
+  position: absolute; top: 9mm; right: 18mm;
+  width: 14mm; height: 14mm; border-radius: 50%;
+  background: var(--sun);
+  border: 2px solid var(--ink);
+  filter: url(#wobble);
+  box-shadow: 0 0 8mm rgba(254,243,163,.7);
+}
+.hero-stage .cloud {
+  position: absolute; top: 12mm; left: 14mm;
+  width: 22mm; height: 9mm;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  filter: url(#wobble);
+}
+
+.page-1 .title {
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-size: 78pt;
+  font-weight: 700;
+  line-height: 0.92;
+  margin: 9mm 0 0;
+  letter-spacing: -.01em;
+}
+.page-1 .subtitle {
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 16pt;
+  color: var(--ink-2);
+  margin: 3mm 0 0;
+}
+.page-1 .subtitle .hl {
+  color: var(--warm);
+  background: linear-gradient(transparent 60%, rgba(254,243,163,.7) 60%);
+  padding: 0 4px;
+}
+.page-1 .lede {
+  font-family: "Noto Serif SC", serif;
+  font-size: 10.5pt;
+  color: var(--ink-2);
+  line-height: 1.75;
+  margin: 5mm 0 0;
+  max-width: 145mm;
+}
+.page-1 .live-pill {
+  display: inline-flex; align-items: center; gap: 4mm;
+  margin-top: 7mm;
+  background: var(--night);
+  color: var(--paper);
+  padding: 4mm 9mm 4mm 6mm;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 12pt;
+  filter: url(#wobble);
+  box-shadow: 2px 3px 0 rgba(0,0,0,.2);
+}
+.page-1 .live-pill .led {
+  width: 2.5mm; height: 2.5mm; border-radius: 50%;
+  background: var(--warm);
+  box-shadow: 0 0 6px var(--warm);
+}
+.page-1 .live-pill .url {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5pt;
+  margin-left: 3mm;
+}
+
+.meta-strip {
+  position: absolute;
+  left: 16mm; right: 16mm; bottom: 16mm;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8mm;
+  border-top: 1.2px solid rgba(27,27,27,.18);
+  padding-top: 5mm;
+}
+.meta-strip .key {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 7.5pt;
+  letter-spacing: .2em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.meta-strip .val {
+  font-family: "Ma Shan Zheng", "Noto Serif SC", sans-serif;
+  font-size: 11pt;
+  color: var(--ink);
+  margin-top: 2mm;
+  line-height: 1.3;
+}
+
+/* ─── PAGE 2 · STORYBOARD COMIC GRID ─────────────────────── */
+.page-2 .header { position: relative; padding-right: 56mm; }
+.page-2 h1 {
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-size: 28pt; font-weight: 500; line-height: 1.05; margin: 0;
+}
+.page-2 h1 em { font-style: italic; font-weight: 500; }
+.page-2 .sub {
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-style: italic;
+  font-size: 10.5pt;
+  color: var(--ink-2);
+  line-height: 1.55;
+  margin: 4mm 0 0;
+}
+.page-2 .sub .quiet { color: var(--ink-3); }
+.tags {
+  position: absolute; top: 1mm; right: 0;
+  display: flex; flex-direction: column; gap: 2mm;
+  align-items: flex-end;
+}
+.tag {
+  background: var(--sun);
+  border: 1.6px solid var(--ink);
+  padding: 1.5mm 4mm;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8pt;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  filter: url(#wobble);
+  box-shadow: 1.2px 1.6px 0 rgba(0,0,0,.18);
+}
+.tag.moss { background: var(--moss-soft); }
+.tag.rose { background: var(--rose); }
+.tag.paper { background: var(--paper); }
+
+.grid {
+  margin-top: 8mm;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: 7mm;
+  height: calc(100% - 60mm);
+}
+.panel { display: flex; flex-direction: column; position: relative; }
+.panel-frame {
+  flex: 1;
+  background: var(--paper);
+  border: 1.8px solid var(--ink);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 2px 3px 0 rgba(0,0,0,.10);
+  display: flex; flex-direction: column;
+  filter: url(#wobble);
+}
+.panel-frame::before {
+  content: "";
+  height: 4.5mm;
+  background: linear-gradient(180deg, var(--sand-soft) 0%, #e3d6b6 100%);
+  border-bottom: 1px solid rgba(27,27,27,.28);
+  flex-shrink: 0;
+}
+.panel-img {
+  flex: 1;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-color: var(--sand);
+}
+.panel-caption {
+  margin-top: 2.6mm;
+  text-align: center;
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  line-height: 1.3;
+}
+.panel-caption .num { font-weight: 600; font-size: 11pt; }
+.panel-caption .name {
+  font-family: "Ma Shan Zheng", "Noto Serif SC", sans-serif;
+  font-size: 11pt; color: var(--ink);
+}
+.panel-caption .sub {
+  display: block; font-style: italic;
+  font-size: 8.5pt; color: var(--ink-3); margin-top: 0.3mm;
+}
+.arrow {
+  position: absolute; color: #b8a890;
+  font-family: "Caveat", cursive;
+  font-size: 16pt; pointer-events: none; line-height: 1;
+}
+.arrow.right { right: -6mm; top: 38%; }
+.arrow.down { bottom: -3mm; left: 46%; }
+
+/* ─── PAGE 3 · FEATURES + ARCHITECTURE ───────────────────── */
+.feat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6mm;
+  margin-top: 5mm;
+}
+.feat-card {
+  background: var(--paper-2);
+  border: 1.6px solid var(--ink);
+  padding: 6mm 7mm 6mm;
+  position: relative;
+  filter: url(#wobble);
+  box-shadow: 2px 3px 0 rgba(0,0,0,.1);
+}
+.feat-card .ico {
+  width: 9mm; height: 9mm;
+  border: 1.8px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: "Caveat", cursive;
+  font-size: 14pt;
+  filter: url(#wobble);
+}
+.feat-card h4 {
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 15pt;
+  margin: 3mm 0 1.5mm;
+  color: var(--ink);
+}
+.feat-card h4 .en {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8pt;
+  color: var(--ink-3);
+  letter-spacing: .14em;
+  margin-left: 3mm;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.feat-card p {
+  font-family: "Noto Serif SC", serif;
+  font-size: 9.5pt;
+  line-height: 1.65;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.arch-block {
+  margin-top: 12mm;
+}
+.arch-block .section-title { margin-bottom: 2mm; }
+.stack-pills {
+  margin: 5mm 0 6mm;
+  display: flex; flex-wrap: wrap; gap: 2mm;
+}
+.stack-pills .pill {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8pt;
+  padding: 1.8mm 4mm;
+  border: 1px solid rgba(27,27,27,.4);
+  background: var(--paper);
+  color: var(--ink-2);
+  border-radius: 2px;
+}
+.stack-pills .pill.warm {
+  background: var(--warm);
+  color: var(--paper);
+  border-color: var(--warm);
+}
+.stack-pills .pill.moss {
+  background: var(--moss-soft);
+  color: #2c4530;
+}
+
+.numlist { display: flex; flex-direction: column; }
+.numrow {
+  display: grid;
+  grid-template-columns: 12mm 32mm 1fr;
+  gap: 4mm;
+  padding: 3mm 0;
+  border-top: 1px solid rgba(27,27,27,.12);
+  align-items: baseline;
+}
+.numrow:last-child { border-bottom: 1px solid rgba(27,27,27,.12); }
+.numrow .n {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8.5pt; color: var(--ink-4);
+}
+.numrow .k {
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 12pt; color: var(--ink);
+}
+.numrow .v {
+  font-family: "Noto Serif SC", serif;
+  font-size: 9.5pt; color: var(--ink-2); line-height: 1.55;
+}
+.numrow .v code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8.5pt;
+  background: var(--sand-soft);
+  padding: 0.4mm 1.4mm; border-radius: 2px;
+}
+
+/* ─── PAGE 4 · STEPS + ENGINEERING NOTES ─────────────────── */
+.steps { display: flex; flex-direction: column; gap: 4mm; margin-top: 4mm; }
+.step {
+  display: grid;
+  grid-template-columns: 22mm 1fr;
+  gap: 5mm;
+  align-items: start;
+  padding: 4mm 0;
+  border-top: 1px solid rgba(27,27,27,.14);
+}
+.step .num {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 36pt; line-height: 1; color: var(--ink-4);
+  font-weight: 500;
+  letter-spacing: -.02em;
+}
+.step .head {
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 16pt; margin: 1mm 0 1.5mm;
+}
+.step .body {
+  font-family: "Noto Serif SC", serif;
+  font-size: 10pt; color: var(--ink-2);
+  line-height: 1.65; margin: 0;
+}
+.step .body .hl { color: var(--warm); font-weight: 500; }
+
+.notes-block {
+  margin-top: 10mm;
+}
+.notes-grid {
+  margin-top: 5mm;
+  display: flex; flex-direction: column; gap: 4mm;
+}
+.note-card {
+  background: var(--paper-2);
+  border-radius: 4mm;
+  padding: 4mm 6mm;
+  border: 1.2px solid rgba(27,27,27,.12);
+}
+.note-card .label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8pt;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.note-card .body {
+  font-family: "Noto Serif SC", serif;
+  font-size: 10pt; color: var(--ink);
+  line-height: 1.65;
+  margin: 1.5mm 0 0;
+}
+
+.climb-teaser {
+  margin-top: 9mm;
+  padding: 5mm 7mm;
+  background: linear-gradient(135deg, #2d2418 0%, #1E1711 100%);
+  color: #F4EFE6;
+  border: 2px solid var(--ink);
+  position: relative;
+  filter: url(#wobble);
+  box-shadow: 2px 3px 0 rgba(0,0,0,.22);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 6mm; align-items: center;
+}
+.climb-teaser .ico {
+  font-size: 22pt;
+  filter: drop-shadow(0 0 6px rgba(232,151,92,.4));
+}
+.climb-teaser .copy h5 {
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 14pt; margin: 0 0 1.5mm;
+}
+.climb-teaser .copy h5 em {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic; color: var(--warm);
+  font-weight: 500;
+  margin-left: 3mm;
+}
+.climb-teaser .copy p {
+  font-family: "Noto Serif SC", serif;
+  font-size: 9pt; line-height: 1.6;
+  color: #C9BAA3; margin: 0;
+}
+.climb-teaser .status {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 7.5pt;
+  letter-spacing: .2em;
+  color: var(--warm);
+  border: 1.5px solid var(--warm);
+  padding: 1.5mm 3.5mm;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ─── PAGES 5–7 · PRODUCT SHOTS ──────────────────────────── */
+.shot-block {
+  margin-bottom: 9mm;
+}
+.shot-frame {
+  background: var(--paper-2);
+  border: 1.6px solid var(--ink);
+  border-radius: 3mm;
+  overflow: hidden;
+  box-shadow: 3px 4px 0 rgba(0,0,0,.12);
+  filter: url(#wobble);
+}
+.shot-frame .chrome {
+  display: flex; align-items: center; gap: 4mm;
+  padding: 2.5mm 4mm;
+  background: linear-gradient(180deg, var(--sand-soft) 0%, #e3d6b6 100%);
+  border-bottom: 1.2px solid rgba(27,27,27,.25);
+}
+.shot-frame .lights {
+  display: flex; gap: 2mm;
+}
+.shot-frame .lights span {
+  width: 2.6mm; height: 2.6mm; border-radius: 50%;
+  border: 0.6px solid rgba(27,27,27,.45);
+}
+.shot-frame .lights .r { background: #e88a8a; }
+.shot-frame .lights .y { background: #f2d27a; }
+.shot-frame .lights .g { background: #98c98a; }
+.shot-frame .url {
+  flex: 1;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 7.5pt;
+  color: var(--ink-3);
+  background: var(--paper);
+  padding: 1mm 4mm;
+  border-radius: 999px;
+  border: 0.8px solid rgba(27,27,27,.2);
+  text-align: center;
+}
+.shot-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6mm;
+}
+.phone-shot {
+  position: relative;
+  border-radius: 5mm;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 3px 4px 0 rgba(0,0,0,.14);
+  aspect-ratio: 1218 / 2216;
+  filter: url(#wobble);
+}
+.phone-shot img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.shot-caption {
+  margin-top: 3mm;
+  line-height: 1.35;
+}
+.shot-caption .name {
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 13pt; color: var(--ink);
+}
+.shot-caption .desc {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 7.5pt;
+  color: var(--ink-3);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-top: 1mm;
+  display: block;
+}
+.shot-caption .desc .cn {
+  font-family: "Noto Serif SC", serif;
+  text-transform: none; letter-spacing: 0; color: var(--ink-2);
+  font-size: 9pt; margin-left: 3mm;
+}
+
+/* ─── PAGE 7 · CLOSING ───────────────────────────────────── */
+.closing {
+  position: absolute;
+  left: 16mm; right: 16mm;
+  bottom: 28mm;
+  text-align: center;
+}
+.closing .lead {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8.5pt;
+  letter-spacing: .24em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.closing .punch {
+  font-family: "Ma Shan Zheng", serif;
+  font-size: 26pt;
+  line-height: 1.35;
+  margin: 5mm 0 0;
+  color: var(--ink);
+}
+.closing .punch .hl {
+  color: var(--warm);
+  background: linear-gradient(transparent 60%, rgba(254,243,163,.7) 60%);
+  padding: 0 4px;
+}
+.closing .sign {
+  margin-top: 8mm;
+  display: flex; justify-content: center; gap: 9mm;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8pt;
+  color: var(--ink-3);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.closing .sign a {
+  color: var(--warm);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(217,119,87,.5);
+}
+</style>
+</head>
+<body>
+
+<svg class="wobble-svg" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="wobble" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="1.2"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="printbar">
+  <button onclick="window.print()">PRINT / 导出 PDF →</button>
+</div>
+
+
+<!-- ════════════════ PAGE 1 · HERO ════════════════ -->
+<div class="page page-1">
+  <div class="topbar">
+    <span class="dot"></span>
+    <span class="eyebrow">MY WORLD<span class="sep">·</span>作品展示</span>
+  </div>
+
+  <div class="hero-stage">
+    <div class="cloud"></div>
+    <div class="sun"></div>
+    <div class="ground"></div>
+    <div class="hero-phone">
+      <img src="./storyboard-screenshots/01-title.jpg" alt="title screen">
+    </div>
+  </div>
+
+  <h1 class="title">散步.</h1>
+  <div class="subtitle">在 <span class="hl">60 秒</span> 里走完一个人的作品集</div>
+  <p class="lede">
+    一个可以走的作品集网页 — 横向卷轴 + 路边对话 + 不难的小关卡。<br>
+    路上有两件可玩的产品、一面涂鸦墙、几个想法、一个终点 ✦<br>
+    急的人随时可以跳过散步直接看作品。
+  </p>
+
+  <div class="live-pill">
+    <span class="led"></span>
+    <span>在线体验 —</span>
+    <span class="url">ardencosmic.com</span>
+  </div>
+
+  <div class="meta-strip">
+    <div>
+      <div class="key">ROLE</div>
+      <div class="val">独立开发<br>设计 + 全栈</div>
+    </div>
+    <div>
+      <div class="key">PLATFORM</div>
+      <div class="val">Web · 触屏 / 鼠标 / 键盘</div>
+    </div>
+    <div>
+      <div class="key">STACK</div>
+      <div class="val">React · Vite<br>Inline SVG</div>
+    </div>
+    <div>
+      <div class="key">LIVE</div>
+      <div class="val">ardencosmic.com</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════ PAGE 2 · STORYBOARD ════════════════ -->
+<div class="page page-2">
+  <div class="header">
+    <h1>散步 · <em>A Stroll Through My World</em></h1>
+    <p class="sub">
+      ≈ 60–90 秒。横向卷轴 + 路边对话 + 不难的小关卡。<br>
+      <span class="quiet">access skip 在右上角 — 急的人随时可以跳到「全部作品」。</span>
+    </p>
+    <div class="tags">
+      <span class="tag">A · SIDE-SCROLLER</span>
+      <span class="tag moss">+ D · KNOCK KNOCK</span>
+      <span class="tag rose">+ TINY STAGES</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-frame"><div class="panel-img" style="background-image: url('./storyboard-screenshots/01-title.jpg');"></div></div>
+      <div class="panel-caption"><span class="num">①</span> <span class="name">标题屏</span><span class="sub">tap to wake — 主标题</span></div>
+      <span class="arrow right">⤳</span>
+    </div>
+    <div class="panel">
+      <div class="panel-frame"><div class="panel-img" style="background-image: url('./storyboard-screenshots/02-knock.jpg');"></div></div>
+      <div class="panel-caption"><span class="num">②</span> <span class="name">打个招呼</span><span class="sub">knock knock — 一段对话</span></div>
+      <span class="arrow right">⤳</span>
+    </div>
+    <div class="panel">
+      <div class="panel-frame"><div class="panel-img" style="background-image: url('./storyboard-screenshots/03-puddle.jpg');"></div></div>
+      <div class="panel-caption"><span class="num">③</span> <span class="name">小关卡 · 跳水坑</span><span class="sub">space / tap 跳 — 5 秒搞定</span></div>
+      <span class="arrow down">↓</span>
+    </div>
+    <div class="panel">
+      <div class="panel-frame"><div class="panel-img" style="background-image: url('./storyboard-screenshots/04-about.jpg');"></div></div>
+      <div class="panel-caption"><span class="num">④</span> <span class="name">关于</span><span class="sub">about — 顺路的自我介绍</span></div>
+      <span class="arrow right">⤳</span>
+    </div>
+    <div class="panel">
+      <div class="panel-frame"><div class="panel-img" style="background-image: url('./storyboard-screenshots/05-focus.jpg');"></div></div>
+      <div class="panel-caption"><span class="num">⑤</span> <span class="name">专注圈</span><span class="sub">AI 番茄钟 · 可当场试一试</span></div>
+      <span class="arrow right">⤳</span>
+    </div>
+    <div class="panel">
+      <div class="panel-frame"><div class="panel-img" style="background-image: url('./storyboard-screenshots/06-mood.jpg');"></div></div>
+      <div class="panel-caption"><span class="num">⑥</span> <span class="name">心情唱片</span><span class="sub">AI DJ · 为你压一张唱片</span></div>
+    </div>
+  </div>
+
+  <div class="foot"><span>ARDEN · 2026</span><span>page 2 / 7 · 分镜 / storyboard</span></div>
+</div>
+
+
+<!-- ════════════════ PAGE 3 · FEATURES + ARCHITECTURE ════════════════ -->
+<div class="page">
+  <div class="eyebrow">CORE FEATURES<span class="sep">·</span>核心功能</div>
+  <h2 class="section-title">围绕 <span class="hl">「走一段路」</span></h2>
+  <p class="section-sub">不是 portfolio 列表，是一段可以漫游的世界。每个停靠点都是一件作品或一段想法。</p>
+
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="ico">↻</div>
+      <h4>散步引擎 <span class="en">SIDE-SCROLLER</span></h4>
+      <p>横向卷轴 · 视差三层背景 · 物理跳跃。点屏幕走路，按 ← → 也行；点招牌互动，路上还藏着 4 颗星星。</p>
+    </div>
+    <div class="feat-card">
+      <div class="ico">✎</div>
+      <h4>路边对话 <span class="en">KNOCK KNOCK</span></h4>
+      <p>12 个停靠点 — 敲门、关于、灯笼、邮筒、信箱…… 每块招牌都能点开一段话，像一本边走边翻的日记。</p>
+    </div>
+    <div class="feat-card">
+      <div class="ico">★</div>
+      <h4>两件作品在路上 <span class="en">PLAYABLE WORKS</span></h4>
+      <p>专注圈、心情唱片 — 不只是介绍页，每件作品在路边就能 <code>▶ 小演示</code> 试一段，再深入跳到完整介绍页。</p>
+    </div>
+    <div class="feat-card">
+      <div class="ico">✿</div>
+      <h4>涂鸦墙 + 终点 <span class="en">EXTRAS</span></h4>
+      <p>六个能玩的小实验（小猫追光、字母重力场、纸鹤生成器……）+ 一张终点统计卡片，记录通关时间和星星。</p>
+    </div>
+  </div>
+
+  <div class="arch-block">
+    <div class="eyebrow">ARCHITECTURE<span class="sep">·</span>技术架构</div>
+    <h2 class="section-title">用什么 <span class="hl">搭起来的</span></h2>
+    <p class="section-sub">个人项目 · 设计 + 全栈开发 · 2026 · 约 3,000 行代码 / 一个长周末</p>
+
+    <div class="stack-pills">
+      <span class="pill warm">React 18</span>
+      <span class="pill warm">Vite 5</span>
+      <span class="pill">Inline SVG</span>
+      <span class="pill">Web Audio API</span>
+      <span class="pill moss">requestAnimationFrame</span>
+      <span class="pill">CSS keyframes</span>
+      <span class="pill">localStorage</span>
+      <span class="pill">feTurbulence filter</span>
+      <span class="pill">JetBrains Mono · ZCOOL KuaiLe · Caveat</span>
+    </div>
+
+    <div class="numlist">
+      <div class="numrow">
+        <span class="n">01</span><span class="k">游戏循环</span>
+        <span class="v"><code>requestAnimationFrame</code> 驱动 ~60 fps · 角色物理（重力 / 跳跃 / 地形起伏） · 视差摄像机跟随</span>
+      </div>
+      <div class="numrow">
+        <span class="n">02</span><span class="k">手绘风</span>
+        <span class="v">每条边框、每片地面都过一遍同一个 SVG 滤镜 — <code>feTurbulence</code> + <code>feDisplacementMap</code> — 一行 CSS 就有抖动手绘感</span>
+      </div>
+      <div class="numrow">
+        <span class="n">03</span><span class="k">音效</span>
+        <span class="v">Web Audio API 当场合成 — 脚步、跳跃、水花、星星、开门、通关，8 段过程音效 + 一段循环 BGM</span>
+      </div>
+      <div class="numrow">
+        <span class="n">04</span><span class="k">响应式</span>
+        <span class="v">手机端去掉键盘改成「前进跳」浮动按钮，可拖动重定位 · 三种输入（触屏 / 鼠标 / 键盘）共一套状态机</span>
+      </div>
+      <div class="numrow">
+        <span class="n">05</span><span class="k">作品页跳转</span>
+        <span class="v">用 iframe 内嵌作品介绍页，左侧贴一个迷你小人当返回键 — 可拖动、可切左右 · 替代「开新标签」</span>
+      </div>
+      <div class="numrow">
+        <span class="n">06</span><span class="k">持久化</span>
+        <span class="v"><code>localStorage</code> 记住通关次数、跳跃按钮位置、探头小人停靠点</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>ARDEN · 2026</span><span>page 3 / 7 · 核心功能 + 技术架构</span></div>
+</div>
+
+
+<!-- ════════════════ PAGE 4 · STEPS + ENGINEERING NOTES ════════════════ -->
+<div class="page">
+  <div class="eyebrow">HOW IT WORKS<span class="sep">·</span>运作方式</div>
+  <h2 class="section-title">三步 <span class="hl">,一次漫游</span></h2>
+  <p class="section-sub">从打开网页到通关，只需要做三件事 — 选 · 走 · 看。</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">01</div>
+      <div>
+        <div class="head">选一种打开方式</div>
+        <p class="body">开场卡片两个按钮 — <span class="hl">玩一遍 →</span> 或 <span class="hl">直接看作品</span>。<br>
+        想散步的人开始往右走；急的人直接跳到全部作品页面。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">02</div>
+      <div>
+        <div class="head">走 · 点 · 跳</div>
+        <p class="body">点屏幕（或按 ← →）走路，路过招牌点开互动 — 敲门聊聊、跳过水坑、点亮灯笼、捡几颗星。<br>
+        路上遇到两件真正的产品，可以当场 <span class="hl">▶ 小演示</span> 或 <span class="hl">详细了解 →</span> 跳到完整介绍页。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">03</div>
+      <div>
+        <div class="head">通关 + 重玩</div>
+        <p class="body">走到终点 ✦ 弹出一张统计卡 — <span class="hl">停靠点 · 星星 · 用时 · 通关次数</span>。<br>
+        再走一遍，从第二次开始路上会跟着一只小猫 :) 还有切到「攀岩版」的入口。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes-block">
+    <div class="eyebrow">ENGINEERING NOTES<span class="sep">·</span>设计取舍</div>
+    <h2 class="section-title">视觉之外的 <span class="hl">几个决定</span></h2>
+
+    <div class="notes-grid">
+      <div class="note-card">
+        <div class="label">SAME-TAB · 探头小人替代开新标签</div>
+        <div class="body">点「详细了解」不开新标签页 — 而是把作品介绍页装进 iframe，左侧贴一个迷你小人当返回键。可拖动 / 可切左右 / 气泡 5 秒一闪。让「跳出去看完再回来继续走」这件事不打断节奏。</div>
+      </div>
+      <div class="note-card">
+        <div class="label">ONE FILTER · 一个滤镜，全场手绘</div>
+        <div class="body">所有边框、按钮、地形、人物都走同一个 <code style="font-family:'JetBrains Mono',monospace;font-size:8.5pt;background:var(--sand-soft);padding:0.2mm 1.2mm;">filter: url(#wobble)</code>。改一次 baseFrequency 全站抖动幅度跟着变。</div>
+      </div>
+      <div class="note-card">
+        <div class="label">INPUT PARITY · 三种输入一套逻辑</div>
+        <div class="body">键盘 ← → / 空格、触屏点击、鼠标点击 — 都汇聚到同一个 <code style="font-family:'JetBrains Mono',monospace;font-size:8.5pt;background:var(--sand-soft);padding:0.2mm 1.2mm;">target.x</code> 状态机。手机端没有空格键就把跳跃按钮做成可拖动的浮动球。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="climb-teaser">
+    <div class="ico">⛰</div>
+    <div class="copy">
+      <h5>攀岩版 · <em>climb mode</em></h5>
+      <p>纵向版本 — 从地面爬到山顶。难度更高，停靠点更密，物理是真正的攀岩手感。终点接到同一张通关卡。</p>
+    </div>
+    <div class="status">IN DEVELOPMENT</div>
+  </div>
+
+  <div class="foot"><span>ARDEN · 2026</span><span>page 4 / 7 · 运作方式 + 设计取舍</span></div>
+</div>
+
+
+<!-- ════════════════ PAGE 5 · PRODUCT SHOTS · 起点 ════════════════ -->
+<div class="page">
+  <div class="eyebrow">PRODUCT SHOTS<span class="sep">·</span>产品截图</div>
+  <h2 class="section-title">走进这个 <span class="hl">小世界</span></h2>
+  <p class="section-sub">手机优先 · 桌面同样可玩 — 截图都来自 ardencosmic.com / walk</p>
+
+  <div class="shot-pair">
+    <div>
+      <div class="phone-shot">
+        <img src="./storyboard-screenshots/01-title.jpg" alt="title">
+      </div>
+      <div class="shot-caption">
+        <div class="name">开场屏</div>
+        <div class="desc">TITLE<span class="cn">「散步 60 秒 ✦」— 玩一遍 / 直接看作品</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="phone-shot">
+        <img src="./storyboard-screenshots/02-knock.jpg" alt="knock">
+      </div>
+      <div class="shot-caption">
+        <div class="name">敲门 · 第一段对话</div>
+        <div class="desc">KNOCK<span class="cn">招呼 · 介绍这个小世界 · 邀你随便逛</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 8mm">
+    <div class="shot-pair">
+      <div>
+        <div class="phone-shot">
+          <img src="./storyboard-screenshots/03-puddle.jpg" alt="puddle">
+        </div>
+        <div class="shot-caption">
+          <div class="name">小关卡 · 跳水坑</div>
+          <div class="desc">STAGE<span class="cn">space / tap 跳过去 · 没跳过去就湿脚 💦</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="phone-shot">
+          <img src="./storyboard-screenshots/04-about.jpg" alt="about">
+        </div>
+        <div class="shot-caption">
+          <div class="name">关于</div>
+          <div class="desc">ABOUT<span class="cn">顺路的自我介绍 · 几个手写标签</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>ARDEN · 2026</span><span>page 5 / 7 · 走进这个小世界</span></div>
+</div>
+
+
+<!-- ════════════════ PAGE 6 · PRODUCT SHOTS · 作品 ════════════════ -->
+<div class="page">
+  <div class="eyebrow">PRODUCT SHOTS<span class="sep">·</span>产品截图</div>
+  <h2 class="section-title">路上的 <span class="hl">两件作品</span></h2>
+  <p class="section-sub">每件作品都不是静态截图 — 在路边就能当场玩一小段，想深入再跳到完整介绍页。</p>
+
+  <div class="shot-pair">
+    <div>
+      <div class="phone-shot">
+        <img src="./storyboard-screenshots/05-focus.jpg" alt="focus">
+      </div>
+      <div class="shot-caption">
+        <div class="name">专注圈 · 第一个产品</div>
+        <div class="desc">FOCUS<span class="cn">AI 番茄钟 · 一片会呼吸的光晕</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="phone-shot">
+        <img src="./storyboard-screenshots/06-mood.jpg" alt="mood">
+      </div>
+      <div class="shot-caption">
+        <div class="name">心情唱片 · 夜里的产品</div>
+        <div class="desc">MOODTUNE<span class="cn">AI DJ · 把心情压成一张唱片</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 8mm">
+    <div class="shot-pair">
+      <div>
+        <div class="phone-shot">
+          <img src="./storyboard-screenshots/07-lantern.jpg" alt="lantern">
+        </div>
+        <div class="shot-caption">
+          <div class="name">灯笼 · 黄昏</div>
+          <div class="desc">LANTERN<span class="cn">天慢慢黑下来 · 路上一直有灯</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="phone-shot">
+          <img src="./storyboard-screenshots/08-doodle.jpg" alt="doodle">
+        </div>
+        <div class="shot-caption">
+          <div class="name">涂鸦墙 · 6 个小实验</div>
+          <div class="desc">DOODLE<span class="cn">每个都能点开玩 — 字母重力场、纸鹤、夜里的钟……</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>ARDEN · 2026</span><span>page 6 / 7 · 路上的作品</span></div>
+</div>
+
+
+<!-- ════════════════ PAGE 7 · END + CLOSING ════════════════ -->
+<div class="page">
+  <div class="eyebrow">PRODUCT SHOTS<span class="sep">·</span>产品截图</div>
+  <h2 class="section-title">走到终点 <span class="hl">✦</span></h2>
+  <p class="section-sub">通关卡 · 统计 · 再走一遍 · 切到攀岩版（开发中）</p>
+
+  <div class="shot-pair" style="grid-template-columns: 1fr 1.2fr;">
+    <div>
+      <div class="phone-shot">
+        <img src="./storyboard-screenshots/09-end.jpg" alt="end">
+      </div>
+      <div class="shot-caption">
+        <div class="name">通关 ✦</div>
+        <div class="desc">END<span class="cn">停靠点 · 星星 · 用时 · 通关次数</span></div>
+      </div>
+    </div>
+    <div>
+      <div style="
+        background: linear-gradient(135deg, #2d2418 0%, #1E1711 100%);
+        color: #F4EFE6;
+        border: 2px solid var(--ink);
+        filter: url(#wobble);
+        box-shadow: 3px 4px 0 rgba(0,0,0,.22);
+        padding: 7mm 9mm;
+        aspect-ratio: 1218 / 2216;
+        display: flex; flex-direction: column;
+        position: relative;
+      ">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 7.5pt; letter-spacing: .22em; color: var(--warm); text-transform: uppercase;">
+          NEXT · 下一座山
+        </div>
+        <div style="font-family: 'Ma Shan Zheng', serif; font-size: 28pt; line-height: 1.1; margin-top: 6mm; color: #F4EFE6;">
+          攀岩版<br><em style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18pt; color: var(--warm); font-weight: 500;">climb mode.</em>
+        </div>
+        <p style="font-family: 'Noto Serif SC', serif; font-size: 9.5pt; line-height: 1.7; color: #C9BAA3; margin: 7mm 0 0;">
+          散步是横向的。攀岩是纵向的。<br><br>
+          从地面爬到山顶 — 每抓一处岩点都是一个停靠点，物理是真正的「找下一个落脚」手感。<br><br>
+          会接到同一张通关卡。两种走法，一个世界。
+        </p>
+        <div style="
+          margin-top: auto; text-align: center;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 8pt; letter-spacing: .22em;
+          color: var(--warm);
+          border: 1.5px solid var(--warm);
+          padding: 3mm 0;
+          text-transform: uppercase;
+        ">
+          IN DEVELOPMENT · 制作中
+        </div>
+      </div>
+      <div class="shot-caption">
+        <div class="name">攀岩版 · 下一版本</div>
+        <div class="desc">CLIMB MODE<span class="cn">纵向版本 — 代开发中</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="closing">
+    <div class="lead">献给那些觉得 portfolio 太长的人</div>
+    <div class="punch">
+      有些作品集 是 一张<span class="hl">列表</span>。<br>
+      这一份 是 一段<span class="hl">路</span>。
+    </div>
+    <div class="sign">
+      <span><span style="color: var(--ink-4);">LIVE</span> &nbsp; <a href="https://ardencosmic.com">ardencosmic.com</a></span>
+      <span><span style="color: var(--ink-4);">CODE</span> &nbsp; <a href="https://github.com/ArdenGao10/Ardenworld">github.com/ArdenGao10/Ardenworld</a></span>
+      <span><span style="color: var(--ink-4);">MAIL</span> &nbsp; <a href="mailto:endn0601@gmail.com">endn0601@gmail.com</a></span>
+    </div>
+  </div>
+
+  <div class="foot"><span>MY WORLD · ARDEN · 2026</span><span>page 7 / 7 · fin · ✦</span></div>
+</div>
+
+</body>
+</html>
