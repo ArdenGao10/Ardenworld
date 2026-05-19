@@ -323,9 +323,27 @@ html, body {
   100% { transform: translateY(110vh) rotate(720deg); opacity: 1; }
 }
 
-/* Scrollbar */
-.mw-stage *::-webkit-scrollbar { width: 6px; }
-.mw-stage *::-webkit-scrollbar-thumb { background: rgba(27,27,27,.3); border-radius: 3px; }
+/* Scrollbar — hidden on opt-in containers; the wall of paper looks cleaner
+   without a track at all. Scroll still works (mouse wheel / touch / keys). */
+.mw-stage *::-webkit-scrollbar { width: 0; height: 0; }
+.mw-themed-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.mw-themed-scroll::-webkit-scrollbar-track { background: transparent; }
+.mw-themed-scroll::-webkit-scrollbar-thumb { background: transparent; }
+.mw-themed-scroll {
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* old IE/Edge */
+}
+
+/* Showcase overlay — speech bubble flashes every 5s (3s on, 2s off),
+   so the hint keeps teaching without nagging. */
+@keyframes mw-peek-bubble {
+  0%        { opacity: 1; transform: translateY(0); }
+  28%       { opacity: 1; transform: translateY(-3px); }
+  56%       { opacity: 1; transform: translateY(0); }
+  64%, 96%  { opacity: 0; transform: translateY(-2px); }
+  100%      { opacity: 1; transform: translateY(0); }
+}
+.mw-peek-bubble { animation: mw-peek-bubble 5s ease-in-out infinite; }
 
 /* No text-select while playing (except inputs) */
 .mw-stage, .mw-stage * { -webkit-user-select: none; user-select: none; }

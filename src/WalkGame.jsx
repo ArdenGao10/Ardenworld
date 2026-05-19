@@ -29,6 +29,7 @@ import { HUD, InteractPrompt } from './components/HUD.jsx';
 import Gallery from './components/Gallery.jsx';
 import DoodleWall from './components/DoodleWall.jsx';
 import ContactCard from './components/ContactCard.jsx';
+import ShowcaseFrame from './components/ShowcaseFrame.jsx';
 import {
   initAudio, startBgm, playStep, playJump, playSplash, playStar, playOpen, playWin,
   isMuted, setMuted,
@@ -52,6 +53,7 @@ export default function WalkGame({ onSwitch }) {
   const [reached, setReached] = useState({});
   const [showEnd, setShowEnd] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
+  const [showcase, setShowcase] = useState(null); // { url, workId }
   const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [showStartHint, setShowStartHint] = useState(true);
   const [splash, setSplash] = useState(null); // {x, y} for splash drops
@@ -621,7 +623,34 @@ export default function WalkGame({ onSwitch }) {
       {dialog && <Dialog lines={dialog.lines} onDone={() => setDialog(null)}/>}
 
       {overlay?.type === "work" && (
-        <WorkModal work={WORKS[overlay.workId]} workId={overlay.workId} onClose={() => setOverlay(null)}/>
+        <WorkModal
+          work={WORKS[overlay.workId]}
+          workId={overlay.workId}
+          onClose={() => setOverlay(null)}
+          onShowcase={(url, workId) =>
+            setShowcase({ url, workId, fromX: stateRef.current.x })
+          }
+        />
+      )}
+
+      {showcase && (
+        <ShowcaseFrame
+          url={showcase.url}
+          onClose={() => {
+            // Back-to-walk: put the character exactly back where they were
+            // standing when they opened the showcase — not at start, not at
+            // the work's sign. Wherever they actually were.
+            if (typeof showcase.fromX === "number") {
+              stateRef.current.x = showcase.fromX;
+              setCharX(showcase.fromX);
+              setTarget(null);
+            }
+            setShowcase(null);
+            setOverlay(null);
+            // Note: if they came from the skip-gallery, leave it open so they
+            // land back in the gallery they were browsing.
+          }}
+        />
       )}
 
       {overlay?.type === "about" && (
@@ -687,6 +716,9 @@ export default function WalkGame({ onSwitch }) {
         <Gallery
           onClose={() => setShowGallery(false)}
           onBackToWalk={() => setShowGallery(false)}
+          onShowcase={(url, workId) =>
+            setShowcase({ url, workId, fromX: stateRef.current.x })
+          }
         />
       )}
 

@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react';
 import { FocusDemo, MoodDemo } from './WorkDemo.jsx';
 
-export default function WorkModal({ work, workId, onClose }) {
+export default function WorkModal({ work, workId, onClose, onShowcase }) {
   const [demoOn, setDemoOn] = useState(false);
 
   useEffect(() => {
@@ -20,11 +20,11 @@ export default function WorkModal({ work, workId, onClose }) {
   const demoBg = workId === "focus" ? "#FBFBFB" : "#1E1711";
 
   return (
-    <div onClick={onClose} style={{
+    <div onClick={onClose} className="mw-themed-scroll" style={{
       position: "fixed", inset: 0, background: "rgba(27,27,27,.6)", zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto"
     }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
+      <div onClick={(e) => e.stopPropagation()} className="mw-themed-scroll" style={{
         width: "min(640px, 100%)", background: "#fffdf6", border: "3px solid #1b1b1b", filter: "url(#wobble)",
         padding: "28px 32px", boxShadow: "6px 8px 0 rgba(0,0,0,.2)", position: "relative",
         maxHeight: "90vh", overflowY: "auto"
@@ -109,7 +109,7 @@ export default function WorkModal({ work, workId, onClose }) {
           <button className="mw-btn mw-btn-primary" onClick={() => setDemoOn(d => !d)}>
             {demoOn ? "✕ 收起演示" : "▶ 小演示"}
           </button>
-          <button className="mw-btn" onClick={() => window.open(work.showcase, "_blank", "noopener")}>
+          <button className="mw-btn" onClick={() => onShowcase?.(work.showcase, workId)}>
             详细了解 →
           </button>
           <button className="mw-btn" onClick={onClose}>继续走</button>
