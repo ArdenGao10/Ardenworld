@@ -59,10 +59,18 @@ export default function WalkGame({ onSwitch }) {
   const [thought, setThought] = useState(null); // {id, text}
   const [muted, setMutedState] = useState(isMuted());
   const [showIntro, setShowIntro] = useState(true); // opening choice card
+  const [jumpPos, setJumpPos] = useState(() => {  // user-draggable jump button
+    try {
+      const s = JSON.parse(localStorage.getItem("mw-jump-pos") || "null");
+      if (s && typeof s.right === "number") return s;
+    } catch { /* ignore */ }
+    return { right: 24, bottom: 150 };
+  });
   const firedThoughts = useRef({});
   const thoughtTimer = useRef();
   const startTime = useRef(Date.now());
   const stepAcc = useRef(0); // footstep cadence accumulator
+  const jumpDrag = useRef(null); // drag-state for repositioning the jump button
 
   const time = timeFor(charX);
   const isMobile = viewport.w < 720 || matchMedia("(pointer:coarse)").matches;
@@ -124,6 +132,39 @@ export default function WalkGame({ onSwitch }) {
         x: Math.max(80, Math.min(WORLD_WIDTH - 80, charX + dir * 200)),
         then: null,
       });
+    }
+  };
+
+  // jump button — a quick tap jumps; a drag repositions and remembers it
+  const onJumpDown = (e) => {
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    jumpDrag.current = { x: e.clientX, y: e.clientY, moved: false, pos: null };
+  };
+  const onJumpMove = (e) => {
+    const d = jumpDrag.current;
+    if (!d) return;
+    if (Math.abs(e.clientX - d.x) > 7 || Math.abs(e.clientY - d.y) > 7) d.moved = true;
+    if (d.moved) {
+      const sz = 62;
+      d.pos = {
+        right: Math.max(6, Math.min(window.innerWidth - sz - 6, window.innerWidth - e.clientX - sz / 2)),
+        bottom: Math.max(6, Math.min(window.innerHeight - sz - 6, window.innerHeight - e.clientY - sz / 2)),
+      };
+      setJumpPos(d.pos);
+    }
+  };
+  const onJumpUp = (e) => {
+    e.stopPropagation();
+    const d = jumpDrag.current;
+    jumpDrag.current = null;
+    if (!d) return;
+    if (d.moved && d.pos) {
+      localStorage.setItem("mw-jump-pos", JSON.stringify({
+        right: Math.round(d.pos.right), bottom: Math.round(d.pos.bottom),
+      }));
+    } else if (!d.moved) {
+      onJump();
     }
   };
 
@@ -564,11 +605,16 @@ export default function WalkGame({ onSwitch }) {
         <InteractPrompt stop={nearest}/>
       )}
 
-      {/* Jump button — visible near puddle */}
+      {/* Jump button — tap to jump, drag to reposition (position is remembered) */}
       {showJump && (
-        <button className="mw-jump-btn" onClick={(e) => { e.stopPropagation(); onJump(); }}>
+        <button className="mw-jump-btn"
+          style={{ right: jumpPos.right, bottom: jumpPos.bottom, touchAction: "none" }}
+          onPointerDown={onJumpDown}
+          onPointerMove={onJumpMove}
+          onPointerUp={onJumpUp}
+        >
           <div className="sk-hand" style={{ fontSize: 22, lineHeight: 1 }}>↑</div>
-          <div className="sk-mono" style={{ fontSize: 7.5, letterSpacing: ".16em" }}>JUMP</div>
+          <div className="sk-mono" style={{ fontSize: 7, letterSpacing: ".14em" }}>拖我·跳</div>
         </button>
       )}
 

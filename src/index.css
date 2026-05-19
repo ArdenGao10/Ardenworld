@@ -154,6 +154,11 @@ html, body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+/* Aura orb breathing (Focus demo) */
+@keyframes mw-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
 /* Birds */
 .mw-bird {
   position: absolute; left: -50px;

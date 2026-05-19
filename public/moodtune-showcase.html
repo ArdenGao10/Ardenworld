@@ -351,6 +351,21 @@
     color: var(--fg); border-color: var(--accent); background: rgba(232,151,92,.1);
   }
 
+  /* 源码仓库链接 */
+  .repo-row { margin-top: 26px; text-align: center; }
+  .repo-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .05em;
+    text-decoration: none; color: var(--fg);
+    background: var(--card); border: 1px solid var(--line);
+    padding: 10px 18px; border-radius: 999px;
+    transition: transform .18s, border-color .2s, background .2s;
+  }
+  .repo-link:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent); background: rgba(232,151,92,.1);
+  }
+
   /* ---------- 收尾 ---------- */
   .closing { text-align: center; }
   .closing h2 {
@@ -377,10 +392,40 @@
 
   /* ---------- 响应式 ---------- */
   @media (max-width: 720px) {
-    .tracks { grid-template-columns: 1fr; }
-    section { padding: 60px 0; }
-    .hero { padding: 64px 0 50px; }
+    .wrap { padding: 0 18px; }
     .cursor-glow { display: none; }
+    section { padding: 56px 0; }
+
+    /* Hero —— 收紧留白、缩小标题避免长英文行溢出 */
+    .hero { padding: 52px 0 42px; }
+    .hero h1 { margin-top: 16px; font-size: clamp(30px, 8.6vw, 92px); }
+    .hero .lede { margin-top: 18px; font-size: 15px; line-height: 1.78; }
+    .hero-disc { margin-top: 36px; }
+    .hero .scroll-cue { margin-top: 30px; }
+
+    /* 三首歌：单列铺满 */
+    .tracks { grid-template-columns: 1fr; margin-top: 30px; }
+    .moods { margin-top: 30px; gap: 9px; }
+    .stage { margin-top: 36px; }
+
+    /* 播放器控件：进度条自适应，不再用固定 220px 撑溢出 */
+    .player-ctrls { width: 100%; max-width: 300px; }
+    .progress { flex: 1 1 auto; width: auto; }
+
+    /* 运作流程：手机上单列铺满，不被 max-width:200px 压窄居中 */
+    .pipe { gap: 10px; }
+    .node { flex-basis: 100%; max-width: 100%; }
+
+    /* CTA / 顶栏：避免长链接 + 文案溢出窄屏 */
+    .cta { font-size: 13px; padding: 14px 22px; max-width: 100%; flex-wrap: wrap; }
+    .top-link { padding: 7px 12px; }
+  }
+
+  @media (max-width: 400px) {
+    .wrap { padding: 0 14px; }
+    .hero h1 { font-size: clamp(26px, 8.8vw, 60px); }
+    .chip { font-size: 13px; padding: 10px 15px; }
+    .brand { font-size: 13px; letter-spacing: .1em; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { animation-duration: .001s !important; animation-iteration-count: 1 !important; }
@@ -553,6 +598,11 @@
       <span class="tag">Rough.js</span>
       <span class="tag">OpenWeather</span>
       <span class="tag">Vercel</span>
+    </div>
+    <div class="repo-row reveal">
+      <a class="repo-link" href="https://github.com/ArdenGao10/MoodTune" target="_blank" rel="noopener">
+        ↗ 源码 · github.com/ArdenGao10/MoodTune
+      </a>
     </div>
   </div>
 </section>

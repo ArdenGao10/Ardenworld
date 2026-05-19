@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>专注圈 Focus Circle — 灵气流动</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#FBFBFB; --paper:#FFFFFF; --ink:#1A1A1A;
+    --ink-2:#6B6B6B; --ink-3:#A0A0A0;
+    --green:rgba(111,169,137,.6); --green-soft:rgba(168,213,186,.3);
+    --warm:rgba(244,196,161,.5); --cool:rgba(197,181,221,.4);
+    --green-solid:#5C8A70; --warm-solid:#C99765; --lav-solid:#8D83A6;
+    --serif:'Cormorant Garamond','Songti SC',Georgia,serif;
+    --sans:'Inter','PingFang SC','Hiragino Sans GB',system-ui,sans-serif;
+    --mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+    --radius:24px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:#FAFAFA}
+  ::-webkit-scrollbar-thumb{background:var(--green-solid);border-radius:3px}
+  a{color:inherit;text-decoration:none}
+
+  /* paper grain */
+  body::before{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+    background-image:url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  }
+
+  /* falling petals */
+  #petals{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .petal{
+    position:absolute;top:-40px;width:14px;height:14px;
+    border-radius:0 50% 50% 50%;opacity:0;
+    animation:fall linear infinite;will-change:transform,opacity;
+  }
+  @keyframes fall{
+    0%{transform:translateY(0) translateX(0) rotate(0);opacity:0}
+    12%{opacity:.55}
+    88%{opacity:.4}
+    100%{transform:translateY(105vh) translateX(60px) rotate(420deg);opacity:0}
+  }
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px;position:relative;z-index:2}
+
+  /* ── nav ── */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 36px;transition:.4s ease;
+  }
+  nav.scrolled{
+    background:rgba(251,251,251,.82);backdrop-filter:blur(14px);
+    box-shadow:0 1px 0 rgba(0,0,0,.05);padding:13px 36px;
+  }
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--serif);
+    font-size:21px;font-weight:500;letter-spacing:.3px}
+  .brand .dot{
+    width:28px;height:28px;border-radius:50%;
+    background:radial-gradient(circle,rgba(111,169,137,.5) 0%,rgba(168,213,186,.25) 46%,transparent 74%);
+    box-shadow:0 0 13px rgba(168,213,186,.45);
+    animation:breathe 7s ease-in-out infinite;
+  }
+  .nav-links{display:flex;gap:30px;font-size:14px;color:var(--ink-2)}
+  .nav-links a{position:relative;padding-bottom:3px;transition:color .25s}
+  .nav-links a::after{
+    content:'';position:absolute;left:50%;bottom:0;height:1.5px;width:0;
+    background:var(--green-solid);transform:translateX(-50%);transition:width .3s ease;
+  }
+  .nav-links a:hover{color:var(--ink)}
+  .nav-links a:hover::after{width:100%}
+  @media(max-width:720px){.nav-links{display:none}}
+
+  /* ── hero ── */
+  header{
+    min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;
+    padding:130px 28px 80px;position:relative;
+  }
+  /* hero orb — replica of the real product's AuraHalo:
+     soft diffuse glow + translucent breathing core, no hard edges */
+  .orb-stage{
+    position:relative;width:340px;height:340px;margin-bottom:4px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .orb-glow{
+    position:absolute;width:128%;height:128%;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(168,213,186,.3) 0%,rgba(168,213,186,.3) 35%,transparent 70%);
+    filter:blur(46px);
+  }
+  .orb-core{
+    position:absolute;width:248px;height:248px;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(111,169,137,.5) 0%,rgba(168,213,186,.25) 45%,transparent 72%);
+    animation:breathe 7s ease-in-out infinite;
+  }
+  .orb-content{position:relative;z-index:2;text-align:center}
+  .orb-content .clock{
+    font-family:var(--serif);font-size:40px;font-weight:300;
+    letter-spacing:1.5px;color:var(--ink);font-variant-numeric:tabular-nums;
+  }
+  .orb-content .lbl{
+    font-family:var(--serif);font-style:italic;font-size:15px;
+    color:var(--green-solid);margin-top:3px;letter-spacing:.6px;
+  }
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+  /* floating ball — replica of the real desktop floating ball; links to the live app */
+  .float-ball{
+    position:fixed;right:32px;bottom:34px;z-index:60;
+    width:116px;height:116px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:transform .4s cubic-bezier(.22,.61,.36,1);
+  }
+  .float-ball:hover{transform:scale(1.08)}
+  .fb-glow{
+    position:absolute;width:116px;height:116px;border-radius:50%;
+    background:radial-gradient(circle,rgba(168,213,186,.32) 0%,transparent 68%);
+    filter:blur(14px);
+  }
+  .fb-core{
+    position:absolute;width:74px;height:74px;border-radius:50%;
+    background:radial-gradient(circle,rgba(111,169,137,.55) 0%,rgba(168,213,186,.28) 45%,transparent 74%);
+    animation:breathe 7s ease-in-out infinite;
+  }
+  .fb-pulse{
+    position:absolute;width:74px;height:74px;border-radius:50%;
+    border:1.5px solid rgba(92,138,112,.55);
+    animation:pulsering 2.8s ease-out infinite;
+  }
+  @keyframes pulsering{
+    0%{transform:scale(.78);opacity:.7}
+    100%{transform:scale(1.68);opacity:0}
+  }
+  .fb-time{
+    position:relative;z-index:2;font-family:var(--serif);font-size:15px;
+    font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.5px;
+  }
+  .fb-tip{
+    position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);
+    white-space:nowrap;font-family:var(--mono);font-size:11px;letter-spacing:.5px;
+    color:#fff;background:var(--green-solid);padding:5px 13px;border-radius:999px;
+    box-shadow:0 6px 18px rgba(92,138,112,.42);transition:.3s ease;
+  }
+  .float-ball:hover .fb-tip{bottom:-18px;box-shadow:0 9px 22px rgba(92,138,112,.5)}
+  @media(max-width:560px){
+    .float-ball{right:16px;bottom:22px;width:94px;height:94px}
+    .fb-glow{width:94px;height:94px}
+    .fb-core,.fb-pulse{width:62px;height:62px}
+  }
+
+  .eyebrow{
+    font-family:var(--mono);font-size:12px;letter-spacing:3px;
+    text-transform:uppercase;color:var(--ink-3);margin-bottom:22px;
+  }
+  h1{
+    font-family:var(--serif);font-weight:400;font-size:clamp(48px,9vw,86px);
+    line-height:1.05;letter-spacing:.5px;
+  }
+  h1 em{font-style:italic;color:var(--green-solid)}
+  .sub{
+    margin:24px auto 0;max-width:540px;font-size:16px;color:var(--ink-2);
+    line-height:1.8;
+  }
+  .cta-row{margin-top:38px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+  .btn{
+    display:inline-block;text-align:center;
+    font-size:14px;letter-spacing:.5px;padding:14px 30px;border-radius:999px;
+    cursor:pointer;border:1px solid transparent;transition:.3s ease;
+  }
+  .btn-primary{
+    background:var(--green-solid);color:#fff;
+    box-shadow:0 8px 24px rgba(92,138,112,.32);
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(92,138,112,.42)}
+  .btn-ghost{background:transparent;border-color:rgba(0,0,0,.14);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--green-solid);color:var(--green-solid)}
+
+  .scroll-hint{
+    margin-top:64px;font-family:var(--mono);font-size:11px;letter-spacing:2px;
+    color:var(--ink-3);animation:bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(7px);opacity:1}}
+
+  /* ── section frame ── */
+  section{padding:100px 0;position:relative;scroll-margin-top:64px}
+  .sec-head{text-align:center;margin-bottom:62px}
+  .sec-head .tag{
+    font-family:var(--mono);font-size:11px;letter-spacing:3px;
+    text-transform:uppercase;color:var(--green-solid);
+  }
+  .sec-head h2{
+    font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,46px);
+    margin-top:12px;letter-spacing:.5px;
+  }
+  .sec-head p{margin:14px auto 0;max-width:480px;color:var(--ink-2);font-size:15px}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(28px);
+    transition:opacity .8s ease,transform .8s cubic-bezier(.22,.61,.36,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ── feature grid ── */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  @media(max-width:880px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .card{
+    background:var(--paper);border-radius:var(--radius);padding:32px 28px;
+    border:1px solid rgba(0,0,0,.045);
+    box-shadow:0 4px 22px rgba(0,0,0,.035);
+    transition:transform .4s cubic-bezier(.22,.61,.36,1),box-shadow .4s;
+  }
+  .card:hover{transform:translateY(-7px);box-shadow:0 18px 44px rgba(92,138,112,.16)}
+  .card .ic{
+    position:relative;width:58px;height:58px;border-radius:50%;margin-bottom:22px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ic svg{
+    width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.6;
+    stroke-linecap:round;stroke-linejoin:round;
+  }
+  /* decorative breathing light dot */
+  .ic::after{
+    content:'';position:absolute;top:2px;right:4px;width:7px;height:7px;
+    border-radius:50%;background:currentColor;opacity:.45;
+    animation:breathe 5s ease-in-out infinite;
+  }
+  .ic.g{color:var(--green-solid);background:radial-gradient(circle,rgba(168,213,186,.42) 0%,transparent 72%)}
+  .ic.w{color:var(--warm-solid);background:radial-gradient(circle,rgba(244,196,161,.42) 0%,transparent 72%)}
+  .ic.c{color:var(--lav-solid);background:radial-gradient(circle,rgba(197,181,221,.46) 0%,transparent 72%)}
+  .card h3{font-family:var(--serif);font-size:23px;font-weight:500;margin-bottom:9px}
+  .card p{font-size:14px;color:var(--ink-2);line-height:1.75}
+
+  /* ── aura states ── */
+  .states{display:flex;gap:30px;justify-content:center;flex-wrap:wrap}
+  .state{text-align:center;cursor:pointer}
+  .state .mini{
+    width:128px;height:128px;border-radius:50%;margin:0 auto 16px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:13px;color:var(--ink-2);
+    transition:transform .4s ease;
+  }
+  .state:hover .mini{transform:scale(1.08)}
+  .mini.focus{background:radial-gradient(circle,rgba(111,169,137,.5) 0%,rgba(168,213,186,.25) 45%,transparent 72%);
+    box-shadow:0 0 42px rgba(111,169,137,.28)}
+  .mini.paused{background:radial-gradient(circle,rgba(176,156,217,.45) 0%,rgba(197,181,221,.22) 45%,transparent 72%);
+    box-shadow:0 0 42px rgba(141,131,166,.24)}
+  .mini.done{background:radial-gradient(circle,rgba(220,178,138,.45) 0%,rgba(244,196,161,.22) 45%,transparent 72%);
+    box-shadow:0 0 42px rgba(201,151,101,.26)}
+  .state .nm{font-family:var(--serif);font-style:italic;font-size:18px}
+  .state .ds{font-size:12px;color:var(--ink-3);margin-top:3px}
+
+  /* ── leaderboard mock ── */
+  .panel{
+    background:var(--paper);border-radius:var(--radius);
+    border:1px solid rgba(0,0,0,.05);box-shadow:0 8px 34px rgba(0,0,0,.05);
+    max-width:520px;margin:0 auto;overflow:hidden;
+  }
+  .panel-top{
+    padding:22px 26px;border-bottom:1px solid rgba(0,0,0,.05);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .panel-top .t{font-family:var(--serif);font-size:21px;font-weight:500}
+  .panel-top .live{
+    font-family:var(--mono);font-size:11px;color:var(--green-solid);
+    display:flex;align-items:center;gap:6px;letter-spacing:1px;
+  }
+  .live .blip{width:7px;height:7px;border-radius:50%;background:var(--green-solid);
+    animation:blip 1.8s ease-in-out infinite}
+  @keyframes blip{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.25)}}
+  .row{
+    display:flex;align-items:center;gap:14px;padding:15px 26px;
+    border-bottom:1px solid rgba(0,0,0,.035);transition:background .25s;
+  }
+  .row:last-child{border-bottom:none}
+  .row:hover{background:#FAFAF8}
+  .rank{font-family:var(--mono);font-size:14px;color:var(--ink-3);width:22px}
+  .row.top .rank{color:var(--warm-solid);font-weight:500}
+  .ava{width:40px;height:40px;border-radius:50%;flex-shrink:0}
+  .nameblock{flex:1}
+  .nameblock .n{font-size:14px;font-weight:400}
+  .nameblock .bar{
+    height:4px;border-radius:3px;margin-top:6px;
+    background:linear-gradient(90deg,var(--green-solid),rgba(168,213,186,.5));
+    transition:width 1.3s cubic-bezier(.22,.61,.36,1);width:0;
+  }
+  .dur{font-family:var(--mono);font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* ── tech stack ── */
+  .stack{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .chip{
+    font-family:var(--mono);font-size:12px;padding:9px 18px;border-radius:999px;
+    background:var(--paper);border:1px solid rgba(0,0,0,.07);color:var(--ink-2);
+    transition:.3s ease;cursor:default;
+  }
+  .chip:hover{border-color:var(--green-solid);color:var(--green-solid);transform:translateY(-3px)}
+  .repo-link{text-align:center;margin-top:36px}
+  .repo-link a{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:var(--mono);font-size:13px;letter-spacing:.3px;
+    padding:13px 26px;border-radius:999px;background:var(--ink);color:#fff;
+    transition:.3s ease;
+  }
+  .repo-link a:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.24)}
+  .repo-link svg{width:17px;height:17px;fill:currentColor}
+
+  /* ── stats ── */
+  .stats{display:flex;justify-content:center;gap:60px;flex-wrap:wrap}
+  .stat{text-align:center}
+  .stat .num{
+    font-family:var(--serif);font-size:54px;font-weight:500;color:var(--green-solid);
+    line-height:1;
+  }
+  .stat .cap{font-size:13px;color:var(--ink-2);margin-top:8px;letter-spacing:.5px}
+
+  /* ── cta band ── */
+  .band{
+    background:linear-gradient(135deg,rgba(168,213,186,.22),rgba(197,181,221,.18) 50%,rgba(244,196,161,.2));
+    border-radius:36px;padding:74px 40px;text-align:center;position:relative;overflow:hidden;
+  }
+  .band h2{font-family:var(--serif);font-weight:400;font-size:clamp(30px,5vw,44px)}
+  .band p{margin:16px auto 30px;max-width:420px;color:var(--ink-2);font-size:15px}
+
+  footer{
+    text-align:center;padding:54px 28px 60px;color:var(--ink-3);font-size:13px;
+  }
+  footer .brand{justify-content:center;margin-bottom:14px;font-size:18px}
+  footer .mono{font-family:var(--mono);font-size:11px;letter-spacing:1px;margin-top:8px}
+
+  /* ── nav CTA pill ── */
+  .nav-links{align-items:center}
+  .nav-links .nav-cta{
+    color:var(--green-solid);border:1px solid rgba(92,138,112,.38);
+    padding:7px 16px;border-radius:999px;
+  }
+  .nav-links .nav-cta::after{display:none}
+  .nav-links .nav-cta:hover{background:var(--green-solid);color:#fff}
+
+  /* ── mobile menu (目录) ── */
+  .menu-btn{
+    display:none;flex-direction:column;gap:5px;
+    background:none;border:none;cursor:pointer;padding:6px;z-index:60;
+  }
+  .menu-btn span{
+    width:22px;height:2px;background:var(--ink);border-radius:2px;transition:.3s ease;
+  }
+  .menu-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .menu-btn.open span:nth-child(2){opacity:0}
+  .menu-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .menu-panel{
+    position:fixed;top:0;left:0;right:0;z-index:45;
+    background:rgba(251,251,251,.98);backdrop-filter:blur(16px);
+    padding:74px 24px 24px;display:flex;flex-direction:column;
+    box-shadow:0 16px 32px rgba(0,0,0,.09);
+    transform:translateY(-106%);transition:transform .42s cubic-bezier(.22,.61,.36,1);
+  }
+  .menu-panel.open{transform:translateY(0)}
+  .menu-panel a{
+    font-family:var(--serif);font-size:20px;padding:14px 4px;color:var(--ink);
+    border-bottom:1px solid rgba(0,0,0,.055);
+  }
+  .menu-panel .mp-cta{
+    margin-top:16px;border-bottom:none;text-align:center;
+    font-family:var(--sans);font-size:15px;
+    background:var(--green-solid);color:#fff;border-radius:999px;padding:14px;
+  }
+
+  /* ── tablet ── */
+  @media(max-width:760px){
+    section{padding:70px 0}
+    .sec-head{margin-bottom:44px}
+  }
+  /* show hamburger 目录 below 720px (placed after base .menu-btn so it wins) */
+  @media(max-width:720px){
+    .menu-btn{display:flex}
+  }
+
+  /* ── phone ── */
+  @media(max-width:560px){
+    .wrap{padding:0 18px}
+    nav{padding:13px 18px}
+    nav.scrolled{padding:11px 18px}
+    section{padding:56px 0}
+    header{min-height:auto;padding:104px 18px 52px}
+    .orb-stage{width:248px;height:248px}
+    .orb-core{width:182px;height:182px}
+    .orb-content .clock{font-size:31px;letter-spacing:1px}
+    .orb-content .lbl{font-size:13px}
+    h1{font-size:40px}
+    .sub{font-size:14px;margin-top:18px}
+    .cta-row{margin-top:28px;gap:11px;width:100%}
+    .cta-row .btn{width:100%;padding:13px 20px}
+    .scroll-hint{margin-top:36px}
+    .sec-head{margin-bottom:34px}
+    .sec-head h2{font-size:28px}
+    .sec-head p{font-size:14px}
+    .grid{gap:13px}
+    .card{padding:24px 22px;border-radius:20px}
+    .card .ic{width:50px;height:50px;margin-bottom:16px}
+    .ic svg{width:24px;height:24px}
+    .card h3{font-size:20px;margin-bottom:7px}
+    .card p{font-size:13px}
+    .states{gap:14px}
+    .state .mini{width:104px;height:104px;margin-bottom:11px}
+    .state .nm{font-size:16px}
+    .panel-top{padding:17px 18px}
+    .panel-top .t{font-size:18px}
+    .row{padding:13px 18px;gap:11px}
+    .ava{width:34px;height:34px}
+    .stats{gap:28px}
+    .stat .num{font-size:40px}
+    .stat .cap{font-size:12px}
+    .stack{gap:9px}
+    .chip{font-size:11px;padding:8px 14px}
+    .repo-link{margin-top:26px}
+    .band{padding:48px 22px;border-radius:24px}
+    .band p{font-size:14px;margin:13px auto 24px}
+    footer{padding:42px 20px 48px}
+  }
+</style>
+</head>
+<body>
+
+<div id="petals"></div>
+
+<!-- floating ball — same look as the real desktop floating ball, links to the live app -->
+<a class="float-ball" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener" aria-label="打开专注圈在线体验">
+  <span class="fb-glow"></span>
+  <span class="fb-pulse"></span>
+  <span class="fb-core"></span>
+  <span class="fb-time" id="fbClock">00:00</span>
+  <span class="fb-tip">立即体验&nbsp;→</span>
+</a>
+
+<nav id="nav">
+  <a class="brand" href="#top"><span class="dot"></span>专注圈</a>
+  <div class="nav-links">
+    <a href="#features">功能</a>
+    <a href="#aura">灵气流动</a>
+    <a href="#community">社群</a>
+    <a href="#stack">技术</a>
+    <a class="nav-cta" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener">立即体验</a>
+  </div>
+  <button class="menu-btn" id="menuBtn" aria-label="目录" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- mobile 目录 -->
+<div class="menu-panel" id="menuPanel">
+  <a href="#top">首页</a>
+  <a href="#features">功能</a>
+  <a href="#aura">灵气流动</a>
+  <a href="#community">社群</a>
+  <a href="#stack">技术栈</a>
+  <a class="mp-cta" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener">立即体验专注圈 →</a>
+</div>
+
+<header id="top">
+  <div class="orb-stage">
+    <div class="orb-glow"></div>
+    <div class="orb-core"></div>
+    <div class="orb-content">
+      <div class="clock" id="heroClock">00:00:00</div>
+      <div class="lbl">focusing</div>
+    </div>
+  </div>
+  <div class="eyebrow">FOCUS · CIRCLE · 灵气流动</div>
+  <h1>静下来，<em>一起</em>专注</h1>
+  <p class="sub">专注圈是一款面向学习社群的专注计时应用。和志同道合的伙伴一起打卡、追踪专注时长，在排行榜上彼此见证每一段心流。</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener">立即体验 · 打开专注圈 →</a>
+    <a class="btn btn-ghost" href="#features">了解功能</a>
+  </div>
+  <div class="scroll-hint">向下滚动 ↓</div>
+</header>
+
+<!-- ── features ── -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="tag">Features</div>
+      <h2>陪伴每一段专注</h2>
+      <p>从计时到社群，专注圈把学习的仪式感融进每一个细节。</p>
+    </div>
+    <div class="grid">
+      <div class="card reveal">
+        <div class="ic g"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2.2"/><path d="M9.2 3h5.6M12 6V3"/></svg></div>
+        <h3>专注计时</h3><p>正计时模式，自由暂停与继续。跨设备实时同步，心流不被打断。</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic w"><svg viewBox="0 0 24 24"><path d="M10 6.5h10M10 12h10M10 17.5h10"/><path d="M3.5 6.5l1.4 1.4 2.6-2.8"/><path d="M3.5 12l1.4 1.4 2.6-2.8"/><path d="M3.5 17.5l1.4 1.4 2.6-2.8"/></svg></div>
+        <h3>每日任务</h3><p>细粒度的可勾选清单，配合 AI 智能拆解，让目标清晰可执行。</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic c"><svg viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><rect x="4.2" y="13" width="4.4" height="7.5" rx="1.3"/><rect x="9.8" y="8" width="4.4" height="12.5" rx="1.3"/><rect x="15.4" y="4" width="4.4" height="16.5" rx="1.3"/></svg></div>
+        <h3>实时排行榜</h3><p>按当日专注时长排名，活跃用户脉冲提示，与伙伴共同进步。</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic g"><svg viewBox="0 0 24 24"><path d="M12 21V10.5"/><path d="M12 11C12 6.8 9 4 4 4c0 5.2 3.2 7.5 8 7Z"/><path d="M12 14.5c0-3.2 3-5.2 7.2-5.2 0 4.2-3.4 6.2-7.2 5.2Z"/></svg></div>
+        <h3>学习广场</h3><p>社区分享学习资源，每日限发一条，让每次表达都更有分量。</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic c"><svg viewBox="0 0 24 24"><path d="M20 11.5A8 8 0 0 0 6.5 6.2"/><path d="M4 12.5A8 8 0 0 0 17.5 17.8"/><path d="M6.6 3.4 6.4 6.6l3.2-.2"/><path d="M17.4 20.6l.2-3.2-3.2.2"/></svg></div>
+        <h3>离线与恢复</h3><p>网络异常自动缓存补传；遗忘的「僵尸计时器」可一键修复。</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic w"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5.4"/><path d="M12 3.4v1.8M12 18.8v1.8M3.4 12h1.8M18.8 12h1.8M6 6l1.3 1.3M16.7 16.7 18 18M18 6l-1.3 1.3M7.3 16.7 6 18"/></svg></div>
+        <h3>桌面悬浮球</h3><p>透明悬浮窗常驻桌面，一眼掌握专注进度，随手拖拽收纳。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── aura states ── -->
+<section id="aura" style="background:linear-gradient(180deg,transparent,rgba(168,213,186,.07),transparent)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="tag">Design System</div>
+      <h2>灵气流动</h2>
+      <p>计时器是一颗会呼吸的光球。状态改变时，光晕的颜色随之流转，形状始终如一。</p>
+    </div>
+    <div class="states">
+      <div class="state reveal"><div class="mini focus aura-orb">scale 1.0×</div><div class="nm">Focus</div><div class="ds">沉静的绿，专注进行中</div></div>
+      <div class="state reveal"><div class="mini paused aura-orb">paused</div><div class="nm">Paused</div><div class="ds">柔和的紫，短暂停留</div></div>
+      <div class="state reveal"><div class="mini done aura-orb">complete</div><div class="nm">Complete</div><div class="ds">温暖的橙，圆满收束</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── community / leaderboard ── -->
+<section id="community">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="tag">Community</div>
+      <h2>不是一个人在专注</h2>
+      <p>今日实时排行榜 — 看着伙伴的进度条增长，是最温柔的督促。</p>
+    </div>
+    <div class="panel reveal">
+      <div class="panel-top">
+        <span class="t">今日专注榜</span>
+        <span class="live"><span class="blip"></span>LIVE</span>
+      </div>
+      <div id="board"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── stats ── -->
+<section style="padding:80px 0">
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat reveal"><div class="num" data-to="128" data-suf="h">0</div><div class="cap">累计专注 · 示例</div></div>
+      <div class="stat reveal"><div class="num" data-to="36" data-suf="天">0</div><div class="cap">连续打卡</div></div>
+      <div class="stat reveal"><div class="num" data-to="92" data-suf="%">0</div><div class="cap">任务完成率</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── tech stack ── -->
+<section id="stack" style="background:linear-gradient(180deg,transparent,rgba(197,181,221,.07),transparent)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="tag">Built With</div>
+      <h2>稳健的技术底座</h2>
+      <p>现代 Web 技术栈，离线优先，可安装为 PWA 与桌面应用。</p>
+    </div>
+    <div class="stack reveal">
+      <span class="chip">Next.js 16</span>
+      <span class="chip">React 19</span>
+      <span class="chip">TypeScript 5</span>
+      <span class="chip">Tailwind CSS 4</span>
+      <span class="chip">Supabase</span>
+      <span class="chip">Realtime</span>
+      <span class="chip">Cloudflare Workers</span>
+      <span class="chip">Electron</span>
+      <span class="chip">智谱 GLM</span>
+      <span class="chip">PWA</span>
+    </div>
+    <div class="repo-link reveal">
+      <a href="https://github.com/ArdenGao10/focus-circle" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        在 GitHub 查看源码 →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── cta band ── -->
+<section>
+  <div class="wrap">
+    <div class="band reveal">
+      <h2>找回属于你的专注节奏</h2>
+      <p>从今天起，让每一段心流都被看见、被记录、被陪伴。</p>
+      <a class="btn btn-primary" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener">立即体验专注圈 →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="brand"><span class="dot"></span>专注圈 Focus Circle</div>
+  <div>和志同道合的人一起学习打卡</div>
+  <div class="mono">灵气流动 · AURA FOCUS · MIT LICENSE</div>
+</footer>
+
+<script>
+  /* ── nav scroll state ── */
+  const nav=document.getElementById('nav');
+  addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>30));
+
+  /* ── mobile 目录 toggle ── */
+  (function(){
+    const btn=document.getElementById('menuBtn');
+    const panel=document.getElementById('menuPanel');
+    const toggle=(open)=>{
+      btn.classList.toggle('open',open);
+      panel.classList.toggle('open',open);
+      btn.setAttribute('aria-expanded',open);
+    };
+    btn.addEventListener('click',()=>toggle(!btn.classList.contains('open')));
+    panel.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>toggle(false)));
+  })();
+
+  /* ── falling petals ── */
+  (function(){
+    const box=document.getElementById('petals');
+    const tones=['rgba(168,213,186,.55)','rgba(244,196,161,.5)','rgba(197,181,221,.5)','rgba(220,231,224,.6)'];
+    const N=window.innerWidth<640?14:24;
+    for(let i=0;i<N;i++){
+      const p=document.createElement('div');
+      p.className='petal';
+      const s=8+Math.random()*12;
+      p.style.left=Math.random()*100+'%';
+      p.style.width=p.style.height=s+'px';
+      p.style.background=tones[i%tones.length];
+      p.style.animationDuration=(11+Math.random()*14)+'s';
+      p.style.animationDelay=(-Math.random()*20)+'s';
+      box.appendChild(p);
+    }
+  })();
+
+  /* ── live count-up clocks (hero orb + floating ball) ── */
+  (function(){
+    const hero=document.getElementById('heroClock');
+    const fb=document.getElementById('fbClock');
+    let s=0;
+    setInterval(()=>{
+      s++;
+      const h=String(Math.floor(s/3600)).padStart(2,'0');
+      const m=String(Math.floor(s%3600/60)).padStart(2,'0');
+      const c=String(s%60).padStart(2,'0');
+      hero.textContent=`${h}:${m}:${c}`;
+      fb.textContent=`${m}:${c}`;
+    },1000);
+  })();
+
+  /* ── scroll reveal ── */
+  const io=new IntersectionObserver((es)=>{
+    es.forEach((e,i)=>{
+      if(e.isIntersecting){
+        const sibs=[...e.target.parentElement.children].filter(n=>n.classList.contains('reveal'));
+        e.target.style.transitionDelay=(sibs.indexOf(e.target)%6*70)+'ms';
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  },{threshold:.18});
+  document.querySelectorAll('.reveal').forEach(n=>io.observe(n));
+
+  /* ── leaderboard build + animate ── */
+  (function(){
+    const auras=[
+      'radial-gradient(circle,rgba(168,213,186,.7),rgba(168,213,186,.2) 70%)',
+      'radial-gradient(circle,rgba(197,181,221,.7),rgba(197,181,221,.2) 70%)',
+      'radial-gradient(circle,rgba(244,196,161,.7),rgba(244,196,161,.2) 70%)',
+      'radial-gradient(circle,rgba(173,198,219,.7),rgba(173,198,219,.2) 70%)',
+      'radial-gradient(circle,rgba(192,209,188,.7),rgba(192,209,188,.2) 70%)',
+    ];
+    const data=[
+      {n:'晚风',min:312},{n:'青柠',min:268},{n:'江南雨',min:241},
+      {n:'山岚',min:197},{n:'白桦',min:154},
+    ];
+    const max=data[0].min;
+    const board=document.getElementById('board');
+    data.forEach((d,i)=>{
+      const r=document.createElement('div');
+      r.className='row'+(i<3?' top':'');
+      const h=Math.floor(d.min/60),m=d.min%60;
+      r.innerHTML=`
+        <span class="rank">${i+1}</span>
+        <span class="ava" style="background:${auras[i]}"></span>
+        <div class="nameblock">
+          <div class="n">${d.n}</div>
+          <div class="bar" data-w="${(d.min/max*100).toFixed(0)}"></div>
+        </div>
+        <span class="dur">${h}h${String(m).padStart(2,'0')}</span>`;
+      board.appendChild(r);
+    });
+    const bo=new IntersectionObserver((es)=>{
+      es.forEach(e=>{
+        if(e.isIntersecting){
+          e.target.querySelectorAll('.bar').forEach((b,i)=>{
+            setTimeout(()=>b.style.width=b.dataset.w+'%',120*i);
+          });
+          bo.unobserve(e.target);
+        }
+      });
+    },{threshold:.3});
+    bo.observe(board);
+  })();
+
+  /* ── stat count-up ── */
+  (function(){
+    const so=new IntersectionObserver((es)=>{
+      es.forEach(e=>{
+        if(!e.isIntersecting)return;
+        const el=e.target,to=+el.dataset.to,suf=el.dataset.suf||'';
+        let v=0;const step=Math.max(1,Math.round(to/48));
+        const t=setInterval(()=>{
+          v+=step;
+          if(v>=to){v=to;clearInterval(t);}
+          el.textContent=v+suf;
+        },22);
+        so.unobserve(el);
+      });
+    },{threshold:.6});
+    document.querySelectorAll('.num').forEach(n=>so.observe(n));
+  })();
+
+  /* ── aura state mini-orbs gentle breathe (staggered) ── */
+  document.querySelectorAll('.aura-orb').forEach((o,i)=>{
+    o.style.animation=`breathe 7s ease-in-out ${i*1.4}s infinite`;
+  });
+</script>
+</body>
+</html>

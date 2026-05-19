@@ -42,6 +42,7 @@ export const WORKS = {
     tag: "AI 番茄钟",
     color: "#cfe0c6",
     bg: "radial-gradient(circle at 50% 50%, #cfe0c6 0%, #fffdf6 70%)",
+    showcase: "/focus-circle-showcase.html",
     intro: "一个让你不分心的小工具 — 静而后能定。",
     body: [
       "我做的第一个产品。",
@@ -57,6 +58,7 @@ export const WORKS = {
     tag: "AI 音乐网页",
     color: "#d97757",
     bg: "radial-gradient(circle at 50% 40%, #d97757 0%, #2a1a14 80%)",
+    showcase: "/moodtune-showcase.html",
     intro: "调研你今天的心情 → 生成一张专属唱片。",
     body: [
       "AI 网页。",
