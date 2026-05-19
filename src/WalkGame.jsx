@@ -113,26 +113,48 @@ export default function WalkGame({ onSwitch }) {
 
   // ----- jump button -----
   const onJump = () => {
-    if (charY === 0 && !overlay && !dialog && !showEnd && !showGallery) {
-      keys.current.jumpRequested = true;
-      setShowStartHint(false);
+    if (charY !== 0 || overlay || dialog || showEnd || showGallery || showIntro) return;
+    keys.current.jumpRequested = true;
+    setShowStartHint(false);
+    // On mobile there's no key to hold for forward motion, so the jump
+    // button does both at once: a forward hop through the jump arc.
+    if (isMobile) {
+      const dir = facing || 1;
+      setTarget({
+        x: Math.max(80, Math.min(WORLD_WIDTH - 80, charX + dir * 200)),
+        then: null,
+      });
     }
   };
 
-  // ----- keyboard fallback -----
-  const keys = useRef({ jumpRequested: false });
+  // ----- keyboard: ← → (or A/D) walk, Space / ↑ / W jump -----
+  const keys = useRef({ jumpRequested: false, left: false, right: false });
   useEffect(() => {
+    const active = () => !dialog && !overlay && !showEnd && !showGallery && !showIntro;
     const down = (e) => {
-      if (e.key === " " || e.key === "ArrowUp") {
-        if (!dialog && !overlay && !showEnd && !showGallery && !showIntro) {
-          keys.current.jumpRequested = true;
-          e.preventDefault();
-        }
+      if (!active()) return;
+      if (e.key === " " || e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+        keys.current.jumpRequested = true;
+        e.preventDefault();
+      } else if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+        keys.current.left = true;
+        e.preventDefault();
+      } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+        keys.current.right = true;
+        e.preventDefault();
       }
     };
+    const up = (e) => {
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.current.left = false;
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.current.right = false;
+    };
     window.addEventListener("keydown", down);
-    return () => window.removeEventListener("keydown", down);
-  });
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, [dialog, overlay, showEnd, showGallery, showIntro]);
 
   // ----- game loop -----
   const lastT = useRef(performance.now());
@@ -154,8 +176,14 @@ export default function WalkGame({ onSwitch }) {
       const blocked = overlay || dialog || showGallery;
       const walkBlocked = blocked || showEnd;
 
-      // walk toward target
-      if (target && !walkBlocked) {
+      // walk — held ← → keys take priority, else head to the click target
+      const keyDir = (keys.current.right ? 1 : 0) - (keys.current.left ? 1 : 0);
+      if (keyDir !== 0 && !walkBlocked) {
+        curFacing = keyDir;
+        x += WALK_SPEED * dt * keyDir;
+        isWalking = true;
+        if (target) setTarget(null); // a key press cancels a pending click-walk
+      } else if (target && !walkBlocked) {
         const dx = target.x - x;
         if (Math.abs(dx) < 6) {
           if (target.then) target.then();
@@ -395,7 +423,7 @@ export default function WalkGame({ onSwitch }) {
   // on desktop it just appears near the puddle, since Space already works.
   const puddleStop = STOPS.find(s => s.type === "puddle");
   const nearPuddle = puddleStop && Math.abs(charX - puddleStop.x) < 350;
-  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery;
+  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery && !showIntro;
 
   const totalTime = (Date.now() - startTime.current) / 1000;
 
@@ -539,8 +567,8 @@ export default function WalkGame({ onSwitch }) {
       {/* Jump button — visible near puddle */}
       {showJump && (
         <button className="mw-jump-btn" onClick={(e) => { e.stopPropagation(); onJump(); }}>
-          <div className="sk-hand" style={{ fontSize: 30, lineHeight: 1 }}>↑</div>
-          <div className="sk-mono" style={{ fontSize: 9, letterSpacing: ".2em" }}>JUMP</div>
+          <div className="sk-hand" style={{ fontSize: 22, lineHeight: 1 }}>↑</div>
+          <div className="sk-mono" style={{ fontSize: 7.5, letterSpacing: ".16em" }}>JUMP</div>
         </button>
       )}
 
@@ -599,12 +627,12 @@ export default function WalkGame({ onSwitch }) {
       {showStartHint && charX < 460 && !dialog && !overlay && !showIntro && (
         <div className="mw-start-hint">
           <div className="sk-hand" style={{ fontSize: isMobile ? 22 : 28, color: "#1b1b1b" }}>
-            {isMobile ? "点屏幕往那边走 ✦" : "点屏幕走 · 空格跳 ✦"}
+            {isMobile ? "点屏幕往那边走 ✦" : "点屏幕走,或按 ← → 键 ✦"}
           </div>
           <div className="mw-body" style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
             {isMobile
-              ? "点招牌 = 互动 · 点 ↑ = 跳"
-              : "点招牌 = 互动 · 空格 = 跳 · 左右键都能走"}
+              ? "点招牌互动 · 点 ↑ 键 = 前进跳"
+              : "← → = 走路 · 空格 = 跳 · 点招牌互动"}
           </div>
         </div>
       )}

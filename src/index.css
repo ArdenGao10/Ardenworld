@@ -80,8 +80,8 @@ html, body {
 
 /* Jump button — floating (sits above the bottom-right mode toggle) */
 .mw-jump-btn {
-  position: fixed; bottom: 104px; right: 30px;
-  width: 80px; height: 80px; border-radius: 50%;
+  position: fixed; bottom: 150px; right: 24px;
+  width: 62px; height: 62px; border-radius: 50%;
   background: var(--warm); color: var(--paper);
   border: 3px solid var(--ink);
   filter: url(#wobble);
