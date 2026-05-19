@@ -18,7 +18,7 @@ html, body {
   width: 100%;
   overscroll-behavior: none;
 }
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 /* Type system */
 .mw-title { font-family: "Caveat", "Ma Shan Zheng", "Long Cang", "Noto Serif SC", serif; letter-spacing: .02em; font-weight: 600; }
@@ -344,4 +344,13 @@ html, body {
 @keyframes dw-snow {
   0%   { transform: translateY(0) translateX(0); }
   100% { transform: translateY(252px) translateX(20px); }
+}
+
+/* === Contact — paper plane flying off === */
+.mw-plane-fly { animation: mw-plane-fly 1.5s cubic-bezier(.4,.05,.7,1) forwards; }
+@keyframes mw-plane-fly {
+  0%   { transform: translate(0,0) rotate(0deg) scale(.6); opacity: 0; }
+  12%  { transform: translate(0,2px) rotate(7deg) scale(1); opacity: 1; }
+  34%  { transform: translate(-10px,-30px) rotate(-9deg) scale(1); opacity: 1; }
+  100% { transform: translate(150px,-280px) rotate(-30deg) scale(.4); opacity: 0; }
 }

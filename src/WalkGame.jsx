@@ -28,6 +28,7 @@ import Overlay from './components/Overlay.jsx';
 import { HUD, InteractPrompt } from './components/HUD.jsx';
 import Gallery from './components/Gallery.jsx';
 import DoodleWall from './components/DoodleWall.jsx';
+import ContactCard from './components/ContactCard.jsx';
 import {
   initAudio, startBgm, playStep, playJump, playSplash, playStar, playOpen, playWin,
   isMuted, setMuted,
@@ -389,9 +390,11 @@ export default function WalkGame({ onSwitch }) {
   else if (charY > 40) charMood = "!";
   else if (nearest && nearest.type === "work") charMood = "?";
 
-  // Jump button: show whenever near the puddle.
+  // Jump button: always present on mobile (no keyboard to jump with);
+  // on desktop it just appears near the puddle, since Space already works.
   const puddleStop = STOPS.find(s => s.type === "puddle");
-  const showJump = puddleStop && Math.abs(charX - puddleStop.x) < 350 && !overlay && !dialog && !showEnd && !showGallery;
+  const nearPuddle = puddleStop && Math.abs(charX - puddleStop.x) < 350;
+  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery;
 
   const totalTime = (Date.now() - startTime.current) / 1000;
 
@@ -480,21 +483,22 @@ export default function WalkGame({ onSwitch }) {
         const mins = Math.floor(totalTime / 60);
         const secs = Math.floor(totalTime % 60);
         const timeStr = mins > 0 ? `${mins}′${String(secs).padStart(2,"0")}″` : `${secs}″`;
+        const k = isMobile ? 1 : 1.5; // desktop gets a bigger end card; mobile unchanged
         return (
           <div className="mw-end-card" style={{
-            position: "fixed", width: 250, zIndex: 45,
+            position: "fixed", width: 250 * k, zIndex: 45,
             ...(isMobile
               ? { left: "50%", top: 84, transform: "translateX(-50%) rotate(-1.5deg)" }
               : { left: "50%", top: "50%", transform: "translate(-50%, -50%) rotate(-1.5deg)" }),
             background: "#fffdf6", border: "3px solid #1b1b1b",
-            filter: "url(#wobble)", padding: "14px 18px",
+            filter: "url(#wobble)", padding: `${14 * k}px ${18 * k}px`,
             boxShadow: "3px 4px 0 rgba(0,0,0,.15)",
             pointerEvents: "auto"
           }}>
-            <div className="sk-mono" style={{ fontSize: 9, letterSpacing: ".22em", color: "#888" }}>END · 终点</div>
-            <div className="mw-title" style={{ fontSize: 32, lineHeight: 1, marginTop: 4, color: "#d97757" }}>通关 ✦</div>
-            <div className="sk-hand" style={{ fontSize: 14, color: "#666", marginTop: 2 }}>你走完了 my world</div>
-            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+            <div className="sk-mono" style={{ fontSize: 9 * k, letterSpacing: ".22em", color: "#888" }}>END · 终点</div>
+            <div className="mw-title" style={{ fontSize: 32 * k, lineHeight: 1, marginTop: 4 * k, color: "#d97757" }}>通关 ✦</div>
+            <div className="sk-hand" style={{ fontSize: 14 * k, color: "#666", marginTop: 2 * k }}>你走完了 my world</div>
+            <div style={{ marginTop: 12 * k, display: "flex", flexDirection: "column", gap: 4 * k }}>
               {[
                 { label: "停靠点", value: `${STOPS.length}/${STOPS.length}` },
                 { label: "捡到的星", value: `${stars} 颗` },
@@ -503,18 +507,18 @@ export default function WalkGame({ onSwitch }) {
               ].map(s => (
                 <div key={s.label} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "baseline",
-                  borderBottom: "1.5px dashed rgba(27,27,27,.15)", padding: "5px 0"
+                  borderBottom: "1.5px dashed rgba(27,27,27,.15)", padding: `${5 * k}px 0`
                 }}>
-                  <span className="sk-hand" style={{ fontSize: 15, color: "#555" }}>{s.label}</span>
-                  <span className="mw-title" style={{ fontSize: 16, color: "#1b1b1b" }}>{s.value}</span>
+                  <span className="sk-hand" style={{ fontSize: 15 * k, color: "#555" }}>{s.label}</span>
+                  <span className="mw-title" style={{ fontSize: 16 * k, color: "#1b1b1b" }}>{s.value}</span>
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 12, display: "flex", gap: 6 }}>
-              <button className="mw-btn" style={{ flex: 1, fontSize: 13, padding: "5px 8px" }} onClick={(e) => { e.stopPropagation(); replay(); }}>
+            <div style={{ marginTop: 12 * k, display: "flex", gap: 6 * k }}>
+              <button className="mw-btn" style={{ flex: 1, fontSize: 13 * k, padding: `${5 * k}px ${8 * k}px` }} onClick={(e) => { e.stopPropagation(); replay(); }}>
                 ↺ 再走一遍
               </button>
-              <button className="mw-btn" style={{ flex: 1, fontSize: 13, padding: "5px 8px" }} onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}>
+              <button className="mw-btn" style={{ flex: 1, fontSize: 13 * k, padding: `${5 * k}px ${8 * k}px` }} onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}>
                 看作品
               </button>
             </div>
@@ -545,8 +549,8 @@ export default function WalkGame({ onSwitch }) {
           <div className="mw-body" style={{ fontSize: 18, lineHeight: 1.7, color: "#1b1b1b" }}>
             我是 <b>Arden</b> — 还在探索。<br/><br/>
             住在北京。<br/>
-            白天做产品 — 喜欢简单、有手感、解决一个真问题的小东西；<br/>
-            晚上偶尔画画、写点想法。<br/><br/>
+            白天学习➕做产品 — 喜欢简单、有手感、解决一个真问题的小东西；<br/>
+            晚上偶尔写点想法。<br/><br/>
             <i style={{ color: "#666" }}>这个网站本身也是我的一件作品。</i>
           </div>
           <div style={{ marginTop: 18, display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -582,21 +586,7 @@ export default function WalkGame({ onSwitch }) {
       )}
 
       {overlay?.type === "contact" && (
-        <Overlay title="写信给我" sub="CONTACT" onClose={() => setOverlay(null)} accent="#fffdf6">
-          <div className="mw-body" style={{ fontSize: 17, lineHeight: 1.55, color: "#444", marginBottom: 16 }}>
-            随便说点什么都好 — 想合作、想吐槽、想聊天 :)
-          </div>
-          <textarea rows={5} placeholder="写两句…" style={{
-            width: "100%", border: "2.5px solid #1b1b1b", filter: "url(#wobble)", padding: 12,
-            fontFamily: "Caveat", fontSize: 20, lineHeight: 1.4, background: "#fffdf6", resize: "vertical"
-          }}/>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, gap: 10, flexWrap: "wrap" }}>
-            <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".15em", color: "#888" }}>
-              寄到 — hello@myworld.cn
-            </div>
-            <button className="mw-btn mw-btn-primary">寄出 →</button>
-          </div>
-        </Overlay>
+        <ContactCard onClose={() => setOverlay(null)}/>
       )}
 
       {/* Start hint */}
