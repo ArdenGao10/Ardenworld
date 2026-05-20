@@ -115,7 +115,7 @@ export const STORY_THOUGHTS = [
   { id: "after", range: [1100, 1300], text: "做东西就像盖房子 …" },
   { id: "abt",   range: [1550, 1750], text: "继续往前。" },
   { id: "wet",   range: [2200, 2400], text: "鞋好像有点湿 :) " },
-  { id: "1stwk", range: [2800, 3000], text: "第一个作品做完那天，安静得很。" },
+  { id: "1stwk", range: [2800, 3000], text: "一个人散步的时候安静得很。" },
   { id: "lant",  range: [3400, 3600], text: "天慢慢黑了。" },
   { id: "night", range: [4500, 4700], text: "晚上的世界更小、更近。" },
   { id: "next",  range: [5700, 5900], text: "终点在前面了。" },
