@@ -6,7 +6,7 @@
 <title>专注圈 Focus Circle — 灵气流动</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
     --bg:#FBFBFB; --paper:#FFFFFF; --ink:#1A1A1A;
@@ -14,7 +14,7 @@
     --green:rgba(111,169,137,.6); --green-soft:rgba(168,213,186,.3);
     --warm:rgba(244,196,161,.5); --cool:rgba(197,181,221,.4);
     --green-solid:#5C8A70; --warm-solid:#C99765; --lav-solid:#8D83A6;
-    --serif:'Cormorant','LXGW WenKai','霞鹜文楷','Source Han Serif SC','Noto Serif SC','Songti SC',Georgia,serif;
+    --serif:'Cormorant Garamond','LXGW WenKai','霞鹜文楷','Source Han Serif SC','Noto Serif SC','Songti SC',Georgia,serif;
     --sans:'Inter','PingFang SC','Hiragino Sans GB',system-ui,sans-serif;
     --mono:'JetBrains Mono','SF Mono',Menlo,monospace;
     --radius:24px;
@@ -105,8 +105,8 @@
   }
   .orb-content{position:relative;z-index:2;text-align:center}
   .orb-content .clock{
-    font-family:var(--serif);font-size:40px;font-weight:400;
-    letter-spacing:1.5px;color:var(--ink);font-variant-numeric:tabular-nums;
+    font-family:var(--serif);font-size:40px;font-weight:300;
+    letter-spacing:0.02em;color:var(--ink);font-variant-numeric:tabular-nums lining-nums;
     visibility:hidden;
   }
   .fonts-ready .orb-content .clock{visibility:visible}
@@ -143,8 +143,8 @@
     100%{transform:scale(1.68);opacity:0}
   }
   .fb-time{
-    position:relative;z-index:2;font-family:var(--serif);font-size:15px;
-    font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.5px;
+    position:relative;z-index:2;font-family:var(--serif);font-size:16px;
+    font-weight:300;color:var(--ink);font-variant-numeric:tabular-nums lining-nums;letter-spacing:0.02em;
     visibility:hidden;
   }
   .fonts-ready .fb-time{visibility:visible}
@@ -651,12 +651,12 @@
     }
   })();
 
-  /* ── wait for Cormorant before revealing clocks (prevents FOUT) ── */
+  /* ── wait for Cormorant Garamond before revealing clocks (prevents FOUT) ── */
   (function(){
     const reveal=()=>document.documentElement.classList.add('fonts-ready');
     if(document.fonts&&document.fonts.load){
       Promise.race([
-        document.fonts.load('400 40px Cormorant'),
+        document.fonts.load('300 40px "Cormorant Garamond"'),
         new Promise(r=>setTimeout(r,1200))
       ]).then(reveal).catch(reveal);
     }else{
