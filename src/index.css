@@ -219,6 +219,26 @@ html, body {
   100% { opacity: 0; }
 }
 
+/* Wide variant: wraps to multiple lines, anchored to char's right side so
+   it stays on-screen even when the character is pressed against a wall. */
+.mw-thought-wide {
+  white-space: normal;
+  width: 240px;
+  max-width: 80vw;
+  text-align: center;
+  left: 0;
+  transform: translateY(-10px);
+  animation: mw-thought-pop-wide .35s cubic-bezier(.2,1.5,.4,1) both, mw-thought-fade 3.8s ease-out forwards;
+}
+.mw-thought-wide:after {
+  left: 30px;
+  transform: none;
+}
+@keyframes mw-thought-pop-wide {
+  0%   { opacity: 0; transform: translateY(-2px) scale(.7); transform-origin: 30px bottom; }
+  100% { opacity: 1; transform: translateY(-10px) scale(1); transform-origin: 30px bottom; }
+}
+
 /* Night ambient overlay (darkens world a bit, keeps stars/sun layers intact) */
 .mw-night-tint {
   position: absolute; inset: 0;
@@ -370,7 +390,7 @@ html, body {
 }
 
 /* === Contact — paper plane flying off === */
-.mw-plane-fly { animation: mw-plane-fly 1.5s cubic-bezier(.4,.05,.7,1) forwards; }
+.mw-plane-fly { animation: mw-plane-fly .9s cubic-bezier(.4,.05,.7,1) forwards; }
 @keyframes mw-plane-fly {
   0%   { transform: translate(0,0) rotate(0deg) scale(.6); opacity: 0; }
   12%  { transform: translate(0,2px) rotate(7deg) scale(1); opacity: 1; }

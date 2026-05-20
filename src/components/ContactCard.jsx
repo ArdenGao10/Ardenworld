@@ -45,7 +45,7 @@ export default function ContactCard({ onClose }) {
     setStatus("flying");
     // run the plane animation and the network request in parallel —
     // whichever the slower, the card resolves once both are done
-    const minWait = new Promise(r => setTimeout(r, 1500));
+    const minWait = new Promise(r => setTimeout(r, 900));
     try {
       const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",

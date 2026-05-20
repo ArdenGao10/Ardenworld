@@ -61,6 +61,7 @@ export default function WalkGame({ onSwitch }) {
   const [thought, setThought] = useState(null); // {id, text}
   const [muted, setMutedState] = useState(isMuted());
   const [showIntro, setShowIntro] = useState(true); // opening choice card
+  const [showClimbSoon, setShowClimbSoon] = useState(false); // 攀岩版施工中
   const [jumpPos, setJumpPos] = useState(() => {  // user-draggable jump button
     try {
       const s = JSON.parse(localStorage.getItem("mw-jump-pos") || "null");
@@ -73,6 +74,7 @@ export default function WalkGame({ onSwitch }) {
   const startTime = useRef(Date.now());
   const stepAcc = useRef(0); // footstep cadence accumulator
   const jumpDrag = useRef(null); // drag-state for repositioning the jump button
+  const atLeftWall = useRef(false); // re-fires the left-wall thought only on (re-)entry
 
   const time = timeFor(charX);
   const isMobile = viewport.w < 720 || matchMedia("(pointer:coarse)").matches;
@@ -91,7 +93,7 @@ export default function WalkGame({ onSwitch }) {
 
   const onStageDown = (e) => {
     initAudio(); startBgm(); // first tap unlocks audio + starts the music
-    if (overlay || dialog || showEnd || showGallery || showIntro) return;
+    if (overlay || dialog || showEnd || showGallery || showIntro || showClimbSoon) return;
     // ignore clicks on the HUD (handled separately)
     if (e.target.closest('.mw-skip, .mw-jump-btn, .mw-tap-zone')) return;
 
@@ -117,13 +119,28 @@ export default function WalkGame({ onSwitch }) {
     if (chosenStop) {
       setTarget({ x: chosenStop.x - (chosenStop.type === "work" || chosenStop.type === "knock" ? 50 : 0), then: () => handleStop(chosenStop) });
     } else {
+      // Clicking off the playable left edge: nudge the player rightward.
+      // The bubble is shown discretely here (one per click) rather than relying
+      // on the game-loop wall detection, which doesn't notice a click when the
+      // character is already pinned at x=80.
+      if (worldX < 80) showLeftWallThought();
       setTarget({ x: Math.max(80, Math.min(WORLD_WIDTH - 80, worldX)), then: null });
     }
   };
 
+  function showLeftWallThought() {
+    setThought({
+      id: `leftwall-${Date.now()}`,
+      text: "往右走哦 →\n左边开发中,可以留言告诉我还想玩啥 (=^▽^=)",
+      wrap: true,
+    });
+    clearTimeout(thoughtTimer.current);
+    thoughtTimer.current = setTimeout(() => setThought(null), 3800);
+  }
+
   // ----- jump button -----
   const onJump = () => {
-    if (charY !== 0 || overlay || dialog || showEnd || showGallery || showIntro) return;
+    if (charY !== 0 || overlay || dialog || showEnd || showGallery || showIntro || showClimbSoon) return;
     keys.current.jumpRequested = true;
     setShowStartHint(false);
     // On mobile there's no key to hold for forward motion, so the jump
@@ -173,7 +190,7 @@ export default function WalkGame({ onSwitch }) {
   // ----- keyboard: ← → (or A/D) walk, Space / ↑ / W jump -----
   const keys = useRef({ jumpRequested: false, left: false, right: false });
   useEffect(() => {
-    const active = () => !dialog && !overlay && !showEnd && !showGallery && !showIntro;
+    const active = () => !dialog && !overlay && !showEnd && !showGallery && !showIntro && !showClimbSoon;
     const down = (e) => {
       if (!active()) return;
       if (e.key === " " || e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
@@ -197,7 +214,7 @@ export default function WalkGame({ onSwitch }) {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [dialog, overlay, showEnd, showGallery, showIntro]);
+  }, [dialog, overlay, showEnd, showGallery, showIntro, showClimbSoon]);
 
   // ----- game loop -----
   const lastT = useRef(performance.now());
@@ -216,7 +233,7 @@ export default function WalkGame({ onSwitch }) {
 
       // NOTE: splashing is purely cosmetic now — it never blocks walking,
       // so the puddle can be strolled straight through without jumping.
-      const blocked = overlay || dialog || showGallery;
+      const blocked = overlay || dialog || showGallery || showClimbSoon;
       const walkBlocked = blocked || showEnd;
 
       // walk — held ← → keys take priority, else head to the click target
@@ -247,6 +264,17 @@ export default function WalkGame({ onSwitch }) {
       }
 
       x = Math.max(80, Math.min(WORLD_WIDTH - 80, x));
+
+      // Left-wall nudge (keyboard branch): when the player holds left against
+      // the leftmost edge, pop the same thought. Click-driven nudges are
+      // fired directly from onStageDown — see showLeftWallThought.
+      const onLeftWall = x <= 80.5 && keyDir < 0 && !blocked && !showEnd;
+      if (onLeftWall && !atLeftWall.current) {
+        atLeftWall.current = true;
+        showLeftWallThought();
+      } else if (!onLeftWall) {
+        atLeftWall.current = false;
+      }
 
       // gravity
       if (y > 0 || v !== 0) {
@@ -292,7 +320,7 @@ export default function WalkGame({ onSwitch }) {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [target, overlay, dialog, showEnd, showGallery, splashing, collectedStars, facing]);
+  }, [target, overlay, dialog, showEnd, showGallery, showClimbSoon, splashing, collectedStars, facing]);
 
   function triggerSplash(charXNow, puddleX) {
     // Soft splash — just briefly wet, no reset
@@ -466,7 +494,7 @@ export default function WalkGame({ onSwitch }) {
   // on desktop it just appears near the puddle, since Space already works.
   const puddleStop = STOPS.find(s => s.type === "puddle");
   const nearPuddle = puddleStop && Math.abs(charX - puddleStop.x) < 350;
-  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery && !showIntro;
+  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery && !showIntro && !showClimbSoon;
 
   const totalTime = (Date.now() - startTime.current) / 1000;
 
@@ -530,8 +558,11 @@ export default function WalkGame({ onSwitch }) {
           <Char size={isMobile ? 64 : 86} walking={walking} jumping={charY > 5} splashing={splashing} facing={facing} mood={charMood}/>
           {/* thought bubble */}
           {thought && (
-            <div className="mw-thought" key={thought.id}>
-              <div className="sk-hand" style={{ fontSize: 17, lineHeight: 1.3, color: "#1b1b1b" }}>{thought.text}</div>
+            <div className={`mw-thought${thought.wrap ? " mw-thought-wide" : ""}`} key={thought.id}>
+              <div className="sk-hand" style={{
+                fontSize: 17, lineHeight: 1.3, color: "#1b1b1b",
+                whiteSpace: thought.wrap ? "pre-line" : undefined,
+              }}>{thought.text}</div>
             </div>
           )}
         </div>
@@ -552,8 +583,9 @@ export default function WalkGame({ onSwitch }) {
         {muted ? "🔇 静音" : "🔊 声音"}
       </button>
 
-      {/* switch to the climb (hard mode) */}
-      <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onSwitch(); }}
+      {/* switch to the climb (hard mode) — currently under construction,
+          shows a placeholder card instead of routing to ClimbGame */}
+      <button className="mw-skip" onClick={(e) => { e.stopPropagation(); setShowClimbSoon(true); }}
         style={{ position: "fixed", bottom: 24, right: 24, zIndex: 36 }}>
         ⛰ 攀岩版 →
       </button>
@@ -701,6 +733,88 @@ export default function WalkGame({ onSwitch }) {
 
       {overlay?.type === "contact" && (
         <ContactCard onClose={() => setOverlay(null)}/>
+      )}
+
+      {showClimbSoon && (
+        <Overlay title="攀岩版" sub="COMING SOON · 施工中"
+                 onClose={() => setShowClimbSoon(false)} accent="#fffdf6">
+          <div style={{ textAlign: "center", padding: "2px 0 4px" }}>
+            <svg width="220" height="160" viewBox="0 0 220 160"
+                 style={{ display: "block", margin: "0 auto" }}>
+              {/* sparkles */}
+              <text x="22" y="28" fontSize="18" fill="#d97757" fontFamily="Caveat">✦</text>
+              <text x="188" y="22" fontSize="14" fill="#d97757" fontFamily="Caveat">✦</text>
+              <text x="195" y="58" fontSize="12" fill="#7a6648" fontFamily="Caveat">·</text>
+
+              {/* mountain */}
+              <path d="M22 130 L78 42 L104 76 L138 28 L198 130 Z"
+                    fill="#cfe0c6" stroke="#1b1b1b" strokeWidth="2.5"
+                    strokeLinejoin="round" filter="url(#wobble)"/>
+              {/* snow caps */}
+              <path d="M70 52 L78 42 L86 54 L80 58 L78 54 L74 58 Z"
+                    fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.5" filter="url(#wobble)"/>
+              <path d="M130 36 L138 28 L146 38 L142 42 L138 38 L134 42 Z"
+                    fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.5" filter="url(#wobble)"/>
+
+              {/* ladder leaning on mountain */}
+              <g stroke="#7a6648" strokeWidth="2.5" fill="none" filter="url(#wobble)">
+                <line x1="42" y1="130" x2="62" y2="78"/>
+                <line x1="58" y1="130" x2="78" y2="78"/>
+                <line x1="46" y1="118" x2="64" y2="118"/>
+                <line x1="49" y1="106" x2="67" y2="106"/>
+                <line x1="52" y1="94" x2="70" y2="94"/>
+                <line x1="55" y1="82" x2="73" y2="82"/>
+              </g>
+
+              {/* worker with hard hat, holding a wrench */}
+              <g transform="translate(60 72)" filter="url(#wobble)">
+                {/* hard hat */}
+                <path d="M-8 4 Q0 -5 8 4 L10 8 L-10 8 Z"
+                      fill="#fef3a3" stroke="#1b1b1b" strokeWidth="1.8"/>
+                <path d="M-10 8 L10 8" stroke="#1b1b1b" strokeWidth="1.8"/>
+                {/* head */}
+                <circle cx="0" cy="13" r="5" fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.8"/>
+                {/* eyes */}
+                <circle cx="-1.8" cy="12.5" r="0.7" fill="#1b1b1b"/>
+                <circle cx="1.8" cy="12.5" r="0.7" fill="#1b1b1b"/>
+                {/* body */}
+                <path d="M-5 18 L5 18 L6 30 L-6 30 Z"
+                      fill="#d97757" stroke="#1b1b1b" strokeWidth="1.5"/>
+                {/* arms — one out holding wrench */}
+                <line x1="-5" y1="20" x2="-10" y2="26" stroke="#1b1b1b" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="5" y1="20" x2="13" y2="15" stroke="#1b1b1b" strokeWidth="1.5" strokeLinecap="round"/>
+                {/* tiny wrench in hand */}
+                <rect x="11" y="11" width="11" height="3.5" fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.3"/>
+                <path d="M22 9 L25 9 L25 16 L22 16 L22 14 L24 12.5 L22 11 Z"
+                      fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.3"/>
+                {/* legs */}
+                <line x1="-3" y1="30" x2="-4" y2="38" stroke="#1b1b1b" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="3" y1="30" x2="4" y2="38" stroke="#1b1b1b" strokeWidth="1.5" strokeLinecap="round"/>
+              </g>
+
+              {/* construction tape band across foreground */}
+              <g transform="rotate(-5 110 138)">
+                <rect x="-15" y="132" width="250" height="15" fill="#fef3a3"
+                      stroke="#1b1b1b" strokeWidth="2" filter="url(#wobble)"/>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <path key={i} d={`M ${i * 26 - 10} 132 L ${i * 26 + 4} 147`}
+                        stroke="#1b1b1b" strokeWidth="2"/>
+                ))}
+              </g>
+            </svg>
+
+            <div className="mw-body" style={{
+              fontSize: 17, color: "#555", marginTop: 14, lineHeight: 1.65,
+            }}>
+              锁扣还在拧 — 改天再来 ✿<br/>
+              想玩什么? 走到 <b>"信箱"</b> 给我写信 :)
+            </div>
+            <button className="mw-btn" style={{ marginTop: 18 }}
+                    onClick={() => setShowClimbSoon(false)}>
+              ← 回去散步
+            </button>
+          </div>
+        </Overlay>
       )}
 
       {/* Start hint — controls differ between touch and desktop */}
