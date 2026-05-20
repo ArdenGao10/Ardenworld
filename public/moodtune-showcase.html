@@ -37,7 +37,10 @@
     color: var(--fg);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  body::-webkit-scrollbar { display: none; }
 
   /* 跟随鼠标的暖光 */
   .cursor-glow {
