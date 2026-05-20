@@ -105,9 +105,11 @@
   }
   .orb-content{position:relative;z-index:2;text-align:center}
   .orb-content .clock{
-    font-family:var(--serif);font-size:40px;font-weight:400;
+    font-family:'Cormorant',Georgia,'Times New Roman',serif;font-size:40px;font-weight:400;
     letter-spacing:1.5px;color:var(--ink);font-variant-numeric:tabular-nums;
+    visibility:hidden;
   }
+  .fonts-ready .orb-content .clock{visibility:visible}
   .orb-content .lbl{
     font-family:var(--serif);font-style:italic;font-size:15px;
     color:var(--green-solid);margin-top:3px;letter-spacing:.6px;
@@ -141,9 +143,11 @@
     100%{transform:scale(1.68);opacity:0}
   }
   .fb-time{
-    position:relative;z-index:2;font-family:var(--serif);font-size:15px;
+    position:relative;z-index:2;font-family:'Cormorant',Georgia,'Times New Roman',serif;font-size:15px;
     font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.5px;
+    visibility:hidden;
   }
+  .fonts-ready .fb-time{visibility:visible}
   .fb-tip{
     position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);
     white-space:nowrap;font-family:var(--mono);font-size:11px;letter-spacing:.5px;
@@ -644,6 +648,19 @@
       p.style.animationDuration=(11+Math.random()*14)+'s';
       p.style.animationDelay=(-Math.random()*20)+'s';
       box.appendChild(p);
+    }
+  })();
+
+  /* ── wait for Cormorant before revealing clocks (prevents FOUT) ── */
+  (function(){
+    const reveal=()=>document.documentElement.classList.add('fonts-ready');
+    if(document.fonts&&document.fonts.load){
+      Promise.race([
+        document.fonts.load('400 40px Cormorant'),
+        new Promise(r=>setTimeout(r,1200))
+      ]).then(reveal).catch(reveal);
+    }else{
+      reveal();
     }
   })();
 
