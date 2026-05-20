@@ -72,8 +72,8 @@ export const WORKS = {
 
 // Notes content (a couple short thoughts)
 export const NOTES = [
-  { date: "5/12", text: "今天北京下了一场雨。\n下雨天最适合写代码。" },
-  { date: "5/05", text: "做完一件作品的时刻，\n比开始时安静得多。" },
+  { date: "5/12", text: "今天北京下了一场雨。\n下雨天适合吃火锅。" },
+  { date: "5/05", text: "去攀岩攻克零条难度，\nemo中(T＿T)" },
   { date: "4/28", text: "我喜欢「专注」\n胜过「高效」。" },
 ];
 
