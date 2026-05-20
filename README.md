@@ -1,169 +1,156 @@
 # My World · Ardenworld
 
-Arden's portfolio reimagined as a small playable world — a hand-drawn,
-side-scrolling walk and a physics-driven climbing wall, all in the browser.
+把 Arden 的作品集做成一个可以走进去的小世界 —— 一段手绘风格的横版散步，
+和一面带物理模拟的攀岩墙，全部跑在浏览器里。
 
-**Live site:** <https://ardencosmic.com/>
+**线上地址：** <https://ardencosmic.com/>
 
-Built from the original Claude Design handoff bundle (`My World.html`) and
-re-implemented as a Vite + React app so it can be hosted, iterated, and
-extended beyond the single-file prototype.
-
----
-
-## What it is
-
-Instead of a static "about / projects / contact" page, the portfolio is a
-~60-second world you walk through. Every stop along the path is an
-interaction: doors knock, signposts speak, mailboxes open, products preview
-themselves inline. A title screen lets the visitor pick how they'd like to
-experience it:
-
-- **简单版 · the walk** — a calm, mouse-first side-scroll. Stops along the
-  path: a knock-knock door, an *about* signpost, a puddle to jump, two product
-  signboards (专注圈 · the focus orb / 心情唱片 · the mood record), a notes
-  mailbox, a lantern, a doodle wall, a contact mailbox, a "coming soon" hill,
-  and the summit. The sky cycles day → dusk → night as you walk. A second
-  playthrough adds a cat that follows you.
-- **困难版 · the climb** — a Klifur-style physics climbing wall. Drag each of
-  the four limbs onto rock holds. Gripped limbs behave as springs holding you
-  up against gravity; overreach pops a grip; losing all four drops you to the
-  last ledge. The two featured works are wall plaques you can read mid-climb.
-  Reach the summit to clear it.
-
-Either game's **← 标题** button returns to the title screen so the visitor
-can swap modes at any time.
+项目基于 Claude Design 最初的交付文件 `My World.html`，用 Vite + React
+重新实现，以便部署、迭代，以及在原型之外继续扩展。
 
 ---
 
-## Controls
+## 这是什么
 
-### 简单版 (mouse-first, no keyboard required)
+不同于传统的「关于 / 作品 / 联系」式作品集页面，这里的作品集是一个大约
+60 秒就能走完的小世界。一路上的每一个停留点都是一次互动：门会被敲响、
+路牌会说话、信箱会打开、产品在原地展开自己的小预览。标题页让访客自己
+挑一种体验方式：
 
-- **Click the ground** — walk to that point.
-- **Click a sign / door / mailbox / lantern** — walk over and interact.
-- **Floating ↑ button** (or `Space` / `↑` on keyboard) — jump the puddle.
-- **SKIP →** (top-right) — skip the walk and open the works gallery directly.
+- **简单版 · the walk** — 一段以鼠标为主的安静横版散步。沿途的停留点
+  包括：会敲门的门、写着「关于」的路牌、要跳过的水坑、两块作品招牌
+  （专注圈 / 心情唱片）、便签信箱、提灯、涂鸦墙、联系信箱、写着
+  「coming soon」的小山，以及山顶。天空会随着行进从白天 → 黄昏 → 夜晚
+  变化。第二次重玩时会多出一只跟在身后的小猫。
+- **困难版 · the climb** — Klifur 风格的物理攀岩墙。把四肢一只一只拖到
+  岩点上。已经抓住的肢体相当于把人吊在重力上的弹簧；伸得太远会让某一只
+  手或脚滑落；四肢全部脱手就会掉到最近的休息平台。两件作品作为墙上的
+  铭牌，可以边爬边读。爬到山顶就算通关。
+
+任意一边的 **← 标题** 按钮都会回到标题页，方便随时切换模式。
+
+---
+
+## 操作方式
+
+### 简单版（鼠标即可，不需要键盘）
+
+- **点击地面** —— 走到那个位置。
+- **点击路牌 / 门 / 信箱 / 提灯** —— 走过去并触发互动。
+- **悬浮的 ↑ 按钮**（或键盘 `Space` / `↑`）—— 跳过水坑。
+- **SKIP →**（右上角）—— 跳过整段散步，直接打开作品画廊。
 
 ### 困难版
 
-- **Drag a hand or foot** (the four circles with a dashed ring) onto a rock
-  hold to grip it. Release to let go.
-- Keep your torso within reach of your grips — overreaching pops the
-  furthest hold off the wall.
-- Lose all four grips and you fall to the most recent ledge checkpoint.
-- **← 标题** returns to the title screen; **SKIP →** opens the works gallery.
+- **拖拽手或脚**（四个带虚线圈的圆点）到墙上的岩点抓握。松手即放开。
+- 让身体保持在抓握范围内 —— 伸得太远，最远那个岩点会被「扯掉」。
+- 四肢全部脱手就会下坠到最近的休息平台。
+- **← 标题** 回标题页；**SKIP →** 打开作品画廊。
 
 ---
 
-## Run locally
+## 本地运行
 
-Requires Node 18+.
+需要 Node 18 及以上。
 
 ```bash
 npm install
-npm run dev      # dev server (Vite, hot reload)
-npm run build    # production build to dist/
-npm run preview  # preview the production build locally
+npm run dev      # 开发服务器（Vite，支持热更新）
+npm run build    # 生产环境构建，产物在 dist/
+npm run preview  # 本地预览构建产物
 ```
 
-The dev server prints a local URL (typically <http://localhost:5173>). Open
-it in any modern browser — no other setup needed.
+开发服务器会打印本地访问地址（通常是 <http://localhost:5173>），用任意
+现代浏览器打开即可，不需要额外配置。
 
 ---
 
-## Project structure
+## 项目结构
 
 ```
-index.html                  entry — fonts + the #wobble SVG filter defs
-vite.config.js              Vite config
-public/                     static assets served at /
+index.html                  入口 —— 字体 + #wobble SVG 滤镜定义
+vite.config.js              Vite 配置
+public/                     静态资源，挂在 / 下
 src/
-  main.jsx                  React root
-  index.css                 all styles (type system, animations, layout)
-  App.jsx                   mode router: title → 简单版 / 困难版
-  WalkGame.jsx              简单版 — the side-scrolling walk
-  ClimbGame.jsx             困难版 — the physics climbing wall
+  main.jsx                  React 根节点
+  index.css                 全部样式（字体体系、动画、布局）
+  App.jsx                   模式路由：标题页 → 简单版 / 困难版
+  WalkGame.jsx              简单版 —— 横版散步
+  ClimbGame.jsx             困难版 —— 物理攀岩墙
   world/
-    data.js                 walk-world dimensions, terrain, STOPS, WORKS
-    climbData.js            climbing wall — HOLDS, LEDGES, plaques
-    Char.jsx                walk character + cat sprites
-    Climber.jsx             climber sprite (torso + 4 draggable limbs)
-    Background.jsx          sky, sun/moon, hills, ground, clouds, trees, birds
-    StopMarker.jsx          per-stop scenery (signs, mailboxes, doors…)
+    data.js                 散步世界的尺寸、地形、STOPS、WORKS 数据
+    climbData.js            攀岩墙的 HOLDS、LEDGES、铭牌数据
+    Char.jsx                散步角色 + 小猫精灵
+    Climber.jsx             攀岩者精灵（躯干 + 四个可拖拽肢体）
+    Background.jsx          天空、太阳/月亮、山丘、地面、云、树、鸟
+    StopMarker.jsx          每个停留点的场景（路牌、信箱、门……）
   components/
-    TitleScreen.jsx         pick 简单版 / 困难版
-    Dialog.jsx              speech bubble
-    WorkModal.jsx           work detail modal with mini product preview
-    Overlay.jsx             generic content overlay (about / notes / doodle / contact)
-    HUD.jsx                 walk HUD — progress bar + interact prompt
-    Gallery.jsx             skip-the-game works gallery (shared by both modes)
+    TitleScreen.jsx         选择简单版 / 困难版的标题页
+    Dialog.jsx              对话气泡
+    WorkModal.jsx           作品详情弹层 + 内嵌产品迷你预览
+    Overlay.jsx             通用内容浮层（about / 便签 / 涂鸦 / 联系）
+    HUD.jsx                 散步 HUD —— 进度条 + 互动提示
+    Gallery.jsx             跳过游戏直接看的作品画廊（两种模式共用）
 ```
 
 ---
 
-## How the climb works
+## 攀岩怎么算
 
-`ClimbGame.jsx` runs a small physics simulation each frame:
+`ClimbGame.jsx` 每一帧跑一段很小的物理模拟：
 
-- The **torso** is a point mass pulled down by gravity.
-- Each **gripped limb** is a spring anchored to its hold — when stretched
-  past its rest length it pulls the torso toward the hold, so the active
-  grips hold the climber up.
-- A **position-constraint pass** prevents a limb from exceeding its max
-  reach. If the constraint still can't be satisfied (you overreached),
-  that grip **slips off** the wall.
-- With **zero grips** the climber falls; `LEDGES` act as checkpoints that
-  catch the climber and reset the active limbs.
+- **躯干** 是一个受重力下拉的质点。
+- 每一只 **抓住岩点的肢体** 都是一根锚在该岩点上的弹簧 —— 被拉长
+  超过自然长度时，会把躯干往岩点方向拉回去，于是已经抓住的肢体把
+  人「挂」在墙上。
+- 一次 **位置约束** 检查会阻止肢体超出最大可达距离；如果约束依然
+  无法满足（也就是伸得过远），那个抓握就会从墙上 **滑落**。
+- **四肢全脱** 时角色下坠，`LEDGES` 充当检查点，把人接住并重置肢体。
 
-The constants at the top of `ClimbGame.jsx` (`GRAV`, `STIFF`, `REACH`,
-`DAMP`, …) are the difficulty knobs. `src/world/climbData.js` defines the
-wall geometry, the route of holds, and the catch ledges.
+`ClimbGame.jsx` 顶部的几个常量（`GRAV`、`STIFF`、`REACH`、`DAMP`……）
+就是难度旋钮。`src/world/climbData.js` 里定义了墙的形状、岩点路线
+和接人的休息平台。
 
 ---
 
-## How the walk works
+## 散步怎么算
 
-`WalkGame.jsx` is a deliberately small state machine:
+`WalkGame.jsx` 是一个有意做得很小的状态机：
 
-- The world has a fixed length (`WORLD_W` in `src/world/data.js`) and the
-  camera follows the character horizontally.
-- Clicking the ground sets a walk target; the character animates toward it
-  and triggers the nearest stop when within range.
-- Each entry in `STOPS` describes a position, a kind (sign / door / mailbox
-  / puddle / lantern / doodle), and the payload to show (dialog text, an
-  overlay component, or a product modal).
-- The sky cycles through three phases tied to walk progress, and a second
-  playthrough sets a flag that spawns the trailing cat.
-
----
-
-## Notes on the handoff
-
-A few things worth knowing if you compare this to the original prototype:
-
-- The prototype's two parallel `<script type="text/babel">` blocks were
-  split into ES modules; the `window` global that bridged them became
-  normal imports.
-- The prototype source carried earlier-iteration dead code the final design
-  no longer used — standalone `FocusGame` / `MoodGame` mini-games and a
-  full-screen end screen (superseded by the in-world achievement card) —
-  which has been left out to keep the project to the design's actual output.
-- The `STORY_THOUGHTS` data and the thought-bubble renderer existed in the
-  prototype, but the firing logic had been lost in an editing mishap (see
-  the chat transcript). It is wired up in `WalkGame.jsx` so the storyline
-  thoughts appear at the intended beats.
-- `心情唱片` calls an injected `window.claude.complete` if present, else
-  falls back to a local title list. Outside the original design tool that
-  global doesn't exist, so the deployed site always uses the fallback.
-- The title screen and 困难版 climbing mode are an extension beyond the
-  original `My World.html` design, built in the same hand-drawn style so
-  they sit naturally alongside the walk.
+- 世界长度是固定的（`src/world/data.js` 里的 `WORLD_W`），相机在
+  水平方向跟随角色。
+- 点击地面会设定一个行走目标，角色朝它移动，进入范围后触发最近的
+  停留点。
+- `STOPS` 里的每一项描述了一个位置、一个种类（路牌 / 门 / 信箱 /
+  水坑 / 提灯 / 涂鸦）和要展示的内容（对话文字、浮层组件，或者
+  产品弹层）。
+- 天空按行走进度分三个阶段切换；第二次进入散步时会标记一个 flag，
+  生成那只尾随的小猫。
 
 ---
 
-## Credits
+## 关于交付稿的说明
 
-- Design & illustration: Arden (<https://ardencosmic.com/>)
-- Prototype handoff: Claude Design (`My World.html`)
-- Re-implementation: Vite + React 18
+如果要和原始原型对照，有几个点值得提一下：
+
+- 原型里的两个并列 `<script type="text/babel">` 块被拆成了 ES
+  模块；原本通过 `window` 全局做的桥接现在改成普通 import。
+- 原型源码里带着一些更早版本残留的死代码 —— 独立的 `FocusGame` /
+  `MoodGame` 小游戏，以及一个全屏结算页（已经被世界内的成就卡替代）
+  —— 它们在最终设计里没有被用到，所以没有迁移过来，让项目保留
+  设计稿真正交付的部分。
+- `STORY_THOUGHTS` 这份数据和对应的想法气泡渲染器在原型里已经存在，
+  但触发逻辑在一次编辑事故中丢了（见聊天记录）。这里在
+  `WalkGame.jsx` 里重新接好，让剧情想法能按节奏出现。
+- `心情唱片` 在 `window.claude.complete` 存在时会调用它，否则回退到
+  本地的标题列表。线上环境没有这个全局，所以部署版始终走 fallback。
+- 标题页和困难版攀岩模式是原 `My World.html` 设计之外的扩展，按照
+  同样的手绘风格做出来，让它们和散步部分能自然地放在一起。
+
+---
+
+## 致谢
+
+- 设计 & 插画：Arden（<https://ardencosmic.com/>）
+- 原型交付：Claude Design（`My World.html`）
+- 重新实现：Vite + React 18
