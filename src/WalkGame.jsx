@@ -478,7 +478,12 @@ export default function WalkGame({ onSwitch }) {
     <div className="mw-stage" ref={stageRef}
          onMouseDown={onStageDown}
          onContextMenu={(e) => e.preventDefault()}
-         onTouchStart={(e) => { e.preventDefault(); onStageDown(e); }}
+         onTouchStart={(e) => {
+           // Skip preventDefault on buttons — otherwise the synthesised click is
+           // swallowed and the bottom-row mobile controls stop working.
+           if (e.target.closest('button')) return;
+           e.preventDefault(); onStageDown(e);
+         }}
     >
       {/* Background */}
       <div className="mw-bg">

@@ -278,9 +278,20 @@ export default function ClimbGame({ onSwitch }) {
     <div className="mw-stage" ref={stageRef}
       style={{ background: "linear-gradient(180deg, #acc4d6 0%, #d3d8d0 45%, #e7ddc6 100%)" }}
       onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
-      onTouchStart={(e) => { e.preventDefault(); onDown(e); }}
-      onTouchMove={(e) => { e.preventDefault(); onMove(e); }}
-      onTouchEnd={(e) => { e.preventDefault(); onUp(e); }}
+      onTouchStart={(e) => {
+        // Skip preventDefault on buttons / plaques — otherwise the synthesised
+        // click is swallowed and on-screen controls stop working on mobile.
+        if (e.target.closest('button, .climb-plaque')) return;
+        e.preventDefault(); onDown(e);
+      }}
+      onTouchMove={(e) => {
+        if (!dragRef.current) return;
+        e.preventDefault(); onMove(e);
+      }}
+      onTouchEnd={(e) => {
+        if (!dragRef.current) return;
+        e.preventDefault(); onUp(e);
+      }}
     >
       {/* world layer — scrolls vertically with the camera */}
       <div style={{
