@@ -21,14 +21,15 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
+  html,body{scrollbar-width:none;-ms-overflow-style:none}
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar{display:none;width:0;height:0}
   body{
     background:var(--bg);color:var(--ink);font-family:var(--sans);
     font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;
     overflow-x:hidden;
-    scrollbar-width:none;
-    -ms-overflow-style:none;
   }
-  body::-webkit-scrollbar{display:none}
   a{color:inherit;text-decoration:none}
 
   /* paper grain */
