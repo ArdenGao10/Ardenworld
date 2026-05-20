@@ -6,7 +6,7 @@
 <title>专注圈 Focus Circle — 灵气流动</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
     --bg:#FBFBFB; --paper:#FFFFFF; --ink:#1A1A1A;
@@ -15,6 +15,7 @@
     --warm:rgba(244,196,161,.5); --cool:rgba(197,181,221,.4);
     --green-solid:#5C8A70; --warm-solid:#C99765; --lav-solid:#8D83A6;
     --serif:'Cormorant Garamond','Songti SC',Georgia,serif;
+    --clock-serif:'Cormorant','LXGW WenKai','霞鹜文楷','Source Han Serif SC','Noto Serif SC','Songti SC',Georgia,serif;
     --sans:'Inter','PingFang SC','Hiragino Sans GB',system-ui,sans-serif;
     --mono:'JetBrains Mono','SF Mono',Menlo,monospace;
     --radius:24px;
@@ -105,7 +106,7 @@
   }
   .orb-content{position:relative;z-index:2;text-align:center}
   .orb-content .clock{
-    font-family:var(--serif);font-size:40px;font-weight:300;
+    font-family:var(--clock-serif);font-size:40px;font-weight:400;
     letter-spacing:1.5px;color:var(--ink);font-variant-numeric:tabular-nums;
   }
   .orb-content .lbl{
@@ -141,7 +142,7 @@
     100%{transform:scale(1.68);opacity:0}
   }
   .fb-time{
-    position:relative;z-index:2;font-family:var(--serif);font-size:15px;
+    position:relative;z-index:2;font-family:var(--clock-serif);font-size:15px;
     font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.5px;
   }
   .fb-tip{
