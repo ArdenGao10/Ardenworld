@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { playClick, playStar } from '../world/sound.js';
+import { playClick, playStar, startMood, stopMood } from '../world/sound.js';
 
 // ============================================================
 // 专注圈 — breathing aura-orb focus timer
@@ -175,7 +175,10 @@ export function MoodDemo() {
     playClick();
     setPhase("loading");
     setTimeout(() => {
-      const pool = picked.flatMap(k => MD_LIB[k]).sort(() => Math.random() - 0.5);
+      // Tag each song with its source mood so the background track can
+      // change when the user flips to a different record in the result view.
+      const pool = picked.flatMap(k => MD_LIB[k].map(s => ({ ...s, mood: k })))
+                         .sort(() => Math.random() - 0.5);
       const chosen = [];
       for (const s of pool) {
         if (chosen.length >= 3) break;
@@ -187,6 +190,17 @@ export function MoodDemo() {
       setPhase("result");
     }, 1600);
   };
+
+  // Drive the mood-music engine: start when a record is on screen, switch
+  // when the user picks a different record, stop on close / leaving result.
+  // Two effects on purpose — putting stopMood in the first effect's cleanup
+  // would resume BGM between mood switches and overlap with the new mood.
+  const currentMood = phase === "result" && songs[now] ? songs[now].mood : null;
+  useEffect(() => {
+    if (currentMood) startMood(currentMood);
+    else stopMood();
+  }, [currentMood]);
+  useEffect(() => () => stopMood(), []);
 
   const moodNames = () => picked
     .map(k => MD_MOODS.find(m => m.key === k)?.cn).join(" · ");

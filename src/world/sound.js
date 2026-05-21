@@ -46,7 +46,7 @@ export function setMuted(m) {
   muted = m;
   localStorage.setItem("mw-muted", m ? "1" : "0");
   if (master && ctx) master.gain.setTargetAtTime(m ? 0 : 0.55, ctx.currentTime, 0.04);
-  if (m) stopBgm();
+  if (m) { stopBgm(); stopMood(); bgmWasOn = false; }
   else startBgm();
 }
 
@@ -97,7 +97,7 @@ function noiseBurst({ dur = 0.3, vol = 0.3, lp = 1400, lpEnd = 400 }) {
 // ============================================================
 export function playStep() {
   // soft, low footfall — pitch wanders a little so it never feels looped
-  tone({ freq: 84 + Math.random() * 26, type: "triangle", dur: 0.1, vol: 0.075, attack: 0.004 });
+  tone({ freq: 84 + Math.random() * 26, type: "triangle", dur: 0.09, vol: 0.04, attack: 0.004 });
 }
 export function playJump() {
   tone({ freq: 300, type: "sine", dur: 0.2, vol: 0.22, glideTo: 660 });
@@ -123,28 +123,77 @@ export function playWin() {
 }
 
 // ============================================================
-// Background music — a bright, bouncy little loop in C major
+// Background music — three loops that follow the time of day
+// (day → dusk → night). The scheduler reads `bgmVariant` fresh each
+// batch, so calling setBgmTime() swaps the feel mid-loop.
 // ============================================================
 const NOTE = {
-  C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00,
-  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00,
-  A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99,
+  // bass
+  E2: 82.41, F2: 87.31, G2: 98.00, A2: 110.00, "A#2": 116.54, B2: 123.47,
+  // octave 3
+  C3: 130.81, "C#3": 138.59, D3: 146.83, "D#3": 155.56, E3: 164.81,
+  F3: 174.61, "F#3": 185.00, G3: 196.00, "G#3": 207.65, A3: 220.00,
+  "A#3": 233.08, B3: 246.94,
+  // octave 4
+  C4: 261.63, "C#4": 277.18, D4: 293.66, "D#4": 311.13, E4: 329.63,
+  F4: 349.23, "F#4": 369.99, G4: 392.00, "G#4": 415.30, A4: 440.00,
+  "A#4": 466.16, B4: 493.88,
+  // octave 5
+  C5: 523.25, "C#5": 554.37, D5: 587.33, "D#5": 622.25, E5: 659.25,
+  F5: 698.46, "F#5": 739.99, G5: 783.99,
 };
-// 4 bars × 8 eighth-notes; "." = rest (the note before it just rings on)
-const MELODY = [
-  "G4", "E4", "G4", "C5", ".",  "E4", "D4", ".",
-  "F4", "A4", "G4", "E4", ".",  "C4", ".",  ".",
-  "G4", "E4", "G4", "C5", ".",  "D5", "C5", ".",
-  "E5", "D5", "C5", "G4", "A4", ".",  ".",  ".",
-];
-const BASS = [
-  "C3", ".", ".", "G3", "C3", ".", ".", ".",
-  "F3", ".", ".", "C3", "F3", ".", ".", ".",
-  "C3", ".", ".", "G3", "C3", ".", ".", ".",
-  "G3", ".", ".", "D3", "G3", ".", ".", ".",
-];
-const STEP = 0.19; // seconds per eighth-note — ~158 BPM, sprightly
+// "." = rest (the note before it just rings on)
+const BGM_VARIANTS = {
+  // bright, bouncy C-major — feels like morning sun
+  day: {
+    step: 0.19, mtype: "triangle", btype: "sine",
+    mvol: 0.17, bvol: 0.13, sparkle: true,
+    melody: [
+      "G4", "E4", "G4", "C5", ".",  "E4", "D4", ".",
+      "F4", "A4", "G4", "E4", ".",  "C4", ".",  ".",
+      "G4", "E4", "G4", "C5", ".",  "D5", "C5", ".",
+      "E5", "D5", "C5", "G4", "A4", ".",  ".",  ".",
+    ],
+    bass: [
+      "C3", ".", ".", "G3", "C3", ".", ".", ".",
+      "F3", ".", ".", "C3", "F3", ".", ".", ".",
+      "C3", ".", ".", "G3", "C3", ".", ".", ".",
+      "G3", ".", ".", "D3", "G3", ".", ".", ".",
+    ],
+  },
+  // warmer, slower — A minor / F major, contemplative
+  dusk: {
+    step: 0.27, mtype: "triangle", btype: "sine",
+    mvol: 0.15, bvol: 0.11, sparkle: false,
+    melody: [
+      "A4", ".",  "C5", ".",  "B4", ".",  "A4", ".",
+      "G4", ".",  "F4", ".",  "E4", ".",  ".",  ".",
+      "D4", ".",  "F4", ".",  "A4", ".",  "G4", ".",
+      "F4", ".",  "E4", ".",  "D4", ".",  ".",  ".",
+    ],
+    bass: [
+      "A3", ".",  ".",  ".",  "F3", ".",  ".",  ".",
+      "D3", ".",  ".",  ".",  "E3", ".",  ".",  ".",
+      "A3", ".",  ".",  ".",  "F3", ".",  ".",  ".",
+      "D3", ".",  ".",  ".",  "E3", ".",  ".",  ".",
+    ],
+  },
+  // sparse ambient — slow sine drone with occasional high notes
+  night: {
+    step: 0.42, mtype: "sine", btype: "sine",
+    mvol: 0.13, bvol: 0.10, sparkle: false,
+    melody: [
+      "D5", ".",  ".",  ".",  "A4", ".",  ".",  ".",
+      "F5", ".",  ".",  ".",  "D5", ".",  ".",  ".",
+    ],
+    bass: [
+      "D3", ".",  ".",  ".",  ".",  ".",  ".",  ".",
+      "A2", ".",  ".",  ".",  ".",  ".",  ".",  ".",
+    ],
+  },
+};
 
+let bgmVariant = "day";
 let bgmTimer = null;
 let bgmOn = false;
 let bgmStep = 0;
@@ -173,16 +222,17 @@ export function startBgm() {
   // a small look-ahead scheduler keeps the rhythm tight despite setTimeout jitter
   const schedule = () => {
     if (!bgmOn) return;
+    const cfg = BGM_VARIANTS[bgmVariant] || BGM_VARIANTS.day;
     while (bgmNextT < ctx.currentTime + 0.3) {
-      const i = bgmStep % MELODY.length;
-      const mel = NOTE[MELODY[i]];
-      const bas = NOTE[BASS[i]];
+      const i = bgmStep % cfg.melody.length;
+      const mel = NOTE[cfg.melody[i]];
+      const bas = NOTE[cfg.bass[i]];
       if (mel) {
-        bgmNote(mel, bgmNextT, 0.34, 0.17, "triangle");
-        bgmNote(mel * 2, bgmNextT, 0.16, 0.035, "sine"); // a touch of sparkle
+        bgmNote(mel, bgmNextT, cfg.step * 1.8, cfg.mvol, cfg.mtype);
+        if (cfg.sparkle) bgmNote(mel * 2, bgmNextT, cfg.step * 0.85, 0.035, "sine");
       }
-      if (bas) bgmNote(bas, bgmNextT, 0.42, 0.13, "sine");
-      bgmNextT += STEP;
+      if (bas) bgmNote(bas, bgmNextT, cfg.step * 2.2, cfg.bvol, cfg.btype);
+      bgmNextT += cfg.step;
       bgmStep++;
     }
     bgmTimer = setTimeout(schedule, 60);
@@ -194,4 +244,164 @@ export function stopBgm() {
   bgmOn = false;
   clearTimeout(bgmTimer);
   bgmTimer = null;
+}
+
+// Swap the BGM variant on the fly. The scheduler reads bgmVariant each
+// batch, so the new pattern starts within ~60ms — fine for ambient music.
+export function setBgmTime(variant) {
+  if (!BGM_VARIANTS[variant] || variant === bgmVariant) return;
+  bgmVariant = variant;
+  bgmStep = 0; // restart pattern so the new variant begins cleanly
+}
+
+// ============================================================
+// Mood music — per-mood ambient loops for the Moodtune demo
+// ============================================================
+// Each entry is a tiny 16-step pattern looped at its own tempo, with a
+// melody voice and a slower bass voice. Picks scale/timbre to match the
+// mood word. "." holds the previous note's ring (rest).
+const MOOD_CONFIG = {
+  // 忧郁 — slow, low, sparse sine; A natural minor with a long ring
+  mellow: {
+    step: 0.42, vol: 0.18, mtype: "sine", btype: "sine", mdur: 2.4, bdur: 6,
+    melody: ["A3", ".",  "C4", ".",  "E4", ".",  "D4", ".",
+            "C4", ".",  "A3", ".",  "G3", ".",  ".",  "."],
+    bass:   ["A2", ".",  ".",  ".",  ".",  ".",  ".",  ".",
+            "F2", ".",  ".",  ".",  ".",  ".",  ".",  "."],
+  },
+  // 温柔 — warm triangle, C major arpeggios moving to F
+  tender: {
+    step: 0.30, vol: 0.17, mtype: "triangle", btype: "sine", mdur: 1.6, bdur: 5,
+    melody: ["C4", "E4", "G4", "E4", "C4", ".",  "B3", ".",
+            "F4", "A4", "C5", "A4", "F4", ".",  "E4", "."],
+    bass:   ["C3", ".",  ".",  ".",  "C3", ".",  ".",  ".",
+            "F3", ".",  ".",  ".",  "F3", ".",  ".",  "."],
+  },
+  // 怀旧 — F major, slightly detuned triangle for that worn-tape wobble
+  nostalgic: {
+    step: 0.34, vol: 0.16, mtype: "triangle", btype: "sine", mdur: 1.8, bdur: 5,
+    detune: 9,
+    melody: ["F4", ".",  "D4", ".",  "C4", ".",  "A3", ".",
+            "A#3", ".", "D4", ".",  "F4", ".",  "C4", "."],
+    bass:   ["F2", ".",  ".",  ".",  "F2", ".",  ".",  ".",
+            "A#2", ".", ".",  ".",  "C3", ".",  ".",  "."],
+  },
+  // 躁动 — fast square pulses, syncopated E minor
+  restless: {
+    step: 0.17, vol: 0.12, mtype: "square", btype: "sine", mdur: 0.9, bdur: 2.5,
+    melody: ["E4", ".",  "G4", "E4", ".",  "B4", "A4", "G4",
+            "E4", ".",  "G4", "B4", ".",  "D5", "B4", "G4"],
+    bass:   ["E2", ".",  ".",  ".",  "E2", ".",  ".",  ".",
+            "A2", ".",  ".",  ".",  "B2", ".",  ".",  "."],
+  },
+  // 平静 — very slow sine drone in D dorian, long sustains
+  calm: {
+    step: 0.55, vol: 0.13, mtype: "sine", btype: "sine", mdur: 3.6, bdur: 9,
+    melody: ["D4", ".",  ".",  ".",  "F4", ".",  ".",  ".",
+            "A4", ".",  ".",  ".",  "D5", ".",  ".",  "."],
+    bass:   ["D3", ".",  ".",  ".",  ".",  ".",  ".",  ".",
+            ".",  ".",  ".",  ".",  ".",  ".",  ".",  "."],
+  },
+  // 雀跃 — bouncy fast triangle, G major arpeggios
+  joyful: {
+    step: 0.19, vol: 0.15, mtype: "triangle", btype: "sine", mdur: 0.9, bdur: 2.4,
+    melody: ["G4", "B4", "D5", "B4", "G4", "B4", "D5", "G5",
+            "E4", "G4", "B4", "G4", "D4", "G4", "B4", "D5"],
+    bass:   ["G3", ".",  ".",  ".",  "G3", ".",  ".",  ".",
+            "C3", ".",  ".",  ".",  "D3", ".",  ".",  "."],
+  },
+  // 深夜 — smoky walking bass + sparse high shimmer (B♭ minor)
+  latenight: {
+    step: 0.27, vol: 0.13, mtype: "sine", btype: "triangle", mdur: 2.0, bdur: 1.3,
+    melody: ["F5", ".",  ".",  "D#5", ".", ".",  "F5", ".",
+            ".",  "D5", ".",  ".",  "A#4", ".", ".",  "."],
+    bass:   ["A#2","F3", "G#2","D#3","A#2","F3", "G#2","D#3",
+            "A#2","F3", "G#2","D#3","A#2","F3", "G#2","D#3"],
+  },
+  // 治愈 — slow rising sine arpeggios, A major / D
+  healing: {
+    step: 0.32, vol: 0.15, mtype: "sine", btype: "sine", mdur: 1.6, bdur: 5,
+    melody: ["A3", "C#4","E4", "A4", "E4", "C#4",".",  ".",
+            "D4", "F#4","A4", "C#5","A4", "F#4",".",  "."],
+    bass:   ["A2", ".",  ".",  ".",  ".",  ".",  ".",  ".",
+            "D3", ".",  ".",  ".",  ".",  ".",  ".",  "."],
+  },
+};
+
+let moodTimer = null;
+let moodOn = false;
+let moodStep = 0;
+let moodNextT = 0;
+let moodCfg = null;
+let bgmWasOn = false; // pause the walk's BGM while a mood plays
+
+function moodNote(freq, when, dur, vol, type, detune = 0) {
+  if (!ctx || !freq) return;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  if (detune) osc.detune.value = detune;
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.linearRampToValueAtTime(vol, when + 0.04);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+  osc.connect(g);
+  g.connect(bgmGain);
+  osc.start(when);
+  osc.stop(when + dur + 0.05);
+}
+
+// Internal — tears down the scheduler without touching the BGM toggle.
+// Used when switching between moods so the walk's BGM doesn't blip in
+// between (which previously caused 02 → 03 to bleed the day-loop notes).
+function teardownMood() {
+  moodOn = false;
+  moodCfg = null;
+  clearTimeout(moodTimer);
+  moodTimer = null;
+}
+
+export function startMood(moodKey) {
+  if (!ctx || muted) return;
+  const cfg = MOOD_CONFIG[moodKey];
+  if (!cfg) return;
+  if (moodOn && moodCfg === cfg) return; // same mood already running
+
+  const wasInMood = moodOn;
+  teardownMood();
+  // Pause the walk's BGM only on the first entry into mood-land. While
+  // hopping between moods (e.g. song #01 → #02 in different mood pools)
+  // the BGM stays parked, so it never gets re-scheduled in the gap.
+  if (!wasInMood && bgmOn) { bgmWasOn = true; stopBgm(); }
+
+  moodCfg = cfg;
+  moodOn = true;
+  moodStep = 0;
+  moodNextT = ctx.currentTime + 0.12;
+  const schedule = () => {
+    if (!moodOn) return;
+    while (moodNextT < ctx.currentTime + 0.35) {
+      const i = moodStep % moodCfg.melody.length;
+      const mel = NOTE[moodCfg.melody[i]];
+      const bas = NOTE[moodCfg.bass[i]];
+      if (mel) {
+        moodNote(mel, moodNextT, moodCfg.step * moodCfg.mdur,
+                 moodCfg.vol, moodCfg.mtype, moodCfg.detune || 0);
+      }
+      if (bas) {
+        moodNote(bas, moodNextT, moodCfg.step * moodCfg.bdur,
+                 moodCfg.vol * 0.7, moodCfg.btype);
+      }
+      moodNextT += moodCfg.step;
+      moodStep++;
+    }
+    moodTimer = setTimeout(schedule, 60);
+  };
+  schedule();
+}
+
+export function stopMood() {
+  if (!moodOn && !bgmWasOn) return;
+  teardownMood();
+  if (bgmWasOn) { bgmWasOn = false; startBgm(); }
 }

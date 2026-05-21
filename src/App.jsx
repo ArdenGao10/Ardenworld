@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import WalkGame from './WalkGame.jsx';
 import ClimbGame from './ClimbGame.jsx';
 
@@ -13,6 +14,12 @@ export default function App() {
   // Each mode has an on-screen button to switch to the other.
   const [mode, setMode] = useState('simple'); // 'simple' | 'hard'
 
-  if (mode === 'hard') return <ClimbGame onSwitch={() => setMode('simple')} />;
-  return <WalkGame onSwitch={() => setMode('hard')} />;
+  return (
+    <>
+      {mode === 'hard'
+        ? <ClimbGame onSwitch={() => setMode('simple')} />
+        : <WalkGame onSwitch={() => setMode('hard')} />}
+      <Analytics/>
+    </>
+  );
 }
