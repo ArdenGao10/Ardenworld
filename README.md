@@ -153,3 +153,10 @@ src/
 - 设计 & 插画：Arden（<https://ardencosmic.com/>）
 - 原型交付：Claude Design（`My World.html`）
 - 重新实现：Vite + React 18
+
+---
+
+## License
+MIT © [ArdenGao10](https://github.com/ArdenGao10)
+
+本项目代码仅供学习交流使用，**禁止未经许可用于商业用途**。
