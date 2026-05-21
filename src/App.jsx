@@ -19,7 +19,7 @@ export default function App() {
       {mode === 'hard'
         ? <ClimbGame onSwitch={() => setMode('simple')} />
         : <WalkGame onSwitch={() => setMode('hard')} />}
-      <Analytics/>
+      <Analytics mode="production"/>
     </>
   );
 }
