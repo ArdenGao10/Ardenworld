@@ -123,9 +123,7 @@ export function playWin() {
 }
 
 // ============================================================
-// Background music — three loops that follow the time of day
-// (day → dusk → night). The scheduler reads `bgmVariant` fresh each
-// batch, so calling setBgmTime() swaps the feel mid-loop.
+// Background music — a bright, bouncy little loop in C major
 // ============================================================
 const NOTE = {
   // bass
@@ -142,58 +140,21 @@ const NOTE = {
   C5: 523.25, "C#5": 554.37, D5: 587.33, "D#5": 622.25, E5: 659.25,
   F5: 698.46, "F#5": 739.99, G5: 783.99,
 };
-// "." = rest (the note before it just rings on)
-const BGM_VARIANTS = {
-  // bright, bouncy C-major — feels like morning sun
-  day: {
-    step: 0.19, mtype: "triangle", btype: "sine",
-    mvol: 0.17, bvol: 0.13, sparkle: true,
-    melody: [
-      "G4", "E4", "G4", "C5", ".",  "E4", "D4", ".",
-      "F4", "A4", "G4", "E4", ".",  "C4", ".",  ".",
-      "G4", "E4", "G4", "C5", ".",  "D5", "C5", ".",
-      "E5", "D5", "C5", "G4", "A4", ".",  ".",  ".",
-    ],
-    bass: [
-      "C3", ".", ".", "G3", "C3", ".", ".", ".",
-      "F3", ".", ".", "C3", "F3", ".", ".", ".",
-      "C3", ".", ".", "G3", "C3", ".", ".", ".",
-      "G3", ".", ".", "D3", "G3", ".", ".", ".",
-    ],
-  },
-  // warmer, slower — A minor / F major, contemplative
-  dusk: {
-    step: 0.27, mtype: "triangle", btype: "sine",
-    mvol: 0.15, bvol: 0.11, sparkle: false,
-    melody: [
-      "A4", ".",  "C5", ".",  "B4", ".",  "A4", ".",
-      "G4", ".",  "F4", ".",  "E4", ".",  ".",  ".",
-      "D4", ".",  "F4", ".",  "A4", ".",  "G4", ".",
-      "F4", ".",  "E4", ".",  "D4", ".",  ".",  ".",
-    ],
-    bass: [
-      "A3", ".",  ".",  ".",  "F3", ".",  ".",  ".",
-      "D3", ".",  ".",  ".",  "E3", ".",  ".",  ".",
-      "A3", ".",  ".",  ".",  "F3", ".",  ".",  ".",
-      "D3", ".",  ".",  ".",  "E3", ".",  ".",  ".",
-    ],
-  },
-  // sparse ambient — slow sine drone with occasional high notes
-  night: {
-    step: 0.42, mtype: "sine", btype: "sine",
-    mvol: 0.13, bvol: 0.10, sparkle: false,
-    melody: [
-      "D5", ".",  ".",  ".",  "A4", ".",  ".",  ".",
-      "F5", ".",  ".",  ".",  "D5", ".",  ".",  ".",
-    ],
-    bass: [
-      "D3", ".",  ".",  ".",  ".",  ".",  ".",  ".",
-      "A2", ".",  ".",  ".",  ".",  ".",  ".",  ".",
-    ],
-  },
-};
+// 4 bars × 8 eighth-notes; "." = rest (the note before it just rings on)
+const MELODY = [
+  "G4", "E4", "G4", "C5", ".",  "E4", "D4", ".",
+  "F4", "A4", "G4", "E4", ".",  "C4", ".",  ".",
+  "G4", "E4", "G4", "C5", ".",  "D5", "C5", ".",
+  "E5", "D5", "C5", "G4", "A4", ".",  ".",  ".",
+];
+const BASS = [
+  "C3", ".", ".", "G3", "C3", ".", ".", ".",
+  "F3", ".", ".", "C3", "F3", ".", ".", ".",
+  "C3", ".", ".", "G3", "C3", ".", ".", ".",
+  "G3", ".", ".", "D3", "G3", ".", ".", ".",
+];
+const STEP = 0.19; // seconds per eighth-note — ~158 BPM, sprightly
 
-let bgmVariant = "day";
 let bgmTimer = null;
 let bgmOn = false;
 let bgmStep = 0;
@@ -215,24 +176,26 @@ function bgmNote(freq, when, dur, vol, type) {
 }
 
 export function startBgm() {
-  if (!ctx || muted || bgmTimer) return;
+  // bgmWasOn=true means mood music is currently parked the BGM — any
+  // accidental restart (e.g. a click bubbling from a song-toggle button
+  // up to the stage's onMouseDown) would stack BGM on top of the mood.
+  if (!ctx || muted || bgmTimer || bgmWasOn) return;
   bgmOn = true;
   bgmStep = 0;
   bgmNextT = ctx.currentTime + 0.12;
   // a small look-ahead scheduler keeps the rhythm tight despite setTimeout jitter
   const schedule = () => {
     if (!bgmOn) return;
-    const cfg = BGM_VARIANTS[bgmVariant] || BGM_VARIANTS.day;
     while (bgmNextT < ctx.currentTime + 0.3) {
-      const i = bgmStep % cfg.melody.length;
-      const mel = NOTE[cfg.melody[i]];
-      const bas = NOTE[cfg.bass[i]];
+      const i = bgmStep % MELODY.length;
+      const mel = NOTE[MELODY[i]];
+      const bas = NOTE[BASS[i]];
       if (mel) {
-        bgmNote(mel, bgmNextT, cfg.step * 1.8, cfg.mvol, cfg.mtype);
-        if (cfg.sparkle) bgmNote(mel * 2, bgmNextT, cfg.step * 0.85, 0.035, "sine");
+        bgmNote(mel, bgmNextT, 0.34, 0.17, "triangle");
+        bgmNote(mel * 2, bgmNextT, 0.16, 0.035, "sine"); // a touch of sparkle
       }
-      if (bas) bgmNote(bas, bgmNextT, cfg.step * 2.2, cfg.bvol, cfg.btype);
-      bgmNextT += cfg.step;
+      if (bas) bgmNote(bas, bgmNextT, 0.42, 0.13, "sine");
+      bgmNextT += STEP;
       bgmStep++;
     }
     bgmTimer = setTimeout(schedule, 60);
@@ -244,14 +207,6 @@ export function stopBgm() {
   bgmOn = false;
   clearTimeout(bgmTimer);
   bgmTimer = null;
-}
-
-// Swap the BGM variant on the fly. The scheduler reads bgmVariant each
-// batch, so the new pattern starts within ~60ms — fine for ambient music.
-export function setBgmTime(variant) {
-  if (!BGM_VARIANTS[variant] || variant === bgmVariant) return;
-  bgmVariant = variant;
-  bgmStep = 0; // restart pattern so the new variant begins cleanly
 }
 
 // ============================================================
@@ -333,10 +288,23 @@ let moodOn = false;
 let moodStep = 0;
 let moodNextT = 0;
 let moodCfg = null;
-let bgmWasOn = false; // pause the walk's BGM while a mood plays
+let moodGain = null;     // dedicated bus so we can mute all in-flight notes at once
+let bgmWasOn = false;    // pause the walk's BGM while a mood plays
+
+// Lazy-create the mood bus the first time a mood note plays. All mood
+// notes route through this gain so we can hard-cut any pre-scheduled
+// tail notes when the user flips to a different song (otherwise the
+// previous mood's ringing notes bleed onto the new one).
+function ensureMoodGain() {
+  if (moodGain || !ctx || !bgmGain) return;
+  moodGain = ctx.createGain();
+  moodGain.gain.value = 1;
+  moodGain.connect(bgmGain);
+}
 
 function moodNote(freq, when, dur, vol, type, detune = 0) {
   if (!ctx || !freq) return;
+  ensureMoodGain();
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
   osc.type = type;
@@ -346,19 +314,24 @@ function moodNote(freq, when, dur, vol, type, detune = 0) {
   g.gain.linearRampToValueAtTime(vol, when + 0.04);
   g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
   osc.connect(g);
-  g.connect(bgmGain);
+  g.connect(moodGain || bgmGain);
   osc.start(when);
   osc.stop(when + dur + 0.05);
 }
 
-// Internal — tears down the scheduler without touching the BGM toggle.
-// Used when switching between moods so the walk's BGM doesn't blip in
-// between (which previously caused 02 → 03 to bleed the day-loop notes).
+// Internal — tears down the scheduler and silences any tail notes that
+// the Web Audio scheduler has already queued (up to ~1s into the future).
 function teardownMood() {
   moodOn = false;
   moodCfg = null;
   clearTimeout(moodTimer);
   moodTimer = null;
+  if (moodGain && ctx) {
+    const t = ctx.currentTime;
+    moodGain.gain.cancelScheduledValues(t);
+    moodGain.gain.setValueAtTime(moodGain.gain.value, t);
+    moodGain.gain.linearRampToValueAtTime(0, t + 0.05);
+  }
 }
 
 export function startMood(moodKey) {
@@ -378,6 +351,23 @@ export function startMood(moodKey) {
   moodOn = true;
   moodStep = 0;
   moodNextT = ctx.currentTime + 0.12;
+  // Bring the mood bus back up.
+  // • If we were just switching moods, the teardown queued a linear fade
+  //   to 0 at t+0.05; we chain a linear ramp back to 1 by t+0.15 so the
+  //   bus smoothly fades down and back up — the old mood's tail can't
+  //   bleed over the new one.
+  // • If this is a fresh entry (no prior mood), the bus may still be at
+  //   0 from a previous session — snap it back to 1.
+  ensureMoodGain();
+  if (moodGain) {
+    const t = ctx.currentTime;
+    if (wasInMood) {
+      moodGain.gain.linearRampToValueAtTime(1, t + 0.15);
+    } else {
+      moodGain.gain.cancelScheduledValues(t);
+      moodGain.gain.setValueAtTime(1, t);
+    }
+  }
   const schedule = () => {
     if (!moodOn) return;
     while (moodNextT < ctx.currentTime + 0.35) {

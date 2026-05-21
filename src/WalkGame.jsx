@@ -31,7 +31,7 @@ import DoodleWall from './components/DoodleWall.jsx';
 import ContactCard from './components/ContactCard.jsx';
 import ShowcaseFrame from './components/ShowcaseFrame.jsx';
 import {
-  initAudio, startBgm, setBgmTime, playStep, playJump, playSplash, playStar, playOpen, playWin,
+  initAudio, startBgm, playStep, playJump, playSplash, playStar, playOpen, playWin,
   isMuted, setMuted,
 } from './world/sound.js';
 
@@ -84,10 +84,6 @@ export default function WalkGame({ onSwitch }) {
     window.addEventListener("resize", r);
     return () => window.removeEventListener("resize", r);
   }, []);
-
-  // Sync BGM to time-of-day so the loop doesn't feel repetitive across a
-  // full walk — each variant is its own short pattern.
-  useEffect(() => { setBgmTime(time); }, [time]);
 
   // Camera
   const camX = Math.max(0, Math.min(WORLD_WIDTH - viewport.w, charX - viewport.w * 0.35));

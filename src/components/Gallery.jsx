@@ -10,9 +10,11 @@
 import { useState } from 'react';
 import { WORKS } from '../world/data.js';
 import { FocusDemo, MoodDemo } from './WorkDemo.jsx';
+import { isMuted, setMuted, initAudio } from '../world/sound.js';
 
 export default function Gallery({ onClose, onBackToWalk, onShowcase }) {
   const [demoId, setDemoId] = useState(null);
+  const [muted, setMutedState] = useState(isMuted());
 
   // Card-level call-to-action — pill, colored, more substantial than mw-skip.
   const cardBtn = (bg) => ({
@@ -73,6 +75,19 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase }) {
           <button className="mw-skip" onClick={onClose}>关闭</button>
         </div>
       </div>
+
+      {/* Mute toggle — fixed bottom-left, mirrors the walk's button so the
+          user has the same control whether they walked or skipped. */}
+      <button className="mw-skip" onClick={(e) => {
+          e.stopPropagation();
+          initAudio();
+          const m = !muted;
+          setMuted(m);
+          setMutedState(m);
+        }}
+        style={{ position: "fixed", bottom: 24, left: 24, zIndex: 60 }}>
+        {muted ? "🔇 静音" : "🔊 声音"}
+      </button>
 
       {/* Inline demo popup — its own little card, dark or light to match the work */}
       {demoId && (() => {
