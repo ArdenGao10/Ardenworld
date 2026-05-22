@@ -27,10 +27,10 @@ export const STOPS = [
   { id: "puddle",  x: 1980, type: "puddle",  label: "水坑 · 小心点" },
   { id: "focus",   x: 2560, type: "work",    workId: "focus",  label: "专注圈" },
   { id: "notes",   x: 3200, type: "notes",   label: "邮筒 · 一些想法" },
-  { id: "lantern", x: 3760, type: "lantern", label: "灯 · 点亮一盏" },
-  { id: "mood",    x: 4280, type: "work",    workId: "mood",   label: "心情唱片" },
-  { id: "doodle",  x: 4900, type: "doodle",  label: "涂鸦墙 · 小实验" },
-  { id: "contact", x: 5460, type: "contact", label: "信箱 · 给我写信" },
+  { id: "mood",    x: 3800, type: "work",    workId: "mood",   label: "心情唱片" },
+  { id: "doodle",  x: 4400, type: "doodle",  label: "涂鸦墙 · 小实验" },
+  { id: "lantern", x: 5000, type: "lantern", label: "灯 · 点亮一盏" },
+  { id: "contact", x: 5500, type: "contact", label: "信箱 · 给我写信" },
   { id: "soon",    x: 6000, type: "soon",    label: "空山丘 · 下一件" },
   { id: "peak",    x: 6520, type: "peak",    label: "终点 · 通关" },
 ];
@@ -137,8 +137,8 @@ export const STORY_THOUGHTS = [
 // eased so the world drifts through a long, gradual sunset instead of snapping
 // between states. Daytime holds for most of the walk; dusk fades in slowly,
 // and night (with the moon) only settles near the end.
-const DUSK_START = 3400; // before here: full day
-const NIGHT_FULL = 5400; // after here:  full night, moon up
+const DUSK_START = 3200; // the notes stop — the sun begins to descend here
+const NIGHT_FULL = 4900; // fully night just before the lantern is lit
 
 export function skyPhase(x) {
   const t = Math.max(0, Math.min(1, (x - DUSK_START) / (NIGHT_FULL - DUSK_START)));

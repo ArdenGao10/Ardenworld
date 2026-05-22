@@ -15,7 +15,7 @@ const Signpost = ({ x, y, label, sub, tint = "#fef3a3" }) => (
   </div>
 );
 
-export const StopMarker = ({ stop, charNearby, time }) => {
+export const StopMarker = ({ stop, charNearby, lit }) => {
   const baseY = GROUND_Y + groundLift(stop.x);
   switch (stop.type) {
     case "start":
@@ -147,15 +147,24 @@ export const StopMarker = ({ stop, charNearby, time }) => {
         </div>
       );
     case "lantern":
+      // Stays dark until the player walks up and clicks it — lighting it is
+      // the point of the stop, so it must not glow on its own.
       return (
         <div style={{ position: "absolute", bottom: baseY, left: stop.x - 15 }}>
           <div style={{ width: 5, height: 100, background: "#1b1b1b", margin: "0 auto" }}/>
           <div style={{
             position: "absolute", top: -10, left: -12, width: 30, height: 30,
-            background: time === "night" ? "#fef3a3" : "#fffdf6",
+            background: lit ? "#fef3a3" : "#fffdf6",
             border: "2.5px solid #1b1b1b", filter: "url(#wobble)", borderRadius: "8px 8px 4px 4px",
-            boxShadow: time === "night" ? "0 0 30px rgba(254,243,163,.8), 0 0 60px rgba(254,243,163,.4)" : "none"
+            transition: "background .4s ease, box-shadow .4s ease",
+            boxShadow: lit ? "0 0 30px rgba(254,243,163,.8), 0 0 60px rgba(254,243,163,.4)" : "none"
           }}/>
+          {charNearby && !lit && (
+            <div className="sk-hand" style={{
+              position: "absolute", bottom: 120, left: -32, fontSize: 16, whiteSpace: "nowrap",
+              color: "#1b1b1b", animation: "mw-bob 1.2s ease-in-out infinite"
+            }}>↓ 点亮它</div>
+          )}
         </div>
       );
     case "doodle":

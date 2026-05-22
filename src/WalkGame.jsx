@@ -59,6 +59,7 @@ export default function WalkGame({ onRoom }) {
   const [showStartHint, setShowStartHint] = useState(true);
   const [splash, setSplash] = useState(null); // {x, y} for splash drops
   const [flowered, setFlowered] = useState({});
+  const [lanternLit, setLanternLit] = useState(false); // lit only when clicked
   const [thought, setThought] = useState(null); // {id, text}
   const [muted, setMutedState] = useState(isMuted());
   const [showIntro, setShowIntro] = useState(true); // opening choice card
@@ -412,9 +413,10 @@ export default function WalkGame({ onRoom }) {
 
   const stopMarkers = useMemo(() => (
     STOPS.map(s => (
-      <StopMarker key={s.id} stop={s} charNearby={nearest?.id === s.id} time={time}/>
+      <StopMarker key={s.id} stop={s} charNearby={nearest?.id === s.id}
+        lit={s.id === "lantern" && lanternLit}/>
     ))
-  ), [time, nearest?.id]);
+  ), [lanternLit, nearest?.id]);
 
   const starEls = useMemo(() => (
     [[1700, 60], [1980, 85], [3400, 90], [5300, 70]].map(([sx, sy], i) => (
@@ -447,9 +449,10 @@ export default function WalkGame({ onRoom }) {
       case "work":    setOverlay({ type: "work", workId: s.workId }); break;
       case "notes":   setOverlay({ type: "notes" }); break;
       case "lantern":
+        setLanternLit(true);
         setDialog({
           lines: [
-            "天慢慢黑了。",
+            "天黑了。",
             "灯笼是路上最温柔的东西 ✦",
             "以前我觉得「效率」最重要 —\n后来发现，慢一点也没什么不好。",
           ]
@@ -479,6 +482,7 @@ export default function WalkGame({ onRoom }) {
     setShowEnd(false); setShowGallery(false); setOverlay(null); setDialog(null);
     setTarget(null); setSplashing(false);
     setFlowered({});
+    setLanternLit(false);
     setThought(null); firedThoughts.current = {};
     clearTimeout(thoughtTimer.current);
     startTime.current = Date.now();
