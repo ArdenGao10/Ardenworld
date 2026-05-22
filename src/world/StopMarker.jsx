@@ -192,7 +192,7 @@ export const StopMarker = ({ stop, charNearby, lit }) => {
             <div style={{ position: "absolute", top: 8, left: 8, right: 8, height: 0, borderTop: "1.5px solid #fffdf6" }}/>
             <div className="sk-hand" style={{ position: "absolute", bottom: 4, left: 0, right: 0, textAlign: "center", fontSize: 12, color: "#fffdf6" }}>mail</div>
           </div>
-          <div className="sk-hand" style={{ position: "absolute", bottom: 80, left: -10, fontSize: 14 }}>给我写信 ✉</div>
+          <div className="sk-hand" style={{ position: "absolute", bottom: 80, left: -10, fontSize: 14 }}>给我写信 ✉︎</div>
         </div>
       );
     case "soon":

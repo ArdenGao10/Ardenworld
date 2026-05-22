@@ -122,7 +122,7 @@ export const INTERACT_RADIUS = 90;
 // Story thoughts: char "thinks" something while passing certain x ranges.
 // Each fires once per playthrough; appears briefly above char.
 export const STORY_THOUGHTS = [
-  { id: "morn",  range: [380, 600],   text: "天气不错，出门走走 ☀" },
+  { id: "morn",  range: [380, 600],   text: "天气不错，出门走走 ☀︎" },
   { id: "after", range: [1100, 1300], text: "做东西就像盖房子 …" },
   { id: "abt",   range: [1550, 1750], text: "继续往前。" },
   { id: "wet",   range: [2200, 2400], text: "鞋好像有点湿 :) " },

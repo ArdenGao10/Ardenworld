@@ -20,10 +20,32 @@ html, body {
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* iOS Safari draws native button chrome and tints button labels system-blue
+   unless the appearance is reset. Every button here is custom-painted, so
+   strip the native look and let text inherit the page's ink colour. */
+button {
+  -webkit-appearance: none;
+  appearance: none;
+  color: inherit;
+}
+
+/* iOS / touch devices choke on the SVG wobble filter (feTurbulence +
+   feDisplacementMap): every repaint re-runs the noise, so scrolling, the
+   parallax walk and card animations stutter — and a filtered SVG with a
+   pattern fill (the ground path) fails to render at all, leaving "no road".
+   Drop the decorative wobble on coarse-pointer devices; the hand-drawn look
+   still holds through strokes, fonts, rotations and shadows. */
+@media (hover: none) and (pointer: coarse) {
+  * { filter: none !important; }
+}
+
 /* Type system */
 .mw-title { font-family: "Caveat", "Ma Shan Zheng", "Long Cang", "Noto Serif SC", serif; letter-spacing: .02em; font-weight: 600; }
 .mw-body  { font-family: "ZCOOL KuaiLe", "Kalam", sans-serif; letter-spacing: .01em; }
-.sk-hand  { font-family: "Caveat", "Kalam", cursive; }
+/* "Caveat"/"Kalam" carry no CJK glyphs; without a loaded Chinese handwriting
+   face here, the generic `cursive` fallback differs per OS — handwritten on
+   desktop, plain sans on iOS. Pin "Long Cang" so CJK stays hand-drawn. */
+.sk-hand  { font-family: "Caveat", "Long Cang", cursive; }
 .sk-mono  { font-family: "JetBrains Mono", monospace; }
 .note     { font-family: "Caveat"; font-size: 18px; color: #444; }
 .note-sm  { font-family: "Caveat"; font-size: 15px; color: #555; }

@@ -59,7 +59,7 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
               <div className="mw-body" style={{ fontSize: 16, marginTop: 8, color: "#444" }}>{w.intro}</div>
 
               <div style={{ marginTop: 18, display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <button style={cardBtn("#d97757")} onClick={() => setDemoId(id)}>▶ 小演示</button>
+                <button style={cardBtn("#d97757")} onClick={() => setDemoId(id)}>▶︎ 小演示</button>
                 <button style={cardBtn("#6f8f6a")} onClick={() => onShowcase?.(w.showcase, id)}>
                   详细了解 →
                 </button>

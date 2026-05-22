@@ -38,6 +38,11 @@ export function initAudio() {
   bgmGain = ctx.createGain();
   bgmGain.gain.value = 0.5;
   bgmGain.connect(master);
+
+  // iOS Safari hands back a *suspended* context even when it's created
+  // inside a tap. Chrome auto-resumes a gesture-born context; iOS does not,
+  // so without this explicit resume the music never starts on iPhone.
+  if (ctx.state === "suspended") ctx.resume();
 }
 
 export function isMuted() { return muted; }

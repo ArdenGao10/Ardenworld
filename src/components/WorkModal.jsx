@@ -107,7 +107,7 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
         {/* === three actions === */}
         <div style={{ marginTop: 22, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <button className="mw-btn mw-btn-primary" onClick={() => setDemoOn(d => !d)}>
-            {demoOn ? "✕ 收起演示" : "▶ 小演示"}
+            {demoOn ? "✕ 收起演示" : "▶︎ 小演示"}
           </button>
           <button className="mw-btn" onClick={() => onShowcase?.(work.showcase, workId)}>
             详细了解 →
