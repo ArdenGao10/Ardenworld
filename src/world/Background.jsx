@@ -123,10 +123,11 @@ export const NearHills = ({ phase }) => {
 };
 
 // Small bushes/foreground tufts close to the ground — render BEFORE ground
-export const Bushes = ({ phase }) => {
+export const Bushes = ({ phase, winStart = -Infinity, winEnd = Infinity }) => {
   const c = tri(phase, "#5a7a52", "#48311e", "#0a1020");
   return Array.from({length: 36}).map((_, i) => {
     const x = (i * 197 + 60) % WORLD_WIDTH;
+    if (x < winStart || x > winEnd) return null;          // off-screen — skip
     if (STOPS.some(s => Math.abs(s.x - x) < 110)) return null;
     const y = GROUND_Y + groundLift(x) - 6;
     const sz = 14 + (i % 4) * 6;
@@ -141,7 +142,7 @@ export const Bushes = ({ phase }) => {
 };
 
 // The actual ground with undulating top — character walks on this
-export const Ground = ({ phase }) => {
+export const Ground = ({ phase, winStart = -Infinity, winEnd = Infinity }) => {
   const earth = tri(phase, "#d8c89a", "#806548", "#2a2436");
   const grass = mix("#5a6a4a", "#3a4a5a", clamp01(phase));
   // Build a path going across the entire world at the character's ground line
@@ -173,9 +174,10 @@ export const Ground = ({ phase }) => {
           frame stalls iOS Safari and makes the pattern-filled ground flicker
           out completely. At this scale the wobble was never even visible. */}
       <path d={pathD} fill="url(#earth-hatch)" stroke="#1b1b1b" strokeWidth="2.5"/>
-      {/* grass tufts along curve */}
+      {/* grass tufts along curve — only the ones inside the camera window */}
       {Array.from({length: 100}).map((_, i) => {
         const x = (i * 70 + 30) % WORLD_WIDTH;
+        if (x < winStart || x > winEnd) return null;
         const y = GROUND_LIFT_MAX - groundLift(x) - 2;
         return (
           <text key={i} x={x} y={y - 4} fontSize="14" fill={grass} fontFamily="Caveat">w</text>
@@ -230,10 +232,11 @@ export const Clouds = ({ phase }) => {
   ));
 };
 
-export const Trees = ({ phase, flowered }) => {
+export const Trees = ({ phase, flowered, winStart = -Infinity, winEnd = Infinity }) => {
   const trunkC = "#5a3a20";
   const foliage = tri(phase, "#7fa872", "#6a5440", "#1a3a2a");
   return TREE_POSITIONS.map(({ id, x, h }) => {
+    if (x < winStart || x > winEnd) return null;          // off-screen — skip
     const baseY = GROUND_Y + groundLift(x);
     const isBloom = flowered && flowered[id];
     return (

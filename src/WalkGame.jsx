@@ -97,6 +97,19 @@ export default function WalkGame({ onRoom }) {
   // Camera
   const camX = Math.max(0, Math.min(WORLD_WIDTH - viewport.w, charX - viewport.w * 0.35));
 
+  // ----- visible window (virtualisation) -----
+  // The world is WORLD_WIDTH (~6800px) wide; rendering every tree, bush and
+  // marker at once gives WebKit a layer too large to repaint smoothly while
+  // it scrolls — hence the stutter and the blank strips on Safari. Build only
+  // the slice near the camera. The window is snapped to coarse chunks so the
+  // rendered set changes a few times per walk (not every frame), and it keeps
+  // a full viewport of margin on each side — derived from the live measured
+  // viewport, so it adapts to any screen — so nothing pops in on screen.
+  const VCHUNK = 700;
+  const renderKey = Math.floor(camX / VCHUNK);
+  const winStart = renderKey * VCHUNK - viewport.w;
+  const winEnd = renderKey * VCHUNK + VCHUNK + viewport.w * 2;
+
   // ----- mouse/touch click to walk -----
   const stageRef = useRef(null);
 
@@ -405,18 +418,18 @@ export default function WalkGame({ onRoom }) {
 
   const groundLayer = useMemo(() => (
     <>
-      <Ground phase={phase}/>
-      <Bushes phase={phase}/>
-      <Trees phase={phase} flowered={flowered}/>
+      <Ground phase={phase} winStart={winStart} winEnd={winEnd}/>
+      <Bushes phase={phase} winStart={winStart} winEnd={winEnd}/>
+      <Trees phase={phase} flowered={flowered} winStart={winStart} winEnd={winEnd}/>
     </>
-  ), [phase, flowered]);
+  ), [phase, flowered, winStart, winEnd]);
 
   const stopMarkers = useMemo(() => (
-    STOPS.map(s => (
+    STOPS.filter(s => s.x >= winStart && s.x <= winEnd).map(s => (
       <StopMarker key={s.id} stop={s} charNearby={nearest?.id === s.id}
         lit={s.id === "lantern" && lanternLit}/>
     ))
-  ), [lanternLit, nearest?.id]);
+  ), [lanternLit, nearest?.id, winStart, winEnd]);
 
   const starEls = useMemo(() => (
     [[1700, 60], [1980, 85], [3400, 90], [5300, 70]].map(([sx, sy], i) => (
