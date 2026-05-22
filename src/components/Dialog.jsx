@@ -25,7 +25,7 @@ export default function Dialog({ lines, onDone }) {
       padding: "18px 22px", boxShadow: "4px 6px 0 rgba(0,0,0,.15)", zIndex: 40,
       cursor: "pointer"
     }}>
-      <div className="mw-body" style={{ fontSize: 19, lineHeight: 1.55, color: "#1b1b1b", whiteSpace: "pre-line" }}>
+      <div className="sk-hand" style={{ fontSize: 22, lineHeight: 1.5, color: "#1b1b1b", whiteSpace: "pre-line" }}>
         {lines[i]}
       </div>
       <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".15em", color: "#7a6648", marginTop: 10, textAlign: "right" }}>
