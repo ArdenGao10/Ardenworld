@@ -32,9 +32,10 @@ button {
 /* Type system */
 .mw-title { font-family: "Caveat", "Ma Shan Zheng", "Long Cang", serif; letter-spacing: .02em; font-weight: 600; }
 .mw-body  { font-family: "ZCOOL KuaiLe", system-ui, sans-serif; letter-spacing: .01em; }
-/* "Caveat" carries no CJK glyphs, so CJK here falls through to "Long Cang" —
-   a loaded Chinese handwriting face — instead of an OS-dependent fallback. */
-.sk-hand  { font-family: "Caveat", "Long Cang", cursive; }
+/* Latin set in the Caveat hand; CJK in regular ZCOOL KuaiLe. The hand-drawn
+   character comes from the SVG wobble filter on the elements, not from scrawly
+   letterforms — keep the type upright and readable. */
+.sk-hand  { font-family: "Caveat", "ZCOOL KuaiLe", sans-serif; }
 
 /* Form fields take whatever the user types, including characters outside the
    subsetted webfonts. Render them in a system font so nothing turns to tofu. */
