@@ -12,7 +12,7 @@ html, body {
   margin: 0; padding: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: "ZCOOL KuaiLe", "Kalam", system-ui, sans-serif;
+  font-family: "ZCOOL KuaiLe", system-ui, sans-serif;
   overflow: hidden;
   height: 100%;
   width: 100%;
@@ -40,12 +40,17 @@ button {
 }
 
 /* Type system */
-.mw-title { font-family: "Caveat", "Ma Shan Zheng", "Long Cang", "Noto Serif SC", serif; letter-spacing: .02em; font-weight: 600; }
-.mw-body  { font-family: "ZCOOL KuaiLe", "Kalam", sans-serif; letter-spacing: .01em; }
-/* "Caveat"/"Kalam" carry no CJK glyphs; without a loaded Chinese handwriting
-   face here, the generic `cursive` fallback differs per OS — handwritten on
-   desktop, plain sans on iOS. Pin "Long Cang" so CJK stays hand-drawn. */
+.mw-title { font-family: "Caveat", "Ma Shan Zheng", "Long Cang", serif; letter-spacing: .02em; font-weight: 600; }
+.mw-body  { font-family: "ZCOOL KuaiLe", system-ui, sans-serif; letter-spacing: .01em; }
+/* "Caveat" carries no CJK glyphs, so CJK here falls through to "Long Cang" —
+   a loaded Chinese handwriting face — instead of an OS-dependent fallback. */
 .sk-hand  { font-family: "Caveat", "Long Cang", cursive; }
+
+/* Form fields take whatever the user types, including characters outside the
+   subsetted webfonts. Render them in a system font so nothing turns to tofu. */
+input, textarea {
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
 .sk-mono  { font-family: "JetBrains Mono", monospace; }
 .note     { font-family: "Caveat"; font-size: 18px; color: #444; }
 .note-sm  { font-family: "Caveat"; font-size: 15px; color: #555; }
