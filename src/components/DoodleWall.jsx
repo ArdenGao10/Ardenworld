@@ -225,6 +225,7 @@ function Weather() {
 // ============================================================
 function Letters() {
   const boxRef = useRef(null);
+  const inputRef = useRef(null);
   const size = useRef({ w: 500, h: 240 });
   const items = useRef([]);
   const idRef = useRef(0);
@@ -278,20 +279,43 @@ function Letters() {
     }].slice(-44);
   };
 
+  // Desktop physical keyboard. Events from the hidden input below are
+  // skipped — those run through onType so the result isn't dropped twice.
   useEffect(() => {
     const onKey = (e) => {
+      if (e.target === inputRef.current) return;
       if (e.key.length === 1 && /\S/.test(e.key)) drop(e.key.toUpperCase());
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Phones have no physical keyboard: tapping the box focuses a hidden
+  // input, which raises the soft keyboard and feeds letters through here.
+  const onType = (e) => {
+    if (e.nativeEvent?.isComposing) return;
+    for (const ch of e.target.value) if (/\S/.test(ch)) drop(ch.toUpperCase());
+    e.target.value = "";
+  };
+
   const handful = [..."ARDEN好玩✦"];
   return (
     <div>
       <div ref={boxRef}
-        onMouseDown={(e) => { const r = boxRef.current.getBoundingClientRect(); drop("✦", e.clientX - r.left); }}
+        onMouseDown={(e) => {
+          inputRef.current?.focus();
+          const r = boxRef.current.getBoundingClientRect();
+          drop("✦", e.clientX - r.left);
+        }}
         style={{ ...boxStyle, height: 240, background: "#fffdf6" }}>
+        <input ref={inputRef} aria-label="打字" tabIndex={-1}
+          onInput={onType} onCompositionEnd={onType}
+          autoComplete="off" autoCorrect="off" autoCapitalize="characters" spellCheck={false}
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            opacity: 0, border: "none", background: "transparent",
+            pointerEvents: "none", fontSize: 16, caretColor: "transparent",
+          }}/>
         {items.current.map(it => (
           <div key={it.id} className="mw-title" style={{
             position: "absolute", left: it.x, top: it.y,
