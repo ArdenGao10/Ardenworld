@@ -14,7 +14,7 @@ import {
   WORLD_WIDTH, GROUND_Y, groundLift,
   STOPS, WORKS, NOTES, TREE_POSITIONS,
   WALK_SPEED, JUMP_VEL, GRAVITY, CHAR_BASE_W, INTERACT_RADIUS,
-  STORY_THOUGHTS, timeFor,
+  STORY_THOUGHTS, timeFor, skyPhase,
 } from './world/data.js';
 import { Char, Cat } from './world/Char.jsx';
 import {
@@ -77,6 +77,10 @@ export default function WalkGame({ onRoom }) {
   const atLeftWall = useRef(false); // re-fires the left-wall thought only on (re-)entry
 
   const time = timeFor(charX);
+  // Continuous 0→1 day→night for the sky layers. Quantised to ~40 steps so the
+  // memoised scene doesn't re-render every frame; CSS transitions smooth the
+  // gaps, giving a gradual sunset rather than a snap between states.
+  const phase = Math.round(skyPhase(charX) * 40) / 40;
   const isMobile = viewport.w < 720 || matchMedia("(pointer:coarse)").matches;
 
   useEffect(() => {
@@ -378,33 +382,33 @@ export default function WalkGame({ onRoom }) {
   // ----- memoised scene layers -----
   // The game loop runs ~60×/s. Without this, every frame would re-render
   // all 22 trees, 12 markers and the hills — even though only the character
-  // moved. These layers only change with `time` (day→dusk→night), blooms,
-  // or which sign is nearest, so React can skip re-rendering them per frame.
+  // moved. These layers only change with `phase` (the quantised day→night
+  // value), blooms, or which sign is nearest — so React skips most renders.
   const skyLayer = useMemo(() => (
     <>
-      <SkyGradient time={time}/>
-      <Sun time={time} viewW={viewport.w}/>
-      <Stars time={time}/>
-      <Birds time={time}/>
+      <SkyGradient phase={phase}/>
+      <Sun phase={phase} viewW={viewport.w}/>
+      <Stars phase={phase}/>
+      <Birds phase={phase}/>
     </>
-  ), [time, viewport.w]);
+  ), [phase, viewport.w]);
 
   const farLayer = useMemo(() => (
     <>
-      <FarHills time={time}/>
-      <Clouds time={time} viewW={viewport.w}/>
+      <FarHills phase={phase}/>
+      <Clouds phase={phase}/>
     </>
-  ), [time, viewport.w]);
+  ), [phase]);
 
-  const midLayer = useMemo(() => <NearHills time={time}/>, [time]);
+  const midLayer = useMemo(() => <NearHills phase={phase}/>, [phase]);
 
   const groundLayer = useMemo(() => (
     <>
-      <Ground time={time}/>
-      <Bushes time={time}/>
-      <Trees time={time} flowered={flowered}/>
+      <Ground phase={phase}/>
+      <Bushes phase={phase}/>
+      <Trees phase={phase} flowered={flowered}/>
     </>
-  ), [time, flowered]);
+  ), [phase, flowered]);
 
   const stopMarkers = useMemo(() => (
     STOPS.map(s => (
@@ -781,7 +785,7 @@ export default function WalkGame({ onRoom }) {
           </div>
           <div className="mw-body" style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
             {isMobile
-              ? "点招牌互动 · 点 ↑ 键 = 前进跳"
+              ? "点招牌互动 · 点 ↑ 按钮 = 前进跳"
               : "← → = 走路 · 空格 = 跳 · 点招牌互动"}
           </div>
         </div>

@@ -124,6 +124,12 @@ html, body {
   0%, 100% { transform: translateX(-50%) translateY(0); }
   50%      { transform: translateX(-50%) translateY(-5px); }
 }
+/* The prompt bubble is tappable — tap it to interact with the object */
+.mw-prompt-tap {
+  pointer-events: auto; cursor: pointer;
+  padding: 9px 18px;
+}
+.mw-prompt-tap:active { filter: url(#wobble) brightness(1.25); }
 
 /* Start hint */
 .mw-start-hint {

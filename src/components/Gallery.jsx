@@ -77,8 +77,7 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
         </div>
       </div>
 
-      {/* Mute toggle — fixed bottom-left, mirrors the walk's button so the
-          user has the same control whether they walked or skipped. */}
+      {/* Mute toggle — fixed top-right so it stays clear of the content. */}
       <button className="mw-skip" onClick={(e) => {
           e.stopPropagation();
           initAudio();
@@ -86,7 +85,7 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
           setMuted(m);
           setMutedState(m);
         }}
-        style={{ position: "fixed", bottom: 24, left: 24, zIndex: 60 }}>
+        style={{ position: "fixed", top: 24, right: 24, zIndex: 61 }}>
         <SpeakerIcon muted={muted}/>{muted ? "静音" : "声音"}
       </button>
 

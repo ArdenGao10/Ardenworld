@@ -12,8 +12,8 @@ export function HUD({ charX, time, onSkip, stars }) {
       }}>
         <div className="sk-mono" style={{
           fontSize: 11, letterSpacing: ".15em", background: "#fffdf6",
-          border: "2px solid #1b1b1b", padding: "6px 12px", filter: "url(#wobble)",
-          pointerEvents: "auto"
+          border: "2px solid #1b1b1b", padding: "6px 14px", filter: "url(#wobble)",
+          boxShadow: "1px 2px 0 rgba(0,0,0,.1)", pointerEvents: "auto"
         }}>
           MY WORLD &nbsp;·&nbsp; {time.toUpperCase()} &nbsp;·&nbsp; {reached}/{STOPS.length}
         </div>

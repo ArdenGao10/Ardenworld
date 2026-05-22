@@ -15,6 +15,9 @@ const PALETTE = ["#d97757", "#cfe0c6", "#6f8f6a", "#fef3a3", "#c97a83", "#6a8ab0
 const CARD_BG = ["#cfe0c6", "#fef3a3", "#f7c5c0", "#a8c8e0", "#e7d4c4", "#cfe0c6"];
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+// Touch device? Used to phrase hints with "手指/屏幕" instead of "鼠标".
+const isTouch = typeof matchMedia !== "undefined" && matchMedia("(pointer:coarse)").matches;
+
 const boxStyle = {
   border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
   position: "relative", overflow: "hidden",
@@ -88,7 +91,7 @@ function CatLight() {
           transform: `translate(-50%,-62%) scaleX(${face})` }}>
           <Cat size={58}/>
         </div>
-        {!moved && <Hint>动动鼠标 — 小猫会追那点光 ✦</Hint>}
+        {!moved && <Hint>{isTouch ? "在屏幕上划一下" : "动动鼠标"} — 小猫会追那点光 ✦</Hint>}
       </div>
       <Caption>一只 svg 小猫,和一点跑来跑去的光 — 它永远追不上,但永远在追。</Caption>
     </div>
@@ -512,13 +515,13 @@ function Piano() {
       <div style={{ ...boxStyle, height: 240, padding: 18,
         background: "linear-gradient(180deg,#fef3a3 0%,#fffdf6 100%)",
         display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ display: "flex", gap: 4, width: "100%", maxWidth: 360 }}>
           {PIANO_KEYS.map((k, i) => (
             <div key={i}
               onMouseDown={() => press(i)}
               onTouchStart={(e) => { e.preventDefault(); press(i); }}
               style={{
-                width: 40, height: 168, background: pressed[i] ? "#fef3a3" : "#fffdf6",
+                flex: "1 1 0", minWidth: 0, height: 168, background: pressed[i] ? "#fef3a3" : "#fffdf6",
                 border: "2.5px solid #1b1b1b", filter: "url(#wobble)", cursor: "pointer",
                 display: "flex", alignItems: "flex-end", justifyContent: "center",
                 paddingBottom: 10, userSelect: "none",
@@ -994,35 +997,37 @@ function SketchPad() {
   const [paths, setPaths] = useState([]);
   const [color, setColor] = useState("#d97757");
 
+  // One unified Pointer Events model — no separate mouse/touch handlers.
+  // This avoids the synthetic "ghost" mouse events a phone fires after a
+  // touch, which used to start a stray path and corrupt the real stroke.
   const pos = (e) => {
     const r = boxRef.current.getBoundingClientRect();
-    const cx = e.clientX ?? e.touches?.[0]?.clientX ?? e.changedTouches?.[0]?.clientX;
-    const cy = e.clientY ?? e.touches?.[0]?.clientY ?? e.changedTouches?.[0]?.clientY;
-    return [cx - r.left, cy - r.top];
+    return [e.clientX - r.left, e.clientY - r.top];
   };
 
   const down = (e) => {
     initAudio();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
     const [x, y] = pos(e);
     cur.current = `M${x.toFixed(1)} ${y.toFixed(1)}`;
     drawing.current = true;
     setPaths(p => [...p, { d: cur.current, c: color }]);
   };
   const move = (e) => {
-    if (!drawing.current) return;
-    if (e.cancelable && e.touches) e.preventDefault();
+    if (!drawing.current || !cur.current) return;
     const [x, y] = pos(e);
     cur.current += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+    const d = cur.current;
     setPaths(p => p.map((path, i) =>
-      i === p.length - 1 ? { ...path, d: cur.current } : path));
+      i === p.length - 1 ? { ...path, d } : path));
   };
   const up = () => { drawing.current = false; cur.current = null; };
 
   return (
     <div>
       <div ref={boxRef}
-        onMouseDown={down} onMouseMove={move} onMouseUp={up} onMouseLeave={up}
-        onTouchStart={down} onTouchMove={move} onTouchEnd={up}
+        onPointerDown={down} onPointerMove={move}
+        onPointerUp={up} onPointerCancel={up}
         style={{ ...boxStyle, height: 240, cursor: "crosshair",
           background: "#fffdf6", touchAction: "none" }}>
         <svg width="100%" height="100%"
@@ -1032,7 +1037,7 @@ function SketchPad() {
                   fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           ))}
         </svg>
-        {paths.length === 0 && <Hint>用鼠标画 — 想画啥画啥</Hint>}
+        {paths.length === 0 && <Hint>{isTouch ? "用手指画" : "用鼠标画"} — 想画啥画啥</Hint>}
       </div>
       <div style={{ display: "flex", gap: 6, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
         {SKETCH_COLORS.map(c => (

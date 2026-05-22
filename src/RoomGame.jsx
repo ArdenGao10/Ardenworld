@@ -170,7 +170,7 @@ export default function RoomGame({ onSwitch }) {
   const onStageDown = (e) => {
     initAudio(); startBgm("home");
     if (blocked) return;
-    if (e.target.closest('.mw-skip, .climb-hold, .room-fx')) return;
+    if (e.target.closest('.mw-skip, .climb-hold, .room-fx, .mw-prompt-tap')) return;
 
     if (lying) { setLying(false); return; }
 
@@ -185,22 +185,28 @@ export default function RoomGame({ onSwitch }) {
       return;
     }
 
-    const hits = [
-      { x: POS.outdoor,  approach: POS.outdoor + 40,  then: openOutdoor },
-      { x: POS.climb,    approach: POS.climb + 90,    then: enterClimb },
-      { x: POS.bed,      approach: POS.bed - 30,      then: lieDown },
-      { x: POS.fishtank, approach: POS.fishtank,      then: feedFish },
-      { x: POS.desk,     approach: POS.desk + 93,     then: () => openWork("focus") },
-      { x: POS.shelf,    approach: POS.shelf,         then: openBook },
-      { x: POS.doodle,   approach: POS.doodle,        then: openDoodle },
-      { x: POS.record,   approach: POS.record - 70,   then: () => openWork("mood") },
-      { x: POS.about,    approach: POS.about - 40,    then: openAbout },
-      { x: POS.mail,     approach: POS.mail - 50,     then: openContact },
-    ];
-    for (const h of hits) {
-      if (Math.abs(worldX - h.x) < 110) {
-        setTarget({ x: clamp(h.approach, 80, ROOM_W - 80), then: h.then });
-        return;
+    // Desktop: tapping near an object walks the character to it and opens it.
+    // Mobile: tapping only ever walks — interaction happens by tapping the
+    // black prompt bubble. This keeps you from getting trapped beside an
+    // object that re-opens its modal every time you tap to walk past it.
+    if (!isMobile) {
+      const hits = [
+        { x: POS.outdoor,  approach: POS.outdoor + 40,  then: openOutdoor },
+        { x: POS.climb,    approach: POS.climb + 90,    then: enterClimb },
+        { x: POS.bed,      approach: POS.bed - 30,      then: lieDown },
+        { x: POS.fishtank, approach: POS.fishtank,      then: feedFish },
+        { x: POS.desk,     approach: POS.desk + 93,     then: () => openWork("focus") },
+        { x: POS.shelf,    approach: POS.shelf,         then: openBook },
+        { x: POS.doodle,   approach: POS.doodle,        then: openDoodle },
+        { x: POS.record,   approach: POS.record - 70,   then: () => openWork("mood") },
+        { x: POS.about,    approach: POS.about - 40,    then: openAbout },
+        { x: POS.mail,     approach: POS.mail - 50,     then: openContact },
+      ];
+      for (const h of hits) {
+        if (Math.abs(worldX - h.x) < 110) {
+          setTarget({ x: clamp(h.approach, 80, ROOM_W - 80), then: h.then });
+          return;
+        }
       }
     }
     setTarget({ x: clamp(worldX, 80, ROOM_W - 80), then: null });
@@ -251,6 +257,20 @@ export default function RoomGame({ onSwitch }) {
   }
   function exitClimb() { setClimbHold(null); setClimbSummited(false); }
 
+  // Single entry point for interacting with whatever the character is near.
+  function interactWith(key) {
+    if (key === "focus") openWork("focus");
+    else if (key === "mood") openWork("mood");
+    else if (key === "doodle") openDoodle();
+    else if (key === "shelf") openBook();
+    else if (key === "fishtank") feedFish();
+    else if (key === "climb") enterClimb();
+    else if (key === "bed") lieDown();
+    else if (key === "mail") openContact();
+    else if (key === "about") openAbout();
+    else if (key === "outdoor") openOutdoor();
+  }
+
   useEffect(() => {
     const down = (e) => {
       if (blocked) return;
@@ -268,16 +288,7 @@ export default function RoomGame({ onSwitch }) {
       } else if (k === "e" || k === "E" || k === " " || k === "Enter") {
         if (!climbHold && !lying) {
           const n = findNearest(stateRef.current.x);
-          if (n === "focus") openWork("focus");
-          else if (n === "mood") openWork("mood");
-          else if (n === "doodle") openDoodle();
-          else if (n === "shelf") openBook();
-          else if (n === "fishtank") feedFish();
-          else if (n === "climb") enterClimb();
-          else if (n === "bed") lieDown();
-          else if (n === "mail") openContact();
-          else if (n === "about") openAbout();
-          else if (n === "outdoor") openOutdoor();
+          if (n) interactWith(n);
         }
       }
     };
@@ -367,7 +378,7 @@ export default function RoomGame({ onSwitch }) {
          onMouseDown={onStageDown}
          onContextMenu={(e) => e.preventDefault()}
          onTouchStart={(e) => {
-           if (e.target.closest('button, .climb-hold')) return;
+           if (e.target.closest('button, .climb-hold, .mw-prompt-tap')) return;
            e.preventDefault(); onStageDown(e);
          }}
          style={{
@@ -510,12 +521,14 @@ export default function RoomGame({ onSwitch }) {
         {/* === stations === */}
         <Anchored x={POS.outdoor - 50} bottom={FLOOR_H - 6}
                   prompt={nearest === "outdoor" && PROMPT_LABEL.outdoor}
+                  onActivate={() => interactWith("outdoor")}
                   promptOffset={232}>
           <OutdoorPortal highlighted={nearest === "outdoor"}/>
         </Anchored>
 
         <Anchored x={POS.climb - 100} bottom={climbBottomY}
                   prompt={nearest === "climb" && PROMPT_LABEL.climb}
+                  onActivate={() => interactWith("climb")}
                   promptOffset={370}>
           <ClimbingWall
             holds={CLIMB_HOLDS}
@@ -527,18 +540,21 @@ export default function RoomGame({ onSwitch }) {
 
         <Anchored x={POS.bed - 122} bottom={FLOOR_H - 6}
                   prompt={nearest === "bed" && PROMPT_LABEL.bed}
+                  onActivate={() => interactWith("bed")}
                   promptOffset={148}>
           <Bed highlighted={nearest === "bed"} lying={lying}/>
         </Anchored>
 
         <Anchored x={POS.fishtank - 90} bottom={FLOOR_H - 6}
                   prompt={nearest === "fishtank" && PROMPT_LABEL.fishtank}
+                  onActivate={() => interactWith("fishtank")}
                   promptOffset={210}>
           <FishTank highlighted={nearest === "fishtank"} feedTick={fishFeed}/>
         </Anchored>
 
         <Anchored x={POS.desk - 110} bottom={FLOOR_H - 6}
                   prompt={nearest === "focus" && PROMPT_LABEL.focus}
+                  onActivate={() => interactWith("focus")}
                   promptOffset={196}>
           <Desk highlighted={nearest === "focus"}/>
         </Anchored>
@@ -554,18 +570,21 @@ export default function RoomGame({ onSwitch }) {
 
         <Anchored x={POS.shelf - 64} bottom={FLOOR_H - 6}
                   prompt={nearest === "shelf" && PROMPT_LABEL.shelf}
+                  onActivate={() => interactWith("shelf")}
                   promptOffset={210}>
           <Bookshelf highlighted={nearest === "shelf"}/>
         </Anchored>
 
         <Anchored x={POS.doodle - 80} bottom={FLOOR_H + 80}
                   prompt={nearest === "doodle" && PROMPT_LABEL.doodle}
+                  onActivate={() => interactWith("doodle")}
                   promptOffset={158}>
           <DoodleWallPanel highlighted={nearest === "doodle"}/>
         </Anchored>
 
         <Anchored x={POS.record - 70} bottom={FLOOR_H - 6}
                   prompt={nearest === "mood" && PROMPT_LABEL.mood}
+                  onActivate={() => interactWith("mood")}
                   promptOffset={148}>
           <RecordPlayer highlighted={nearest === "mood"}/>
         </Anchored>
@@ -573,6 +592,7 @@ export default function RoomGame({ onSwitch }) {
         {/* about-me easel */}
         <Anchored x={POS.about - 60} bottom={FLOOR_H - 6}
                   prompt={nearest === "about" && PROMPT_LABEL.about}
+                  onActivate={() => interactWith("about")}
                   promptOffset={216}>
           <AboutEasel highlighted={nearest === "about"}/>
         </Anchored>
@@ -580,6 +600,7 @@ export default function RoomGame({ onSwitch }) {
         {/* pigeon cage — hung from the wall, up above head height */}
         <Anchored x={POS.mail - 31} bottom={FLOOR_H + 80}
                   prompt={nearest === "mail" && PROMPT_LABEL.mail}
+                  onActivate={() => interactWith("mail")}
                   promptOffset={162}>
           <PigeonCage highlighted={nearest === "mail"} empty={cageEmpty}/>
         </Anchored>
@@ -736,7 +757,7 @@ export default function RoomGame({ onSwitch }) {
             border: "2px solid #1b1b1b", filter: "url(#wobble)", padding: "8px 18px",
             pointerEvents: "auto",
           }}>
-            点一下 / 按空格起床
+            {isMobile ? "点一下屏幕起床" : "点一下 / 按空格起床"}
           </div>
         </div>
       )}
@@ -744,10 +765,10 @@ export default function RoomGame({ onSwitch }) {
       {showHint && !blocked && !climbHold && !lying && (
         <div className="mw-start-hint">
           <div className="sk-hand" style={{ fontSize: isMobile ? 22 : 26, color: "#1b1b1b" }}>
-            {isMobile ? "点屋里东西看看 — 都能玩 ✦" : "走到东西旁边 — 都能玩 ✦"}
+            走到东西旁边 — 都能玩 ✦
           </div>
           <div className="mw-body" style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
-            攀岩·床·鱼缸·书桌·书架·涂鸦墙·唱片机·关于我·信鸽 &nbsp;·&nbsp; {isMobile ? "点屏幕走" : "← → / A D 走 · E 互动 · 右上 SKIP 看作品"}
+            攀岩·床·鱼缸·书桌·书架·涂鸦墙·唱片机·关于我·信鸽 &nbsp;·&nbsp; {isMobile ? "点屏幕走 · 点黑气泡互动 · 右上 SKIP 看作品" : "← → / A D 走 · E 互动 · 右上 SKIP 看作品"}
           </div>
         </div>
       )}
@@ -971,12 +992,13 @@ function findNearest(charX) {
 // ============================================================
 // Anchored — world-layer object with a floating black prompt
 // ============================================================
-function Anchored({ x, bottom, prompt, promptOffset, children }) {
+function Anchored({ x, bottom, prompt, promptOffset, onActivate, children }) {
   return (
     <div style={{ position: "absolute", left: x, bottom }}>
       {children}
       {prompt && (
-        <div className="mw-prompt-anchor" style={{ bottom: promptOffset }}>
+        <div className="mw-prompt-anchor mw-prompt-tap" style={{ bottom: promptOffset }}
+             onPointerDown={onActivate ? (e) => { e.stopPropagation(); onActivate(); } : undefined}>
           ▾ &nbsp; {prompt} &nbsp; ▾
         </div>
       )}
