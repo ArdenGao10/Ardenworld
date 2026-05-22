@@ -411,6 +411,20 @@ html, body {
   100% { transform: translate(-8px, -22px) scale(1.1); opacity: 0; }
 }
 
+/* lie-down / get-up — the dim overlay eases in and out so it feels
+   like settling in and waking up, not an instant snap */
+.bed-rest-in  { animation: bed-rest-in  .55s ease-out both; }
+.bed-rest-out { animation: bed-rest-out .45s ease-in  both; }
+@keyframes bed-rest-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bed-rest-out { from { opacity: 1; } to { opacity: 0; } }
+.bed-rest-hint {
+  animation: bed-rest-hint .5s ease-out .35s both;
+}
+@keyframes bed-rest-hint {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 /* fish tank — bubbles rise, fish drift, feeding flake sinks */
 @keyframes tank-bubble {
   0%   { transform: translateY(0) scale(.6); opacity: 0; }

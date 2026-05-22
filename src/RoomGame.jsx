@@ -138,6 +138,7 @@ export default function RoomGame({ onSwitch }) {
   const [climbHold, setClimbHold] = useState(null);
   const [climbSummited, setClimbSummited] = useState(false);
   const [lying, setLying] = useState(false);
+  const [rising, setRising] = useState(false); // brief wake-up fade-out
 
   const stageRef = useRef(null);
   const stateRef = useRef({ x: POS.desk });
@@ -147,6 +148,11 @@ export default function RoomGame({ onSwitch }) {
   const keys = useRef({ left: false, right: false });
   const thoughtTimer = useRef(null);
   const pigeonReturnTimer = useRef(null);
+  // Timestamp of the last lie-down / get-up. A tap (and the synthetic mouse
+  // event a phone fires right after it) within this window is ignored, so the
+  // same gesture can't toggle sleep on and straight back off.
+  const lieToggleAt = useRef(0);
+  const riseTimer = useRef(null);
 
   useEffect(() => {
     const r = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
@@ -156,6 +162,7 @@ export default function RoomGame({ onSwitch }) {
   useEffect(() => () => {
     clearTimeout(thoughtTimer.current);
     clearTimeout(pigeonReturnTimer.current);
+    clearTimeout(riseTimer.current);
   }, []);
   useEffect(() => { startBgm("home"); }, []);
 
@@ -170,9 +177,13 @@ export default function RoomGame({ onSwitch }) {
   const onStageDown = (e) => {
     initAudio(); startBgm("home");
     if (blocked) return;
-    if (e.target.closest('.mw-skip, .climb-hold, .room-fx, .mw-prompt-tap')) return;
 
-    if (lying) { setLying(false); return; }
+    // Swallow the tap that just toggled sleep (and the phone's synthetic
+    // mouse event that follows it) so it can't immediately toggle back.
+    if (Date.now() - lieToggleAt.current < 450) return;
+    if (lying) { getUp(); return; }
+
+    if (e.target.closest('.mw-skip, .climb-hold, .room-fx, .mw-prompt-tap')) return;
 
     const rect = stageRef.current.getBoundingClientRect();
     const localX = (e.clientX ?? e.touches?.[0]?.clientX) - rect.left;
@@ -221,7 +232,23 @@ export default function RoomGame({ onSwitch }) {
     playOpen();
     setBookQuote(BOOK_QUOTES[Math.floor(Math.random() * BOOK_QUOTES.length)]);
   }
-  function lieDown() { playClick(); setLying(true); }
+  function lieDown() {
+    if (lying) return;
+    playClick();
+    setLying(true);
+    setRising(false);
+    lieToggleAt.current = Date.now();
+  }
+  function getUp() {
+    if (!lying) return;
+    playClick();
+    setLying(false);
+    lieToggleAt.current = Date.now();
+    // keep the dim overlay around briefly so it can fade back out
+    setRising(true);
+    clearTimeout(riseTimer.current);
+    riseTimer.current = setTimeout(() => setRising(false), 460);
+  }
   function feedFish() { playClick(); setFishFeed(n => n + 1); }
   function launchPigeon() {
     // pigeon leaves the cage, flies out the window
@@ -276,7 +303,7 @@ export default function RoomGame({ onSwitch }) {
       if (blocked) return;
       const k = e.key;
       if (lying && (k === " " || k === "Enter" || k === "Escape")) {
-        setLying(false); e.preventDefault(); return;
+        getUp(); e.preventDefault(); return;
       }
       if (climbHold && (k === "Escape" || k === "s" || k === "S" || k === "ArrowDown")) {
         exitClimb(); e.preventDefault(); return;
@@ -745,20 +772,22 @@ export default function RoomGame({ onSwitch }) {
         </div>
       )}
 
-      {lying && (
-        <div className="room-fx" style={{
+      {(lying || rising) && (
+        <div className={`room-fx ${lying ? "bed-rest-in" : "bed-rest-out"}`} style={{
           position: "fixed", left: 0, right: 0, top: 0, bottom: 0, zIndex: 28,
           pointerEvents: "none",
           background: "radial-gradient(circle at 50% 65%, rgba(27,27,27,0) 30%, rgba(27,27,27,.18) 100%)",
         }}>
-          <div className="sk-hand" style={{
-            position: "absolute", left: "50%", top: "16%", transform: "translateX(-50%)",
-            fontSize: 26, color: "#1b1b1b", background: "rgba(255,253,246,.92)",
-            border: "2px solid #1b1b1b", filter: "url(#wobble)", padding: "8px 18px",
-            pointerEvents: "auto",
-          }}>
-            {isMobile ? "点一下屏幕起床" : "点一下 / 按空格起床"}
-          </div>
+          {lying && (
+            <div className="sk-hand bed-rest-hint" style={{
+              position: "absolute", left: "50%", top: "16%", transform: "translateX(-50%)",
+              fontSize: 26, color: "#1b1b1b", background: "rgba(255,253,246,.92)",
+              border: "2px solid #1b1b1b", filter: "url(#wobble)", padding: "8px 18px",
+              pointerEvents: "auto",
+            }}>
+              {isMobile ? "点一下屏幕起床" : "点一下 / 按空格起床"}
+            </div>
+          )}
         </div>
       )}
 
