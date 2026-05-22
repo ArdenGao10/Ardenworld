@@ -92,7 +92,7 @@ export const FarHills = ({ phase }) => {
         return (
           <path key={i}
             d={`M ${x} ${SVG_H} Q ${x + w/2} ${20 + (i%3)*30} ${x + w} ${SVG_H} Z`}
-            fill={color} stroke="#1b1b1b" strokeWidth="2" filter="url(#wobble)"/>
+            fill={color} stroke="#1b1b1b" strokeWidth="2"/>
         );
       })}
     </svg>
@@ -115,7 +115,7 @@ export const NearHills = ({ phase }) => {
         return (
           <path key={i}
             d={`M ${x} ${SVG_H} Q ${x + w/2} ${SVG_H - BURY - h} ${x + w} ${SVG_H} Z`}
-            fill={color} stroke="#1b1b1b" strokeWidth="2.5" filter="url(#wobble)" opacity={.98}/>
+            fill={color} stroke="#1b1b1b" strokeWidth="2.5" opacity={.98}/>
         );
       })}
     </svg>
@@ -167,7 +167,12 @@ export const Ground = ({ phase }) => {
           <line x1="0" y1="0" x2="0" y2="14" stroke="rgba(27,27,27,.13)" strokeWidth="1"/>
         </pattern>
       </defs>
-      <path d={pathD} fill="url(#earth-hatch)" stroke="#1b1b1b" strokeWidth="2.5" filter="url(#wobble)"/>
+      {/* No wobble filter here, or on the hill layers above. This path spans
+          the full 6800px world, and the day/night cycle recolours it every
+          frame — re-running an SVG filter over an image that wide on every
+          frame stalls iOS Safari and makes the pattern-filled ground flicker
+          out completely. At this scale the wobble was never even visible. */}
+      <path d={pathD} fill="url(#earth-hatch)" stroke="#1b1b1b" strokeWidth="2.5"/>
       {/* grass tufts along curve */}
       {Array.from({length: 100}).map((_, i) => {
         const x = (i * 70 + 30) % WORLD_WIDTH;
