@@ -1,24 +1,36 @@
 /* My World — mode router
  *
- * Title screen → 简单版 (the walk) or 困难版 (the climb).
- * Each game's "← 标题" button returns here to switch modes.
+ * Two modes: 散步 (the walk) and 房间 (the room).
+ * Climbing now lives inside the room — the standalone climb game is gone.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import WalkGame from './WalkGame.jsx';
-import ClimbGame from './ClimbGame.jsx';
+import RoomGame from './RoomGame.jsx';
 
 export default function App() {
-  // No title screen — the game opens straight into the walk.
-  // Each mode has an on-screen button to switch to the other.
-  const [mode, setMode] = useState('simple'); // 'simple' | 'hard'
+  const [mode, setMode] = useState('simple'); // 'simple' | 'room'
+
+  // Global hotkey: press `R` to toggle between walk ↔ room.
+  // Skipped while focused in an input or while typing in the doodle wall.
+  useEffect(() => {
+    const onKey = (e) => {
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      if (e.key === 'r' || e.key === 'R') {
+        setMode(m => (m === 'room' ? 'simple' : 'room'));
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <>
-      {mode === 'hard'
-        ? <ClimbGame onSwitch={() => setMode('simple')} />
-        : <WalkGame onSwitch={() => setMode('hard')} />}
+      {mode === 'room'
+        ? <RoomGame onSwitch={() => setMode('simple')} />
+        : <WalkGame onRoom={() => setMode('room')} />}
       <Analytics mode="production"/>
     </>
   );

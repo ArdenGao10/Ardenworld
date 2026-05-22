@@ -121,6 +121,14 @@ export function playWin() {
   [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
     tone({ freq: f, type: "sine", dur: 0.5, vol: 0.2, delay: i * 0.13 }));
 }
+export function playPianoNote(freq) {
+  // a triangle wave with a quick attack and a soft octave shimmer
+  tone({ freq, type: "triangle", dur: 0.75, vol: 0.22, attack: 0.005 });
+  tone({ freq: freq * 2, type: "sine", dur: 0.32, vol: 0.05, attack: 0.005 });
+}
+export function playPop() {
+  tone({ freq: 880, type: "sine", dur: 0.12, vol: 0.18, glideTo: 440 });
+}
 
 // ============================================================
 // Background music — a bright, bouncy little loop in C major
@@ -141,19 +149,48 @@ const NOTE = {
   F5: 698.46, "F#5": 739.99, G5: 783.99,
 };
 // 4 bars × 8 eighth-notes; "." = rest (the note before it just rings on)
-const MELODY = [
-  "G4", "E4", "G4", "C5", ".",  "E4", "D4", ".",
-  "F4", "A4", "G4", "E4", ".",  "C4", ".",  ".",
-  "G4", "E4", "G4", "C5", ".",  "D5", "C5", ".",
-  "E5", "D5", "C5", "G4", "A4", ".",  ".",  ".",
-];
-const BASS = [
-  "C3", ".", ".", "G3", "C3", ".", ".", ".",
-  "F3", ".", ".", "C3", "F3", ".", ".", ".",
-  "C3", ".", ".", "G3", "C3", ".", ".", ".",
-  "G3", ".", ".", "D3", "G3", ".", ".", ".",
-];
-const STEP = 0.19; // seconds per eighth-note — ~158 BPM, sprightly
+const BGM_TRACKS = {
+  // The walk — bright, sprightly C major
+  walk: {
+    step: 0.19,
+    melType: "triangle", basType: "sine",
+    melVol: 0.17, basVol: 0.13,
+    sparkle: true,
+    melody: [
+      "G4", "E4", "G4", "C5", ".",  "E4", "D4", ".",
+      "F4", "A4", "G4", "E4", ".",  "C4", ".",  ".",
+      "G4", "E4", "G4", "C5", ".",  "D5", "C5", ".",
+      "E5", "D5", "C5", "G4", "A4", ".",  ".",  ".",
+    ],
+    bass: [
+      "C3", ".", ".", "G3", "C3", ".", ".", ".",
+      "F3", ".", ".", "C3", "F3", ".", ".", ".",
+      "C3", ".", ".", "G3", "C3", ".", ".", ".",
+      "G3", ".", ".", "D3", "G3", ".", ".", ".",
+    ],
+  },
+  // The room — warm cheerful waltz-y feel in F major, slower & cozier
+  home: {
+    step: 0.225,
+    melType: "triangle", basType: "sine",
+    melVol: 0.15, basVol: 0.11,
+    sparkle: false,
+    melody: [
+      "F4", ".",  "A4", "C5", ".",  "A4", "G4", ".",
+      "A4", ".",  "F4", "D4", ".",  "F4", "E4", ".",
+      "F4", ".",  "D4", "A#3",".",  "D4", "F4", ".",
+      "G4", ".",  "E4", "C4", ".",  "E4", "G4", ".",
+    ],
+    bass: [
+      "F2", ".", ".", ".", "C3", ".", ".", ".",
+      "D2", ".", ".", ".", "A2", ".", ".", ".",
+      "A#2",".", ".", ".", "F2", ".", ".", ".",
+      "C3", ".", ".", ".", "F2", ".", ".", ".",
+    ],
+  },
+};
+let currentTrack = "walk";
+let trackCfg = BGM_TRACKS.walk;
 
 let bgmTimer = null;
 let bgmOn = false;
@@ -175,11 +212,18 @@ function bgmNote(freq, when, dur, vol, type) {
   osc.stop(when + dur + 0.04);
 }
 
-export function startBgm() {
+export function startBgm(track) {
   // bgmWasOn=true means mood music is currently parked the BGM — any
   // accidental restart (e.g. a click bubbling from a song-toggle button
   // up to the stage's onMouseDown) would stack BGM on top of the mood.
-  if (!ctx || muted || bgmTimer || bgmWasOn) return;
+  if (!ctx || muted || bgmWasOn) return;
+  // Switch tracks if a different one was requested.
+  if (track && track !== currentTrack && BGM_TRACKS[track]) {
+    if (bgmTimer) stopBgm();
+    currentTrack = track;
+  }
+  trackCfg = BGM_TRACKS[currentTrack] || BGM_TRACKS.walk;
+  if (bgmTimer) return;
   bgmOn = true;
   bgmStep = 0;
   bgmNextT = ctx.currentTime + 0.12;
@@ -187,15 +231,15 @@ export function startBgm() {
   const schedule = () => {
     if (!bgmOn) return;
     while (bgmNextT < ctx.currentTime + 0.3) {
-      const i = bgmStep % MELODY.length;
-      const mel = NOTE[MELODY[i]];
-      const bas = NOTE[BASS[i]];
+      const i = bgmStep % trackCfg.melody.length;
+      const mel = NOTE[trackCfg.melody[i]];
+      const bas = NOTE[trackCfg.bass[i]];
       if (mel) {
-        bgmNote(mel, bgmNextT, 0.34, 0.17, "triangle");
-        bgmNote(mel * 2, bgmNextT, 0.16, 0.035, "sine"); // a touch of sparkle
+        bgmNote(mel, bgmNextT, 0.34, trackCfg.melVol, trackCfg.melType);
+        if (trackCfg.sparkle) bgmNote(mel * 2, bgmNextT, 0.16, 0.035, "sine");
       }
-      if (bas) bgmNote(bas, bgmNextT, 0.42, 0.13, "sine");
-      bgmNextT += STEP;
+      if (bas) bgmNote(bas, bgmNextT, 0.42, trackCfg.basVol, trackCfg.basType);
+      bgmNextT += trackCfg.step;
       bgmStep++;
     }
     bgmTimer = setTimeout(schedule, 60);

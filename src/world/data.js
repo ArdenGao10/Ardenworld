@@ -78,7 +78,8 @@ export const NOTES = [
 ];
 
 // Tiny experiments wall — every one is a real, playable toy (see DoodleWall.jsx)
-export const DOODLES = [
+// Two sets so the walk's wall and the room's wall don't overlap.
+export const DOODLES_WALK = [
   { id: "cat",     name: "小猫追光机",   note: "动动鼠标" },
   { id: "weather", name: "心情天气",     note: "点一种天气" },
   { id: "letters", name: "字母重力场",   note: "打字玩" },
@@ -86,6 +87,16 @@ export const DOODLES = [
   { id: "crane",   name: "纸鹤生成器",   note: "折一只" },
   { id: "collage", name: "拼贴画生成器", note: "我不会画 · 它会" },
 ];
+export const DOODLES_ROOM = [
+  { id: "piano",   name: "小钢琴",     note: "弹一段调" },
+  { id: "bubble",  name: "肥皂泡",     note: "戳破它" },
+  { id: "gift",    name: "小盲盒",     note: "拆一个 ✦" },
+  { id: "tea",     name: "泡杯茶",     note: "点茶杯泡一下" },
+  { id: "flower",  name: "种花",       note: "点地上长" },
+  { id: "sketch",  name: "画画板",     note: "随便画" },
+];
+// Legacy export — kept so older imports keep working.
+export const DOODLES = DOODLES_WALK;
 
 // Tree positions are static — defined once so the click-handler can match them
 export const TREE_POSITIONS = (() => {

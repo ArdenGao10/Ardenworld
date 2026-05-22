@@ -27,7 +27,7 @@ function Plane() {
   );
 }
 
-export default function ContactCard({ onClose }) {
+export default function ContactCard({ onClose, onSent }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -63,7 +63,7 @@ export default function ContactCard({ onClose }) {
       });
       const data = await res.json().catch(() => ({}));
       await minWait;
-      if (data.success) { playStar(); setStatus("sent"); }
+      if (data.success) { playStar(); setStatus("sent"); onSent && onSent(); }
       else setStatus("error");
     } catch {
       await minWait;

@@ -30,12 +30,13 @@ import Gallery from './components/Gallery.jsx';
 import DoodleWall from './components/DoodleWall.jsx';
 import ContactCard from './components/ContactCard.jsx';
 import ShowcaseFrame from './components/ShowcaseFrame.jsx';
+import { HouseIcon, SpeakerIcon } from './components/Icons.jsx';
 import {
   initAudio, startBgm, playStep, playJump, playSplash, playStar, playOpen, playWin,
   isMuted, setMuted,
 } from './world/sound.js';
 
-export default function WalkGame({ onSwitch }) {
+export default function WalkGame({ onRoom }) {
   const [charX, setCharX] = useState(420);
   const [charY, setCharY] = useState(0);
   const [vy, setVy] = useState(0);
@@ -61,7 +62,6 @@ export default function WalkGame({ onSwitch }) {
   const [thought, setThought] = useState(null); // {id, text}
   const [muted, setMutedState] = useState(isMuted());
   const [showIntro, setShowIntro] = useState(true); // opening choice card
-  const [showClimbSoon, setShowClimbSoon] = useState(false); // 攀岩版施工中
   const [jumpPos, setJumpPos] = useState(() => {  // user-draggable jump button
     try {
       const s = JSON.parse(localStorage.getItem("mw-jump-pos") || "null");
@@ -85,6 +85,10 @@ export default function WalkGame({ onSwitch }) {
     return () => window.removeEventListener("resize", r);
   }, []);
 
+  // If audio is already running (e.g. we just came back from the room),
+  // switch to the walk track immediately — no waiting for the first click.
+  useEffect(() => { startBgm("walk"); }, []);
+
   // Camera
   const camX = Math.max(0, Math.min(WORLD_WIDTH - viewport.w, charX - viewport.w * 0.35));
 
@@ -92,8 +96,8 @@ export default function WalkGame({ onSwitch }) {
   const stageRef = useRef(null);
 
   const onStageDown = (e) => {
-    initAudio(); startBgm(); // first tap unlocks audio + starts the music
-    if (overlay || dialog || showEnd || showGallery || showIntro || showClimbSoon) return;
+    initAudio(); startBgm("walk"); // first tap unlocks audio + starts the music
+    if (overlay || dialog || showEnd || showGallery || showIntro) return;
     // ignore clicks on the HUD (handled separately)
     if (e.target.closest('.mw-skip, .mw-jump-btn, .mw-tap-zone')) return;
 
@@ -140,7 +144,7 @@ export default function WalkGame({ onSwitch }) {
 
   // ----- jump button -----
   const onJump = () => {
-    if (charY !== 0 || overlay || dialog || showEnd || showGallery || showIntro || showClimbSoon) return;
+    if (charY !== 0 || overlay || dialog || showEnd || showGallery || showIntro) return;
     keys.current.jumpRequested = true;
     setShowStartHint(false);
     // On mobile there's no key to hold for forward motion, so the jump
@@ -190,7 +194,7 @@ export default function WalkGame({ onSwitch }) {
   // ----- keyboard: ← → (or A/D) walk, Space / ↑ / W jump -----
   const keys = useRef({ jumpRequested: false, left: false, right: false });
   useEffect(() => {
-    const active = () => !dialog && !overlay && !showEnd && !showGallery && !showIntro && !showClimbSoon;
+    const active = () => !dialog && !overlay && !showEnd && !showGallery && !showIntro;
     const down = (e) => {
       if (!active()) return;
       if (e.key === " " || e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
@@ -214,7 +218,7 @@ export default function WalkGame({ onSwitch }) {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [dialog, overlay, showEnd, showGallery, showIntro, showClimbSoon]);
+  }, [dialog, overlay, showEnd, showGallery, showIntro]);
 
   // ----- game loop -----
   const lastT = useRef(performance.now());
@@ -233,7 +237,7 @@ export default function WalkGame({ onSwitch }) {
 
       // NOTE: splashing is purely cosmetic now — it never blocks walking,
       // so the puddle can be strolled straight through without jumping.
-      const blocked = overlay || dialog || showGallery || showClimbSoon;
+      const blocked = overlay || dialog || showGallery;
       const walkBlocked = blocked || showEnd;
 
       // walk — held ← → keys take priority, else head to the click target
@@ -320,7 +324,7 @@ export default function WalkGame({ onSwitch }) {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [target, overlay, dialog, showEnd, showGallery, showClimbSoon, splashing, collectedStars, facing]);
+  }, [target, overlay, dialog, showEnd, showGallery, splashing, collectedStars, facing]);
 
   function triggerSplash(charXNow, puddleX) {
     // Soft splash — just briefly wet, no reset
@@ -453,7 +457,7 @@ export default function WalkGame({ onSwitch }) {
         setDialog({
           lines: [
             "你走过最热闹的一段了 :)",
-            "这块地以后会再长出一座山 ⛰\n下一件作品还在做 — 等等我 ✿",
+            "这块地以后会再长出一座山\n下一件作品还在做 — 等等我 ✦",
           ]
         });
         break;
@@ -486,7 +490,6 @@ export default function WalkGame({ onSwitch }) {
   // Mood
   let charMood = "";
   if (showEnd) charMood = "✦";
-  else if (splashing) charMood = "💦";
   else if (charY > 40) charMood = "!";
   else if (nearest && nearest.type === "work") charMood = "?";
 
@@ -494,7 +497,7 @@ export default function WalkGame({ onSwitch }) {
   // on desktop it just appears near the puddle, since Space already works.
   const puddleStop = STOPS.find(s => s.type === "puddle");
   const nearPuddle = puddleStop && Math.abs(charX - puddleStop.x) < 350;
-  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery && !showIntro && !showClimbSoon;
+  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery && !showIntro;
 
   const totalTime = (Date.now() - startTime.current) / 1000;
 
@@ -556,6 +559,31 @@ export default function WalkGame({ onSwitch }) {
           zIndex: 10
         }}>
           <Char size={isMobile ? 64 : 86} walking={walking} jumping={charY > 5} splashing={splashing} facing={facing} mood={charMood}/>
+          {/* hand-drawn splash bubble above the head when feet hit the puddle */}
+          {splashing && (
+            <div className="mw-splash-pop" style={{
+              position: "absolute", left: "82%", bottom: "92%",
+              pointerEvents: "none",
+            }}>
+              <svg width="44" height="34" viewBox="0 0 44 34" style={{ display: "block" }}>
+                {/* three water droplets, like 💦 — a teardrop = a tip + a round belly */}
+                {[
+                  { x: 9,  y: 20, s: 1.0 },
+                  { x: 23, y: 13, s: 1.25 },
+                  { x: 35, y: 22, s: 0.85 },
+                ].map((d, i) => (
+                  <path key={i}
+                    d={`M${d.x} ${d.y - 11 * d.s}
+                        Q${d.x + 7 * d.s} ${d.y - 1 * d.s} ${d.x + 6 * d.s} ${d.y + 3 * d.s}
+                        Q${d.x + 4 * d.s} ${d.y + 9 * d.s} ${d.x} ${d.y + 9 * d.s}
+                        Q${d.x - 4 * d.s} ${d.y + 9 * d.s} ${d.x - 6 * d.s} ${d.y + 3 * d.s}
+                        Q${d.x - 7 * d.s} ${d.y - 1 * d.s} ${d.x} ${d.y - 11 * d.s} Z`}
+                    fill="#a8c8e0" stroke="#1b1b1b" strokeWidth="2.2"
+                    strokeLinejoin="round" filter="url(#wobble)"/>
+                ))}
+              </svg>
+            </div>
+          )}
           {/* thought bubble */}
           {thought && (
             <div className={`mw-thought${thought.wrap ? " mw-thought-wide" : ""}`} key={thought.id}>
@@ -580,15 +608,17 @@ export default function WalkGame({ onSwitch }) {
           setMutedState(m);
         }}
         style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36 }}>
-        {muted ? "🔇 静音" : "🔊 声音"}
+        <SpeakerIcon muted={muted}/>{muted ? "静音" : "声音"}
       </button>
 
-      {/* switch to the climb (hard mode) — currently under construction,
-          shows a placeholder card instead of routing to ClimbGame */}
-      <button className="mw-skip" onClick={(e) => { e.stopPropagation(); setShowClimbSoon(true); }}
-        style={{ position: "fixed", bottom: 24, right: 24, zIndex: 36 }}>
-        ⛰ 攀岩版 →
-      </button>
+      {/* switch to the room version (indoor mode) — press R also works.
+          The standalone climb mode is gone; climbing lives inside the room. */}
+      {onRoom && (
+        <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onRoom(); }}
+          style={{ position: "fixed", bottom: 24, right: 24, zIndex: 36 }}>
+<HouseIcon/>房间版 →
+        </button>
+      )}
 
       {/* Achievement panel — fixed overlay so it stays fully on-screen
           (must live outside .mw-world: a transformed ancestor would
@@ -636,6 +666,13 @@ export default function WalkGame({ onSwitch }) {
                 看作品
               </button>
             </div>
+            {onRoom && (
+              <button className="mw-btn mw-btn-primary"
+                style={{ width: "100%", marginTop: 6 * k, fontSize: 13 * k, padding: `${6 * k}px ${8 * k}px` }}
+                onClick={(e) => { e.stopPropagation(); onRoom(); }}>
+<HouseIcon size={15}/>没玩够? 回 Arden 家再看看 →
+              </button>
+            )}
           </div>
         );
       })()}
@@ -735,87 +772,6 @@ export default function WalkGame({ onSwitch }) {
         <ContactCard onClose={() => setOverlay(null)}/>
       )}
 
-      {showClimbSoon && (
-        <Overlay title="攀岩版" sub="COMING SOON · 施工中"
-                 onClose={() => setShowClimbSoon(false)} accent="#fffdf6">
-          <div style={{ textAlign: "center", padding: "2px 0 4px" }}>
-            <svg width="220" height="160" viewBox="0 0 220 160"
-                 style={{ display: "block", margin: "0 auto" }}>
-              {/* sparkles */}
-              <text x="22" y="28" fontSize="18" fill="#d97757" fontFamily="Caveat">✦</text>
-              <text x="188" y="22" fontSize="14" fill="#d97757" fontFamily="Caveat">✦</text>
-              <text x="195" y="58" fontSize="12" fill="#7a6648" fontFamily="Caveat">·</text>
-
-              {/* mountain */}
-              <path d="M22 130 L78 42 L104 76 L138 28 L198 130 Z"
-                    fill="#cfe0c6" stroke="#1b1b1b" strokeWidth="2.5"
-                    strokeLinejoin="round" filter="url(#wobble)"/>
-              {/* snow caps */}
-              <path d="M70 52 L78 42 L86 54 L80 58 L78 54 L74 58 Z"
-                    fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.5" filter="url(#wobble)"/>
-              <path d="M130 36 L138 28 L146 38 L142 42 L138 38 L134 42 Z"
-                    fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.5" filter="url(#wobble)"/>
-
-              {/* ladder leaning on mountain */}
-              <g stroke="#7a6648" strokeWidth="2.5" fill="none" filter="url(#wobble)">
-                <line x1="42" y1="130" x2="62" y2="78"/>
-                <line x1="58" y1="130" x2="78" y2="78"/>
-                <line x1="46" y1="118" x2="64" y2="118"/>
-                <line x1="49" y1="106" x2="67" y2="106"/>
-                <line x1="52" y1="94" x2="70" y2="94"/>
-                <line x1="55" y1="82" x2="73" y2="82"/>
-              </g>
-
-              {/* worker with hard hat, holding a wrench */}
-              <g transform="translate(60 72)" filter="url(#wobble)">
-                {/* hard hat */}
-                <path d="M-8 4 Q0 -5 8 4 L10 8 L-10 8 Z"
-                      fill="#fef3a3" stroke="#1b1b1b" strokeWidth="1.8"/>
-                <path d="M-10 8 L10 8" stroke="#1b1b1b" strokeWidth="1.8"/>
-                {/* head */}
-                <circle cx="0" cy="13" r="5" fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.8"/>
-                {/* eyes */}
-                <circle cx="-1.8" cy="12.5" r="0.7" fill="#1b1b1b"/>
-                <circle cx="1.8" cy="12.5" r="0.7" fill="#1b1b1b"/>
-                {/* body */}
-                <path d="M-5 18 L5 18 L6 30 L-6 30 Z"
-                      fill="#d97757" stroke="#1b1b1b" strokeWidth="1.5"/>
-                {/* arms — one out holding wrench */}
-                <line x1="-5" y1="20" x2="-10" y2="26" stroke="#1b1b1b" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="5" y1="20" x2="13" y2="15" stroke="#1b1b1b" strokeWidth="1.5" strokeLinecap="round"/>
-                {/* tiny wrench in hand */}
-                <rect x="11" y="11" width="11" height="3.5" fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.3"/>
-                <path d="M22 9 L25 9 L25 16 L22 16 L22 14 L24 12.5 L22 11 Z"
-                      fill="#fffdf6" stroke="#1b1b1b" strokeWidth="1.3"/>
-                {/* legs */}
-                <line x1="-3" y1="30" x2="-4" y2="38" stroke="#1b1b1b" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="3" y1="30" x2="4" y2="38" stroke="#1b1b1b" strokeWidth="1.5" strokeLinecap="round"/>
-              </g>
-
-              {/* construction tape band across foreground */}
-              <g transform="rotate(-5 110 138)">
-                <rect x="-15" y="132" width="250" height="15" fill="#fef3a3"
-                      stroke="#1b1b1b" strokeWidth="2" filter="url(#wobble)"/>
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <path key={i} d={`M ${i * 26 - 10} 132 L ${i * 26 + 4} 147`}
-                        stroke="#1b1b1b" strokeWidth="2"/>
-                ))}
-              </g>
-            </svg>
-
-            <div className="mw-body" style={{
-              fontSize: 17, color: "#555", marginTop: 14, lineHeight: 1.65,
-            }}>
-              锁扣还在拧 — 改天再来 ✿<br/>
-              还想玩什么? 走到 <b>"信箱"</b> 给我写信 :)
-            </div>
-            <button className="mw-btn" style={{ marginTop: 18 }}
-                    onClick={() => setShowClimbSoon(false)}>
-              ← 回去散步
-            </button>
-          </div>
-        </Overlay>
-      )}
 
       {/* Start hint — controls differ between touch and desktop */}
       {showStartHint && charX < 460 && !dialog && !overlay && !showIntro && (
@@ -859,16 +815,23 @@ export default function WalkGame({ onSwitch }) {
               散步 60 秒 ✦
             </div>
             <div className="mw-body" style={{ fontSize: 16, color: "#555", marginTop: 10, lineHeight: 1.6 }}>
-              往右走一段路 — 路上都是 Arden 做的东西。<br/>不想走?也可以直接看作品。
+              往右走一段路 — 路上都是 Arden 做的东西。<br/>
+              想换个玩法?也可以去 Arden 家的房间逛逛。
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
               <button className="mw-btn mw-btn-primary mw-btn-big"
-                onClick={(e) => { e.stopPropagation(); initAudio(); startBgm(); setShowIntro(false); }}>
-                玩一遍 →
+                onClick={(e) => { e.stopPropagation(); initAudio(); startBgm("walk"); setShowIntro(false); }}>
+                出门散个步 →
               </button>
+              {onRoom && (
+                <button className="mw-btn"
+                  onClick={(e) => { e.stopPropagation(); initAudio(); setShowIntro(false); onRoom(); }}>
+<HouseIcon/>去 Arden 家逛逛
+                </button>
+              )}
               <button className="mw-btn"
                 onClick={(e) => {
-                  e.stopPropagation(); initAudio(); startBgm();
+                  e.stopPropagation(); initAudio(); startBgm("walk");
                   setShowIntro(false); setShowGallery(true);
                 }}>
                 直接看作品
