@@ -10,7 +10,7 @@
 <style>
   :root{
     --bg:#FBFBFB; --paper:#FFFFFF; --ink:#1A1A1A;
-    --ink-2:#6B6B6B; --ink-3:#A0A0A0;
+    --ink-2:#454545; --ink-3:#737373;
     --green:rgba(111,169,137,.6); --green-soft:rgba(168,213,186,.3);
     --warm:rgba(244,196,161,.5); --cool:rgba(197,181,221,.4);
     --green-solid:#5C8A70; --warm-solid:#C99765; --lav-solid:#8D83A6;
@@ -27,7 +27,7 @@
   *::-webkit-scrollbar{display:none;width:0;height:0}
   body{
     background:var(--bg);color:var(--ink);font-family:var(--sans);
-    font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;
+    font-weight:400;line-height:1.6;-webkit-font-smoothing:antialiased;
     overflow-x:hidden;
   }
   a{color:inherit;text-decoration:none}
@@ -72,7 +72,7 @@
     box-shadow:0 0 13px rgba(168,213,186,.45);
     animation:breathe 7s ease-in-out infinite;
   }
-  .nav-links{display:flex;gap:30px;font-size:14px;color:var(--ink-2)}
+  .nav-links{display:flex;gap:30px;font-size:14px;font-weight:500;color:var(--ink-2)}
   .nav-links a{position:relative;padding-bottom:3px;transition:color .25s}
   .nav-links a::after{
     content:'';position:absolute;left:50%;bottom:0;height:1.5px;width:0;
