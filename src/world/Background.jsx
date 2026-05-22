@@ -38,7 +38,7 @@ export const Sun = ({ phase, viewW }) => {
         <div style={{
           position: "absolute", left: sunLeft, top: `${sunTop}%`,
           width: 70, height: 70, borderRadius: "50%",
-          background: sunColor, border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
+          background: sunColor, border: "2.5px solid #1b1b1b",
           opacity: sunOpacity,
           transition: "left .5s linear, top .5s linear, background .5s linear, opacity .5s linear",
           boxShadow: `0 0 ${40 + 20 * phase}px rgba(232,150,66,${0.5 + 0.2 * phase})`,
@@ -48,7 +48,7 @@ export const Sun = ({ phase, viewW }) => {
         <div style={{
           position: "absolute", left: viewW * 0.18, top: `${moonTop}%`,
           width: 64, height: 64, borderRadius: "50%",
-          background: "#f3e8c0", border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
+          background: "#f3e8c0", border: "2.5px solid #1b1b1b",
           opacity: m, transition: "top .5s linear, opacity .5s linear",
           boxShadow: "0 0 50px rgba(243,232,192,.5)",
         }}>
@@ -134,7 +134,7 @@ export const Bushes = ({ phase }) => {
       <div key={"bs" + i} style={{
         position: "absolute", bottom: y, left: x - sz/2, width: sz, height: sz * 0.55,
         background: c, border: "1.5px solid #1b1b1b", borderRadius: "50% 50% 30% 30%",
-        filter: "url(#wobble)", zIndex: 2
+        zIndex: 2
       }}/>
     );
   });
@@ -198,7 +198,7 @@ const CloudShape = ({ color }) => (
          C 174 28, 178 44, 168 52
          L 168 56
          C 152 62, 22 62, 8 56 Z"
-      fill={color} stroke="#1b1b1b" strokeWidth="2" filter="url(#wobble)" strokeLinejoin="round"/>
+      fill={color} stroke="#1b1b1b" strokeWidth="2" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -238,10 +238,10 @@ export const Trees = ({ phase, flowered }) => {
     const isBloom = flowered && flowered[id];
     return (
       <div key={id} style={{ position: "absolute", bottom: baseY - 4, left: x }}>
-        <div style={{ position: "absolute", bottom: 0, left: -5, width: 10, height: h * 0.35, background: trunkC, border: "1.5px solid #1b1b1b", filter: "url(#wobble)" }}/>
+        <div style={{ position: "absolute", bottom: 0, left: -5, width: 10, height: h * 0.35, background: trunkC, border: "1.5px solid #1b1b1b" }}/>
         <div style={{
           position: "absolute", bottom: h * 0.3, left: -h * 0.3, width: h * 0.6, height: h * 0.6,
-          borderRadius: "50%", background: foliage, border: "2px solid #1b1b1b", filter: "url(#wobble)",
+          borderRadius: "50%", background: foliage, border: "2px solid #1b1b1b",
           transition: "transform .25s",
           transform: isBloom ? "scale(1.08)" : "scale(1)"
         }}/>
@@ -290,7 +290,7 @@ export const Birds = ({ phase }) => {
           opacity: 0.7 * fade
         }}>
           <svg width="32" height="14" viewBox="0 0 32 14">
-            <path d="M 2 10 Q 8 2 14 8 Q 20 2 26 10" stroke="currentColor" strokeWidth="2" fill="none" filter="url(#wobble)" strokeLinecap="round"/>
+            <path d="M 2 10 Q 8 2 14 8 Q 20 2 26 10" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
           </svg>
         </div>
       ))}
