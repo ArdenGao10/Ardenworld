@@ -2,50 +2,68 @@
 
 import { WORLD_WIDTH, GROUND_Y, GROUND_LIFT_MAX, groundLift, STOPS, TREE_POSITIONS } from './data.js';
 
-export const SkyGradient = ({ time }) => {
-  const grad = time === "day"   ? "linear-gradient(180deg, #f7eee3 0%, #ebe1cd 100%)"
-            : time === "dusk"  ? "linear-gradient(180deg, #d4885a 0%, #f7a878 35%, #fae0c4 100%)"
-            : time === "dawn"  ? "linear-gradient(180deg, #ffd08a 0%, #fef3a3 40%, #ffe9c0 75%, #cfe0c6 100%)"
-            :                    "linear-gradient(180deg, #1c2a44 0%, #3a3a5a 60%, #5a4a6a 100%)";
-  return <div style={{ position: "absolute", inset: 0, background: grad, transition: "background 1.2s ease" }}/>;
+// --- colour interpolation -------------------------------------------------
+// Every layer takes `phase` (0 = full day → 1 = full night). `tri` walks a
+// day → dusk → night keyframe, so colours warm first, then darken — gradually.
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const toHex = c => "#" + c.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0")).join("");
+const mix = (c1, c2, t) => { const a = hex(c1), b = hex(c2); return toHex(a.map((v, i) => v + (b[i] - v) * t)); };
+const tri = (phase, day, dusk, night) =>
+  phase < 0.5 ? mix(day, dusk, phase * 2) : mix(dusk, night, (phase - 0.5) * 2);
+const clamp01 = v => Math.max(0, Math.min(1, v));
+
+export const SkyGradient = ({ phase }) => {
+  const top = tri(phase, "#f7eee3", "#d4885a", "#1c2a44");
+  const mid = tri(phase, "#f0e6d2", "#f7a878", "#3a3a5a");
+  const bot = tri(phase, "#ebe1cd", "#fae0c4", "#5a4a6a");
+  return <div style={{
+    position: "absolute", inset: 0,
+    background: `linear-gradient(180deg, ${top} 0%, ${mid} 50%, ${bot} 100%)`,
+    transition: "background .5s linear",
+  }}/>;
 };
 
-export const Sun = ({ time, viewW }) => {
-  if (time === "night") {
-    // moon
-    return (
-      <div style={{
-        position: "absolute", left: viewW * 0.18, top: "10%", width: 64, height: 64, borderRadius: "50%",
-        background: "#f3e8c0", border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
-        boxShadow: "0 0 50px rgba(243,232,192,.5)"
-      }}>
-        {/* crater */}
-        <div style={{ position: "absolute", top: 14, left: 14, width: 10, height: 10, borderRadius: "50%", background: "rgba(27,27,27,.15)" }}/>
-        <div style={{ position: "absolute", bottom: 18, right: 12, width: 6, height: 6, borderRadius: "50%", background: "rgba(27,27,27,.15)" }}/>
-      </div>
-    );
-  }
-  const x = time === "dusk" ? viewW * 0.85
-          : time === "dawn" ? viewW * 0.5
-          : viewW * 0.15;
-  const top = time === "dusk" ? "65%" : time === "dawn" ? "30%" : "12%";
-  const color = time === "dusk" ? "#e8703a"
-              : time === "dawn" ? "#ffd86b"
-              : "#f5c542";
+export const Sun = ({ phase, viewW }) => {
+  // Sun arcs left→right, sinks toward the horizon, and fades out as night falls.
+  const sunLeft = viewW * (0.15 + 0.78 * clamp01(phase / 0.92));
+  const sunTop = 12 + 70 * phase;
+  const sunColor = tri(phase, "#f5c542", "#e8703a", "#7a2e12");
+  const sunOpacity = clamp01(1 - (phase - 0.6) / 0.3);
+  // Moon rises from the horizon and fades in over the last of dusk.
+  const m = clamp01((phase - 0.62) / 0.38);
+  const moonTop = 30 - 20 * m;
   return (
-    <div style={{
-      position: "absolute", left: x, top, width: 70, height: 70, borderRadius: "50%",
-      background: color, border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
-      transition: "left 1.2s ease, top 1.2s ease, background 1.2s ease",
-      boxShadow: time === "dusk" ? "0 0 50px rgba(232,112,58,.7)"
-              : time === "dawn" ? "0 0 50px rgba(255,216,107,.7)"
-              : "0 0 40px rgba(245,197,66,.55)"
-    }}/>
+    <>
+      {sunOpacity > 0.01 && (
+        <div style={{
+          position: "absolute", left: sunLeft, top: `${sunTop}%`,
+          width: 70, height: 70, borderRadius: "50%",
+          background: sunColor, border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
+          opacity: sunOpacity,
+          transition: "left .5s linear, top .5s linear, background .5s linear, opacity .5s linear",
+          boxShadow: `0 0 ${40 + 20 * phase}px rgba(232,150,66,${0.5 + 0.2 * phase})`,
+        }}/>
+      )}
+      {m > 0.01 && (
+        <div style={{
+          position: "absolute", left: viewW * 0.18, top: `${moonTop}%`,
+          width: 64, height: 64, borderRadius: "50%",
+          background: "#f3e8c0", border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
+          opacity: m, transition: "top .5s linear, opacity .5s linear",
+          boxShadow: "0 0 50px rgba(243,232,192,.5)",
+        }}>
+          {/* crater */}
+          <div style={{ position: "absolute", top: 14, left: 14, width: 10, height: 10, borderRadius: "50%", background: "rgba(27,27,27,.15)" }}/>
+          <div style={{ position: "absolute", bottom: 18, right: 12, width: 6, height: 6, borderRadius: "50%", background: "rgba(27,27,27,.15)" }}/>
+        </div>
+      )}
+    </>
   );
 };
 
-export const Stars = ({ time }) => {
-  if (time !== "night") return null;
+export const Stars = ({ phase }) => {
+  const opacity = clamp01((phase - 0.7) / 0.3);
+  if (opacity <= 0.01) return null;
   const stars = [];
   for (let i = 0; i < 30; i++) {
     const x = (i * 137) % 100;
@@ -57,14 +75,11 @@ export const Stars = ({ time }) => {
       }}>✦</div>
     );
   }
-  return <>{stars}</>;
+  return <div style={{ position: "absolute", inset: 0, opacity, transition: "opacity .5s linear" }}>{stars}</div>;
 };
 
-export const FarHills = ({ time }) => {
-  const color = time === "night" ? "#1c2540"
-              : time === "dusk"  ? "#8d6655"
-              : time === "dawn"  ? "#c8a892"
-              : "#9eb295";
+export const FarHills = ({ phase }) => {
+  const color = tri(phase, "#9eb295", "#8d6655", "#1c2540");
   const SVG_H = 260;
   const BURY = 60;
   return (
@@ -84,11 +99,8 @@ export const FarHills = ({ time }) => {
   );
 };
 
-export const NearHills = ({ time }) => {
-  const color = time === "night" ? "#0e1830"
-              : time === "dusk"  ? "#5e3f30"
-              : time === "dawn"  ? "#8f6a55"
-              : "#779a6e";
+export const NearHills = ({ phase }) => {
+  const color = tri(phase, "#779a6e", "#5e3f30", "#0e1830");
   // SVG extends below GROUND_Y so the closing horizontal stroke is hidden under the ground band
   const SVG_H = 320;
   const BURY = 80;
@@ -111,11 +123,8 @@ export const NearHills = ({ time }) => {
 };
 
 // Small bushes/foreground tufts close to the ground — render BEFORE ground
-export const Bushes = ({ time }) => {
-  const c = time === "night" ? "#0a1020"
-          : time === "dusk"  ? "#48311e"
-          : time === "dawn"  ? "#6c4f3e"
-          : "#5a7a52";
+export const Bushes = ({ phase }) => {
+  const c = tri(phase, "#5a7a52", "#48311e", "#0a1020");
   return Array.from({length: 36}).map((_, i) => {
     const x = (i * 197 + 60) % WORLD_WIDTH;
     if (STOPS.some(s => Math.abs(s.x - x) < 110)) return null;
@@ -132,11 +141,9 @@ export const Bushes = ({ time }) => {
 };
 
 // The actual ground with undulating top — character walks on this
-export const Ground = ({ time }) => {
-  const earth = time === "night" ? "#2a2436"
-              : time === "dusk"  ? "#806548"
-              : time === "dawn"  ? "#d8b89a"
-              : "#d8c89a";
+export const Ground = ({ phase }) => {
+  const earth = tri(phase, "#d8c89a", "#806548", "#2a2436");
+  const grass = mix("#5a6a4a", "#3a4a5a", clamp01(phase));
   // Build a path going across the entire world at the character's ground line
   const segments = 200;
   let pathD = `M 0 ${GROUND_LIFT_MAX + 100}`;
@@ -166,7 +173,7 @@ export const Ground = ({ time }) => {
         const x = (i * 70 + 30) % WORLD_WIDTH;
         const y = GROUND_LIFT_MAX - groundLift(x) - 2;
         return (
-          <text key={i} x={x} y={y - 4} fontSize="14" fill={time === "night" ? "#3a4a5a" : "#5a6a4a"} fontFamily="Caveat">w</text>
+          <text key={i} x={x} y={y - 4} fontSize="14" fill={grass} fontFamily="Caveat">w</text>
         );
       })}
     </svg>
@@ -190,11 +197,11 @@ const CloudShape = ({ color }) => (
   </svg>
 );
 
-export const Clouds = ({ time }) => {
-  if (time === "night") return null;
-  const cloudColor = time === "dusk" ? "#fef0dd"
-                   : time === "dawn" ? "#fff4d6"
-                   : "#fffdf6";
+export const Clouds = ({ phase }) => {
+  // Clouds warm at dusk, then fade away as the sky darkens.
+  const fade = clamp01(1 - (phase - 0.3) / 0.5);
+  if (fade <= 0.01) return null;
+  const cloudColor = tri(phase, "#fffdf6", "#fef0dd", "#fef0dd");
   // Seven sparse clouds. Static positions, slow drift handled by CSS.
   const layout = [
     { x: 280,  y: 40,  s: 1.0 },
@@ -209,7 +216,7 @@ export const Clouds = ({ time }) => {
     <div key={i} className="mw-cloud" style={{
       position: "absolute", left: c.x, top: c.y,
       width: 180 * c.s, height: 64 * c.s,
-      opacity: 0.95,
+      opacity: 0.95 * fade,
       animationDuration: `${80 + (i % 3) * 20}s`,
       animationDelay: `${-i * 6}s`,
     }}>
@@ -218,12 +225,9 @@ export const Clouds = ({ time }) => {
   ));
 };
 
-export const Trees = ({ time, flowered }) => {
+export const Trees = ({ phase, flowered }) => {
   const trunkC = "#5a3a20";
-  const foliage = time === "night" ? "#1a3a2a"
-                : time === "dusk"  ? "#6a5440"
-                : time === "dawn"  ? "#a8c89a"
-                : "#7fa872";
+  const foliage = tri(phase, "#7fa872", "#6a5440", "#1a3a2a");
   return TREE_POSITIONS.map(({ id, x, h }) => {
     const baseY = GROUND_Y + groundLift(x);
     const isBloom = flowered && flowered[id];
@@ -265,9 +269,10 @@ export const Trees = ({ time, flowered }) => {
   });
 };
 
-// Birds — fly across sky during day/dusk/dawn
-export const Birds = ({ time }) => {
-  if (time === "night") return null;
+// Birds — fly across the sky during the day, fading out as dusk deepens
+export const Birds = ({ phase }) => {
+  const fade = clamp01(1 - (phase - 0.2) / 0.4);
+  if (fade <= 0.01) return null;
   return (
     <>
       {Array.from({length: 2}).map((_, i) => (
@@ -277,7 +282,7 @@ export const Birds = ({ time }) => {
           animationDuration: `${30 + i * 8}s`,
           animationDelay: `${-i * 7}s`,
           color: "#1b1b1b",
-          opacity: time === "dawn" ? 0.85 : 0.7
+          opacity: 0.7 * fade
         }}>
           <svg width="32" height="14" viewBox="0 0 32 14">
             <path d="M 2 10 Q 8 2 14 8 Q 20 2 26 10" stroke="currentColor" strokeWidth="2" fill="none" filter="url(#wobble)" strokeLinecap="round"/>

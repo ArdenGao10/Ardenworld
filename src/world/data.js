@@ -127,15 +127,28 @@ export const STORY_THOUGHTS = [
   { id: "abt",   range: [1550, 1750], text: "继续往前。" },
   { id: "wet",   range: [2200, 2400], text: "鞋好像有点湿 :) " },
   { id: "1stwk", range: [2800, 3000], text: "一个人散步的时候安静得很。" },
-  { id: "lant",  range: [3400, 3600], text: "天慢慢黑了。" },
-  { id: "night", range: [4500, 4700], text: "晚上的世界更小、更近。" },
+  { id: "lant",  range: [4200, 4400], text: "天慢慢黑了。" },
+  { id: "night", range: [5200, 5400], text: "晚上的世界更小、更近。" },
   { id: "next",  range: [5700, 5900], text: "终点在前面了。" },
   { id: "peak",  range: [6200, 6400], text: "走到终点啦 ✦" },
 ];
 
-// Time of day from world x
+// Time of day, continuous. `skyPhase` returns 0 (full day) → 1 (full night),
+// eased so the world drifts through a long, gradual sunset instead of snapping
+// between states. Daytime holds for most of the walk; dusk fades in slowly,
+// and night (with the moon) only settles near the end.
+const DUSK_START = 3400; // before here: full day
+const NIGHT_FULL = 5400; // after here:  full night, moon up
+
+export function skyPhase(x) {
+  const t = Math.max(0, Math.min(1, (x - DUSK_START) / (NIGHT_FULL - DUSK_START)));
+  return t * t * (3 - 2 * t); // smoothstep — gentle at both ends
+}
+
+// Discrete label, kept for the HUD readout and the lantern glow.
 export function timeFor(x) {
-  if (x < 3000) return "day";
-  if (x < 3800) return "dusk";
+  const p = skyPhase(x);
+  if (p < 0.15) return "day";
+  if (p < 0.9)  return "dusk";
   return "night";
 }
