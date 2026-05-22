@@ -763,7 +763,7 @@ export default function WalkGame({ onRoom }) {
                 boxShadow: "2px 3px 0 rgba(0,0,0,.1)"
               }}>
                 <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".2em", color: "#7a6648" }}>{n.date}</div>
-                <div className="sk-hand" style={{ fontSize: 22, lineHeight: 1.45, whiteSpace: "pre-line", marginTop: 4 }}>
+                <div style={{ fontFamily: '"Caveat", "ZCOOL XiaoWei", sans-serif', fontSize: 22, lineHeight: 1.5, whiteSpace: "pre-line", marginTop: 4 }}>
                   {n.text}
                 </div>
               </div>

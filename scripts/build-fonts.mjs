@@ -47,6 +47,7 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
 // variable woff2 spanning their whole weight range — so it's one file each.
 const FONTS = [
   { css: 'ZCOOL+KuaiLe',   slug: 'zcool-kuaile',  cjk: true  },
+  { css: 'ZCOOL+XiaoWei',  slug: 'zcool-xiaowei', cjk: true  },
   { css: 'Ma+Shan+Zheng',  slug: 'ma-shan-zheng', cjk: true  },
   { css: 'Long+Cang',      slug: 'long-cang',     cjk: true  },
   { css: 'Caveat:wght@400..700', slug: 'caveat',  cjk: false },
