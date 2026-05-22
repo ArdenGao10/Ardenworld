@@ -29,16 +29,6 @@ button {
   color: inherit;
 }
 
-/* iOS / touch devices choke on the SVG wobble filter (feTurbulence +
-   feDisplacementMap): every repaint re-runs the noise, so scrolling, the
-   parallax walk and card animations stutter — and a filtered SVG with a
-   pattern fill (the ground path) fails to render at all, leaving "no road".
-   Drop the decorative wobble on coarse-pointer devices; the hand-drawn look
-   still holds through strokes, fonts, rotations and shadows. */
-@media (hover: none) and (pointer: coarse) {
-  * { filter: none !important; }
-}
-
 /* Type system */
 .mw-title { font-family: "Caveat", "Ma Shan Zheng", "Long Cang", serif; letter-spacing: .02em; font-weight: 600; }
 .mw-body  { font-family: "ZCOOL KuaiLe", system-ui, sans-serif; letter-spacing: .01em; }
