@@ -78,7 +78,7 @@ export const Stars = ({ phase }) => {
   return <div style={{ position: "absolute", inset: 0, opacity, transition: "opacity .5s linear" }}>{stars}</div>;
 };
 
-export const FarHills = ({ phase }) => {
+export const FarHills = ({ phase, winStart = -Infinity, winEnd = Infinity }) => {
   const color = tri(phase, "#9eb295", "#8d6655", "#1c2540");
   const SVG_H = 260;
   const BURY = 60;
@@ -89,6 +89,7 @@ export const FarHills = ({ phase }) => {
       {Array.from({length: 12}).map((_, i) => {
         const x = i * 360;
         const w = 280 + (i % 3) * 60;
+        if (x > winEnd || x + w < winStart) return null;     // off-screen — skip
         return (
           <path key={i}
             d={`M ${x} ${SVG_H} Q ${x + w/2} ${20 + (i%3)*30} ${x + w} ${SVG_H} Z`}
@@ -99,7 +100,7 @@ export const FarHills = ({ phase }) => {
   );
 };
 
-export const NearHills = ({ phase }) => {
+export const NearHills = ({ phase, winStart = -Infinity, winEnd = Infinity }) => {
   const color = tri(phase, "#779a6e", "#5e3f30", "#0e1830");
   // SVG extends below GROUND_Y so the closing horizontal stroke is hidden under the ground band
   const SVG_H = 320;
@@ -112,6 +113,7 @@ export const NearHills = ({ phase }) => {
         const x = i * 320 - 100;
         const w = 380 + (i % 4) * 40;
         const h = 90 + (i % 3) * 40;
+        if (x > winEnd || x + w < winStart) return null;     // off-screen — skip
         return (
           <path key={i}
             d={`M ${x} ${SVG_H} Q ${x + w/2} ${SVG_H - BURY - h} ${x + w} ${SVG_H} Z`}
@@ -204,7 +206,7 @@ const CloudShape = ({ color }) => (
   </svg>
 );
 
-export const Clouds = ({ phase }) => {
+export const Clouds = ({ phase, winStart = -Infinity, winEnd = Infinity }) => {
   // Clouds warm at dusk, then fade away as the sky darkens.
   const fade = clamp01(1 - (phase - 0.3) / 0.5);
   if (fade <= 0.01) return null;
@@ -219,17 +221,21 @@ export const Clouds = ({ phase }) => {
     { x: 5400, y: 100, s: 0.9 },
     { x: 6300, y: 40,  s: 0.75 },
   ];
-  return layout.map((c, i) => (
-    <div key={i} className="mw-cloud" style={{
-      position: "absolute", left: c.x, top: c.y,
-      width: 180 * c.s, height: 64 * c.s,
-      opacity: 0.95 * fade,
-      animationDuration: `${80 + (i % 3) * 20}s`,
-      animationDelay: `${-i * 6}s`,
-    }}>
-      <CloudShape color={cloudColor}/>
-    </div>
-  ));
+  return layout.map((c, i) => {
+    const w = 180 * c.s;
+    if (c.x > winEnd || c.x + w < winStart) return null;     // off-screen — skip
+    return (
+      <div key={i} className="mw-cloud" style={{
+        position: "absolute", left: c.x, top: c.y,
+        width: w, height: 64 * c.s,
+        opacity: 0.95 * fade,
+        animationDuration: `${80 + (i % 3) * 20}s`,
+        animationDelay: `${-i * 6}s`,
+      }}>
+        <CloudShape color={cloudColor}/>
+      </div>
+    );
+  });
 };
 
 export const Trees = ({ phase, flowered, winStart = -Infinity, winEnd = Infinity }) => {

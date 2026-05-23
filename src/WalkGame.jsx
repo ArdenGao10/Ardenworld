@@ -109,6 +109,12 @@ export default function WalkGame({ onRoom }) {
   const renderKey = Math.floor(camX / VCHUNK);
   const winStart = renderKey * VCHUNK - viewport.w;
   const winEnd = renderKey * VCHUNK + VCHUNK + viewport.w * 2;
+  // The far/mid parallax layers scroll at 0.3× / 0.6× the camera, so their
+  // visible slice sits at a different offset — same chunk key, scaled span.
+  const farWinStart = renderKey * VCHUNK * 0.3 - viewport.w;
+  const farWinEnd = renderKey * VCHUNK * 0.3 + VCHUNK * 0.3 + viewport.w * 2;
+  const midWinStart = renderKey * VCHUNK * 0.6 - viewport.w;
+  const midWinEnd = renderKey * VCHUNK * 0.6 + VCHUNK * 0.6 + viewport.w * 2;
 
   // ----- mouse/touch click to walk -----
   const stageRef = useRef(null);
@@ -409,12 +415,14 @@ export default function WalkGame({ onRoom }) {
 
   const farLayer = useMemo(() => (
     <>
-      <FarHills phase={phase}/>
-      <Clouds phase={phase}/>
+      <FarHills phase={phase} winStart={farWinStart} winEnd={farWinEnd}/>
+      <Clouds phase={phase} winStart={farWinStart} winEnd={farWinEnd}/>
     </>
-  ), [phase]);
+  ), [phase, farWinStart, farWinEnd]);
 
-  const midLayer = useMemo(() => <NearHills phase={phase}/>, [phase]);
+  const midLayer = useMemo(() => (
+    <NearHills phase={phase} winStart={midWinStart} winEnd={midWinEnd}/>
+  ), [phase, midWinStart, midWinEnd]);
 
   const groundLayer = useMemo(() => (
     <>
