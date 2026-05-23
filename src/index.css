@@ -22,11 +22,15 @@ html, body {
 
 /* iOS Safari draws native button chrome and tints button labels system-blue
    unless the appearance is reset. Every button here is custom-painted, so
-   strip the native look and let text inherit the page's ink colour. */
+   strip the native look and let text inherit the page's ink colour.
+   On iOS Safari, `-webkit-text-fill-color` is set separately on <button>
+   and wins over `color`, so it has to be reset explicitly or the ✕ glyphs
+   render system-blue even though `color: inherit` is in effect. */
 button {
   -webkit-appearance: none;
   appearance: none;
   color: inherit;
+  -webkit-text-fill-color: inherit;
 }
 
 /* Type system */

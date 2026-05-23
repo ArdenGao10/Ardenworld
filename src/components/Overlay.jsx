@@ -23,10 +23,12 @@ export default function Overlay({ title, sub, children, onClose, accent = "#fffd
           {title}
         </div>
         {children}
+        {/* No `filter: url(#wobble)` here — the parent panel already has one,
+            and stacking a second displacement on a 32×32 element stretches
+            the circle into a visible oval on iOS. */}
         <button onClick={onClose} aria-label="close" style={{
           position: "absolute", top: 12, right: 12, width: 32, height: 32, border: "2px solid #1b1b1b",
           background: "transparent", borderRadius: "50%", fontFamily: "Caveat", fontSize: 18, cursor: "pointer",
-          filter: "url(#wobble)"
         }}>✕</button>
       </div>
     </div>

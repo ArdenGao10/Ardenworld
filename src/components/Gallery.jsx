@@ -122,13 +122,14 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
               <div style={{ marginTop: 18 }}>
                 {demoId === "focus" ? <FocusDemo/> : <MoodDemo/>}
               </div>
+              {/* No wobble — parent card already has it; double-displacing a
+                  32×32 element ovals the circle on iOS. */}
               <button onClick={() => setDemoId(null)} aria-label="close" style={{
                 position: "absolute", top: 12, right: 12, width: 32, height: 32,
                 border: "2px solid #1b1b1b",
                 background: dark ? "#1E1711" : "#fffdf6",
                 color: dark ? "#F4EFE6" : "#1b1b1b",
                 borderRadius: "50%", fontFamily: "Caveat", fontSize: 18, cursor: "pointer",
-                filter: "url(#wobble)",
               }}>✕</button>
             </div>
           </div>

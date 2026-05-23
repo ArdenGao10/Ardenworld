@@ -115,10 +115,11 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
           <button className="mw-btn" onClick={onClose}>继续走</button>
         </div>
 
+        {/* No wobble — parent modal already has it; stacking another on a
+            small circle visibly ovals it on iOS. */}
         <button onClick={onClose} aria-label="close" style={{
           position: "absolute", top: 12, right: 12, width: 32, height: 32, border: "2px solid #1b1b1b",
           background: "#fffdf6", borderRadius: "50%", fontFamily: "Caveat", fontSize: 18, cursor: "pointer",
-          filter: "url(#wobble)"
         }}>✕</button>
       </div>
     </div>
