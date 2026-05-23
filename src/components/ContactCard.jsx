@@ -33,8 +33,13 @@ export default function ContactCard({ onClose, onSent }) {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("idle"); // idle | flying | sent | error
 
+  // No `filter: url(#wobble)` on inputs. Every keystroke rerenders the
+  // input's text inside the filter surface; WebKit re-runs the filter
+  // pass each time and leaves visible ghost trails on the input border.
+  // Crisp border is the trade — the Caveat font carries the handwritten
+  // feel on its own. The card's own wobble border (Overlay) is intact.
   const inputStyle = {
-    width: "100%", border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
+    width: "100%", border: "2.5px solid #1b1b1b",
     padding: "9px 12px", fontFamily: "Caveat", fontSize: 19, lineHeight: 1.35,
     background: "#fffdf6", marginBottom: 10,
   };

@@ -509,13 +509,16 @@ export default function WalkGame({ onRoom }) {
     startTime.current = Date.now();
   }
 
-  // Snap parallax translates to integer pixels. Fractional translateX on
-  // iOS WebKit's compositor causes hairline white seams between the SVG hill
-  // segments and at the ground edge — the layer behind shows through a 1px
-  // subpixel reseam every frame. Rounding eliminates the artifact; the
-  // character is inside .mw-world and rounds with it, so it stays put.
-  const farCamX = Math.round(camX * 0.3);
-  const midCamX = Math.round(camX * 0.6);
+  // .mw-world stays integer-snapped — the original white seam appeared
+  // at the ground edge, which is on this layer. The parallax hill layers
+  // (.mw-far at 0.3×, .mw-mid at 0.6×) take the float value so they
+  // scroll smoothly; with snapping they advanced 1px every few frames
+  // and made the distant hills look choppy. The subsequent fixes
+  // (character on its own translate3d layer, StopMarker decor on its
+  // own compositor layers via translateZ(0)) keep the seams away even
+  // with float parallax translates.
+  const farCamX = camX * 0.3;
+  const midCamX = camX * 0.6;
   const camXRounded = Math.round(camX);
 
   // char position with terrain
@@ -579,19 +582,34 @@ export default function WalkGame({ onRoom }) {
             ['--dy']: `${30 + (i % 3) * 10}px`
           }}/>
         ))}
-        {/* cat (after first playthrough) */}
-        {playCount >= 2 && (
-          <div style={{
-            position: "absolute", left: charX - 75 * facing, bottom: GROUND_Y + groundLift(charX - 75 * facing) - 4,
-            transform: facing < 0 ? "scaleX(-1)" : "", transition: "left .2s linear", zIndex: 4
-          }}>
-            <Cat size={32}/>
-          </div>
-        )}
-        {/* character */}
+        {/* cat (after first playthrough)
+            Position is driven by transform: translate3d, not left/bottom.
+            WebKit leaks paint when a child's left/top changes every frame
+            inside a composited parent (.mw-world has will-change: transform),
+            leaving ghost trails of any radial-gradient or box-shadow it had.
+            scaleX for facing lives on the inner div so the flip stays instant
+            instead of riding the .2s transform transition. */}
+        {playCount >= 2 && (() => {
+          const catX = charX - 75 * facing;
+          const catY = GROUND_Y + groundLift(catX) - 4;
+          return (
+            <div style={{
+              position: "absolute", left: 0, bottom: 0, zIndex: 4,
+              transform: `translate3d(${catX}px, ${-catY}px, 0)`,
+              transition: "transform .2s linear",
+              willChange: "transform",
+            }}>
+              <div style={{ transform: `scaleX(${facing < 0 ? -1 : 1})` }}>
+                <Cat size={32}/>
+              </div>
+            </div>
+          );
+        })()}
+        {/* character — same transform path as the cat for the same reason */}
         <div style={{
-          position: "absolute", left: charX - CHAR_BASE_W/2, bottom: charBaseY - 4 + charY,
-          zIndex: 10
+          position: "absolute", left: 0, bottom: 0, zIndex: 10,
+          transform: `translate3d(${charX - CHAR_BASE_W/2}px, ${-(charBaseY - 4 + charY)}px, 0)`,
+          willChange: "transform",
         }}>
           <Char size={isMobile ? 64 : 86} walking={walking} jumping={charY > 5} splashing={splashing} facing={facing} mood={charMood}/>
           {/* hand-drawn splash bubble above the head when feet hit the puddle */}

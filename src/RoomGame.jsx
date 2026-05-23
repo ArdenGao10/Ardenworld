@@ -415,7 +415,10 @@ export default function RoomGame({ onSwitch }) {
     >
       <div className="mw-world" style={{
         width: ROOM_W, height: "100%",
-        transform: `translateX(${-camX}px)`,
+        // Integer-snap the camera translate. Fractional translateX on a
+        // composited layer makes WebKit show hairline white seams between
+        // adjacent decor (the same artefact the walk had before).
+        transform: `translateX(${-Math.round(camX)}px)`,
         pointerEvents: "none",
       }}>
         {/* wall background */}
@@ -472,10 +475,17 @@ export default function RoomGame({ onSwitch }) {
         <StringLights roomW={ROOM_W} floorH={FLOOR_H}/>
         <PennantBanner cx={POS.bed} bottom={FLOOR_H + 280}/>
 
-        {/* picture frame above the bed */}
+        {/* picture frame above the bed.
+            `transform: translateZ(0)` here (and on every other wobble decor
+            in this room) promotes each one to its own compositor layer so
+            WebKit caches its wobble filter result. Without this, every
+            camera-transform change (each frame the player walks) makes
+            WebKit re-execute the displacement on these decor elements,
+            and the border edge leaks paint trails. */}
         <div style={{
           position: "absolute", left: POS.bed - 36, bottom: FLOOR_H + 222, width: 76, height: 58,
           background: "#fffdf6", border: "3px solid #1b1b1b", filter: "url(#wobble)",
+          transform: "translateZ(0)",
           boxShadow: "2px 3px 0 rgba(0,0,0,.18)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
@@ -491,6 +501,7 @@ export default function RoomGame({ onSwitch }) {
         <div style={{
           position: "absolute", left: POS.shelf + 100, bottom: FLOOR_H + 230, width: 74, height: 58,
           background: "#fffdf6", border: "3px solid #1b1b1b", filter: "url(#wobble)",
+          transform: "translateZ(0)",
           boxShadow: "2px 3px 0 rgba(0,0,0,.18)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
@@ -511,6 +522,7 @@ export default function RoomGame({ onSwitch }) {
           position: "absolute", left: POS.desk - 100, bottom: FLOOR_H + 270,
           width: 50, height: 50, borderRadius: "50%",
           background: "#fffdf6", border: "3px solid #1b1b1b", filter: "url(#wobble)",
+          transform: "translateZ(0)",
           boxShadow: "2px 3px 0 rgba(0,0,0,.18)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
@@ -529,20 +541,22 @@ export default function RoomGame({ onSwitch }) {
           </svg>
         </div>
 
-        {/* shelf with trinkets above the record player */}
+        {/* shelf with trinkets above the record player — each one its own
+            layer to cache the wobble filter past camera transforms. */}
         <div style={{
           position: "absolute", left: POS.record - 60, bottom: FLOOR_H + 200, width: 120, height: 8,
           background: "#7a5a36", border: "2px solid #1b1b1b", filter: "url(#wobble)",
+          transform: "translateZ(0)",
           boxShadow: "0 4px 0 rgba(0,0,0,.18)",
         }}/>
         <div style={{ position: "absolute", left: POS.record - 42, bottom: FLOOR_H + 208,
-          width: 16, height: 20,
+          width: 16, height: 20, transform: "translateZ(0)",
           background: "#fef3a3", border: "2px solid #1b1b1b", filter: "url(#wobble)" }}/>
         <div style={{ position: "absolute", left: POS.record - 16, bottom: FLOOR_H + 208,
-          width: 12, height: 26, borderRadius: "50% 50% 30% 30%",
+          width: 12, height: 26, borderRadius: "50% 50% 30% 30%", transform: "translateZ(0)",
           background: "#c97a83", border: "2px solid #1b1b1b", filter: "url(#wobble)" }}/>
         <div style={{ position: "absolute", left: POS.record + 8, bottom: FLOOR_H + 208,
-          width: 20, height: 16, borderRadius: "50%",
+          width: 20, height: 16, borderRadius: "50%", transform: "translateZ(0)",
           background: "#cfe0c6", border: "2px solid #1b1b1b", filter: "url(#wobble)" }}/>
 
         {/* === stations === */}
@@ -648,11 +662,18 @@ export default function RoomGame({ onSwitch }) {
           </div>
         )}
 
-        {/* === walking character === */}
+        {/* === walking character ===
+            Position via transform: translate3d, not left/bottom. Inside
+            .mw-world (a composited layer), per-frame left/bottom changes
+            trip a WebKit paint-invalidation bug that leaves ghost trails
+            on adjacent static decor — picture frames, wall clock, the
+            record-player shelf trinkets, the focus-orb sign. Driving the
+            character on the GPU dirty-rect track keeps those clean. */}
         {!lying && !climbHold && !sitting && !singing && (
           <div style={{
-            position: "absolute", left: charX - CHAR_BASE_W / 2, bottom: charBottom,
-            zIndex: 10,
+            position: "absolute", left: 0, bottom: 0, zIndex: 10,
+            transform: `translate3d(${charX - CHAR_BASE_W / 2}px, ${-charBottom}px, 0)`,
+            willChange: "transform",
           }}>
             <Char size={isMobile ? 70 : 90} walking={walking} facing={facing}
                   mood={nearest ? "?" : ""}/>
@@ -691,14 +712,16 @@ export default function RoomGame({ onSwitch }) {
           </div>
         )}
 
-        {/* === climber on the wall (back view, arms up) === */}
+        {/* === climber on the wall (back view, arms up) ===
+            Same transform pattern as the walker — left/bottom transitions
+            inside .mw-world leave trails on the climbing wall holds and
+            the picture frames above. */}
         {!lying && climbHold && (
           <div style={{
-            position: "absolute",
-            left: climbCharX - 30,
-            bottom: climbCharBottom,
-            zIndex: 11,
-            transition: "left .25s ease-out, bottom .25s ease-out",
+            position: "absolute", left: 0, bottom: 0, zIndex: 11,
+            transform: `translate3d(${climbCharX - 30}px, ${-climbCharBottom}px, 0)`,
+            transition: "transform .25s ease-out",
+            willChange: "transform",
           }}>
             <ClimberSprite/>
           </div>
@@ -1598,10 +1621,15 @@ function FishTank({ highlighted, feedTick }) {
         <rect x="20" y="184" width="9" height="16" fill="#7a5a36" stroke="#1b1b1b" strokeWidth="2"/>
         <rect x="151" y="184" width="9" height="16" fill="#7a5a36" stroke="#1b1b1b" strokeWidth="2"/>
       </svg>
+      {/* Fish tank glass — own compositor layer so the wobble border
+          doesn't trail when the camera scrolls past. The fish + flakes
+          inside are already on the GPU dirty-rect track via translate3d. */}
       <div style={{
         position: "absolute", left: 10, bottom: 32, width: TANK_W, height: TANK_H,
         background: "linear-gradient(180deg, #a8c8e0 0%, #6a8ab0 100%)",
-        border: "3px solid #1b1b1b", filter: "url(#wobble)", overflow: "hidden",
+        border: "3px solid #1b1b1b", filter: "url(#wobble)",
+        transform: "translateZ(0)",
+        overflow: "hidden",
       }}>
         {[20, 56, 90, 126].map((bx, i) => (
           <div key={i} style={{
@@ -1611,31 +1639,41 @@ function FishTank({ highlighted, feedTick }) {
             animationDelay: `${-i * 0.7}s`,
           }}/>
         ))}
+        {/* Fish + flakes use transform: translate3d, not left/top. The
+            tank parent has filter: url(#wobble), and per-frame left/top
+            on its children is the textbook WebKit paint-trail pattern.
+            Inner scaleX/rotate go on a wrapper child so they don't ride
+            the per-frame transform path. */}
         {fish.map(fi => (
           <div key={fi.id} style={{
-            position: "absolute", left: fi.x - 18, top: fi.y - 8, width: 36, height: 16,
-            transform: fi.vx < 0 ? "scaleX(-1)" : "none",
-            pointerEvents: "none",
+            position: "absolute", left: 0, top: 0,
+            transform: `translate3d(${fi.x - 18}px, ${fi.y - 8}px, 0)`,
+            width: 36, height: 16, pointerEvents: "none",
+            willChange: "transform",
           }}>
-            <svg width="36" height="16" viewBox="0 0 36 16">
-              <ellipse cx="14" cy="8" rx="13" ry="6.5"
-                       fill={fi.c} stroke="#1b1b1b" strokeWidth="1.5"/>
-              <path d="M27 8 L36 2 L36 14 Z"
-                    fill={fi.c} stroke="#1b1b1b" strokeWidth="1.5" strokeLinejoin="round"/>
-              <path d="M14 2 L18 -2 L20 4 Z"
-                    fill={fi.c} stroke="#1b1b1b" strokeWidth="1.2"/>
-              <circle cx="6" cy="6.5" r="1.3" fill="#1b1b1b"/>
-              <circle cx="5.4" cy="6" r=".5" fill="#fffdf6"/>
-              <path d="M0 8 Q3 6 3 8 Q3 10 0 8" fill={fi.c} stroke="#1b1b1b" strokeWidth="1"/>
-            </svg>
+            <div style={{ transform: fi.vx < 0 ? "scaleX(-1)" : "none" }}>
+              <svg width="36" height="16" viewBox="0 0 36 16">
+                <ellipse cx="14" cy="8" rx="13" ry="6.5"
+                         fill={fi.c} stroke="#1b1b1b" strokeWidth="1.5"/>
+                <path d="M27 8 L36 2 L36 14 Z"
+                      fill={fi.c} stroke="#1b1b1b" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M14 2 L18 -2 L20 4 Z"
+                      fill={fi.c} stroke="#1b1b1b" strokeWidth="1.2"/>
+                <circle cx="6" cy="6.5" r="1.3" fill="#1b1b1b"/>
+                <circle cx="5.4" cy="6" r=".5" fill="#fffdf6"/>
+                <path d="M0 8 Q3 6 3 8 Q3 10 0 8" fill={fi.c} stroke="#1b1b1b" strokeWidth="1"/>
+              </svg>
+            </div>
           </div>
         ))}
         {flakes.map(f => (
           <div key={f.id} style={{
-            position: "absolute", left: f.x - 3, top: f.y, width: 6, height: 6,
+            position: "absolute", left: 0, top: 0,
+            transform: `translate3d(${f.x - 3}px, ${f.y}px, 0) rotate(${(f.id * 47) % 90}deg)`,
+            width: 6, height: 6,
             background: "#7a5a36", borderRadius: 1.5,
-            transform: `rotate(${(f.id * 47) % 90}deg)`,
             pointerEvents: "none",
+            willChange: "transform",
           }}/>
         ))}
         <div style={{
@@ -2008,6 +2046,7 @@ function RoomWindow({ worldLeft, bottomFromFloor }) {
       width: W, height: H,
       background: "linear-gradient(180deg, #a8c8de 0%, #cfe0c6 75%, #b8c89a 100%)",
       border: "4px solid #1b1b1b", filter: "url(#wobble)",
+      transform: "translateZ(0)",
       boxShadow: "3px 4px 0 rgba(0,0,0,.18)", overflow: "hidden",
     }}>
       <div style={{
@@ -2049,7 +2088,9 @@ function RecordPlayer({ highlighted }) {
     <div style={{ position: "relative", width: 140, height: 140,
                   filter: highlighted ? "drop-shadow(0 0 14px rgba(217,119,87,.55))" : "none",
                   transition: "filter .25s" }}>
-      <svg width="140" height="140" viewBox="0 0 140 140" style={{ display: "block" }}>
+      {/* SVG promoted to its own layer so the inner path's wobble filter
+          result is cached past the camera's transform changes. */}
+      <svg width="140" height="140" viewBox="0 0 140 140" style={{ display: "block", transform: "translateZ(0)" }}>
         <path d="M10 86 L130 86 L134 100 L6 100 Z"
               fill="#a77a4a" stroke="#1b1b1b" strokeWidth="2.5"
               strokeLinejoin="round" filter="url(#wobble)"/>

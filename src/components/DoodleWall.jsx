@@ -40,6 +40,11 @@ function Caption({ children }) {
 // ============================================================
 // Toy 1 — 小猫追光机 · a cat that chases a dot of light
 // ============================================================
+// Wobble lives on the parent like every other toy. The earlier ghost-trail
+// bug wasn't from this filter — it was from the inner children animating
+// via `left`/`top`, which trips a WebKit paint-invalidation bug. Once those
+// move via `transform: translate3d` + `will-change`, the filter parent is
+// safe to keep here. See the inner divs below for the transform pattern.
 function CatLight() {
   const boxRef = useRef(null);
   const target = useRef({ x: 280, y: 110 });
@@ -79,16 +84,23 @@ function CatLight() {
         onTouchMove={(e) => { e.preventDefault(); aim(e); }}
         style={{ ...boxStyle, height: 240, cursor: "none",
           background: "radial-gradient(circle at 50% 28%, #2c3550 0%, #161b2e 92%)" }}>
-        {/* the dot of light */}
-        <div style={{ position: "absolute", left: light.x, top: light.y }}>
+        {/* the dot of light — moved via transform, not left/top. WebKit
+            leaves paint trails when a radial-gradient background or a
+            box-shadow re-rasterises every frame as left/top change.
+            translate3d puts the element on the compositor's dirty-rect
+            track, which is the only reliable path for animated children. */}
+        <div style={{ position: "absolute", left: 0, top: 0,
+          transform: `translate3d(${light.x}px, ${light.y}px, 0)`,
+          willChange: "transform" }}>
           <div style={{ position: "absolute", left: -42, top: -42, width: 84, height: 84,
             borderRadius: "50%", background: "radial-gradient(circle, rgba(254,243,163,.85) 0%, rgba(254,243,163,0) 70%)" }}/>
           <div style={{ position: "absolute", left: -5, top: -5, width: 10, height: 10,
             borderRadius: "50%", background: "#fff6c4", boxShadow: "0 0 12px 5px rgba(254,243,163,.9)" }}/>
         </div>
-        {/* the cat */}
-        <div style={{ position: "absolute", left: cat.x, top: cat.y,
-          transform: `translate(-50%,-62%) scaleX(${face})` }}>
+        {/* the cat — same treatment */}
+        <div style={{ position: "absolute", left: 0, top: 0,
+          transform: `translate3d(${cat.x}px, ${cat.y}px, 0) translate(-50%,-62%) scaleX(${face})`,
+          willChange: "transform" }}>
           <Cat size={58}/>
         </div>
         {!moved && <Hint>{isTouch ? "在屏幕上划一下" : "动动鼠标"} — 小猫会追那点光 ✦</Hint>}
@@ -316,10 +328,14 @@ function Letters() {
             opacity: 0, border: "none", background: "transparent",
             pointerEvents: "none", fontSize: 16, caretColor: "transparent",
           }}/>
+        {/* Letters move via transform: translate3d, not left/top. WebKit
+            leaks paint trails when a child's left/top change every frame
+            inside a composited parent (boxStyle uses filter: url(#wobble)). */}
         {items.current.map(it => (
           <div key={it.id} className="mw-title" style={{
-            position: "absolute", left: it.x, top: it.y,
-            transform: `translate(-50%,-50%) rotate(${it.rot}deg)`,
+            position: "absolute", left: 0, top: 0,
+            transform: `translate3d(${it.x}px, ${it.y}px, 0) translate(-50%,-50%) rotate(${it.rot}deg)`,
+            willChange: "transform",
             fontSize: 34, color: it.color, lineHeight: 1,
           }}>{it.ch}</div>
         ))}
@@ -648,13 +664,18 @@ function Bubbles() {
         onTouchStart={(e) => { e.preventDefault(); popAt(e); }}
         style={{ ...boxStyle, height: 240, cursor: "crosshair",
           background: "linear-gradient(180deg,#a8c8e0 0%,#e0f0ee 100%)" }}>
+        {/* Bubbles drift via transform: translate3d, not left/top — same
+            WebKit paint-trail bug otherwise (radial-gradient bg + animated
+            position is the worst case for that bug). Position is frozen
+            once popping starts, so the pop scale transitions cleanly. */}
         {items.current.map(it => (
           <div key={it.id} style={{
-            position: "absolute", left: it.x - it.r, top: it.y - it.r,
+            position: "absolute", left: 0, top: 0,
             width: it.r * 2, height: it.r * 2, borderRadius: "50%",
             background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,.85), hsla(${it.hue},70%,75%,.35) 70%)`,
             border: "1.8px solid rgba(27,27,27,.7)",
-            transform: it.pop > 0 ? `scale(${1 + it.pop * 0.7})` : "none",
+            transform: `translate3d(${it.x - it.r}px, ${it.y - it.r}px, 0)${it.pop > 0 ? ` scale(${1 + it.pop * 0.7})` : ""}`,
+            willChange: "transform",
             opacity: it.pop > 0 ? Math.max(0, 1 - it.pop) : 1,
             pointerEvents: "none",
             transition: it.pop > 0 ? "opacity .25s, transform .25s" : "none",
@@ -1049,19 +1070,35 @@ function SketchPad() {
 
   return (
     <div>
-      <div ref={boxRef}
-        onPointerDown={down} onPointerMove={move}
-        onPointerUp={up} onPointerCancel={up}
-        style={{ ...boxStyle, height: 240, cursor: "crosshair",
-          background: "#fffdf6", touchAction: "none" }}>
-        <svg width="100%" height="100%"
-             style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          {paths.map((p, i) => (
-            <path key={i} d={p.d} stroke={p.c} strokeWidth="3"
-                  fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-          ))}
-        </svg>
-        {paths.length === 0 && <Hint>{isTouch ? "用手指画" : "用鼠标画"} — 想画啥画啥</Hint>}
+      {/* The wobble border lives on a sibling overlay, NOT on the box that
+          contains the SVG. Every pointer-move grows the current path's `d`
+          attribute, which forces a repaint of the SVG; if that SVG sits
+          inside a `filter: url(#wobble)` parent, WebKit has to re-run the
+          filter pass every move event and leaves ghost trails of older
+          strokes. Pulling the filter out to a sibling layer keeps the
+          drawing surface filter-free while the hand-drawn border is
+          preserved visually. */}
+      <div style={{ position: "relative", height: 240 }}>
+        <div ref={boxRef}
+          onPointerDown={down} onPointerMove={move}
+          onPointerUp={up} onPointerCancel={up}
+          style={{ position: "absolute", inset: 0, cursor: "crosshair",
+            background: "#fffdf6", touchAction: "none", overflow: "hidden",
+            border: "2.5px solid #1b1b1b" }}>
+          <svg width="100%" height="100%"
+               style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+            {paths.map((p, i) => (
+              <path key={i} d={p.d} stroke={p.c} strokeWidth="3"
+                    fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            ))}
+          </svg>
+          {paths.length === 0 && <Hint>{isTouch ? "用手指画" : "用鼠标画"} — 想画啥画啥</Hint>}
+        </div>
+        {/* decorative wobble border — pointer-events:none so it never eats
+            strokes; sits exactly on top so the hand-drawn look survives. */}
+        <div style={{ position: "absolute", inset: 0,
+          border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
+          pointerEvents: "none" }}/>
       </div>
       <div style={{ display: "flex", gap: 6, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
         {SKETCH_COLORS.map(c => (
