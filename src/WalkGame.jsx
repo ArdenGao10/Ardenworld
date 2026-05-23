@@ -509,8 +509,14 @@ export default function WalkGame({ onRoom }) {
     startTime.current = Date.now();
   }
 
-  const farCamX = camX * 0.3;
-  const midCamX = camX * 0.6;
+  // Snap parallax translates to integer pixels. Fractional translateX on
+  // iOS WebKit's compositor causes hairline white seams between the SVG hill
+  // segments and at the ground edge — the layer behind shows through a 1px
+  // subpixel reseam every frame. Rounding eliminates the artifact; the
+  // character is inside .mw-world and rounds with it, so it stays put.
+  const farCamX = Math.round(camX * 0.3);
+  const midCamX = Math.round(camX * 0.6);
+  const camXRounded = Math.round(camX);
 
   // char position with terrain
   const groundOffset = groundLift(charX);
@@ -557,7 +563,7 @@ export default function WalkGame({ onRoom }) {
       </div>
 
       {/* World */}
-      <div className="mw-world" style={{ transform: `translateX(${-camX}px)` }}>
+      <div className="mw-world" style={{ transform: `translateX(${-camXRounded}px)` }}>
         {groundLayer}
         {stopMarkers}
         {starEls}
