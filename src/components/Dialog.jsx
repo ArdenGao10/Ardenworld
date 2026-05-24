@@ -27,7 +27,10 @@ export default function Dialog({ lines, onDone }) {
     <div onClick={advance} style={{
       position: "fixed", left: "50%", bottom: 40, transform: "translateX(-50%)",
       width: "min(560px, calc(100vw - 40px))",
-      background: "#fef3a3",
+      // Solid ink border under the wobble overlay so the wavy displacement
+      // never exposes the page behind the bubble. The wobble pass paints on
+      // top; the straight line is a fail-safe filler for any outward shift.
+      background: "#fef3a3", border: "3px solid #1b1b1b",
       padding: "18px 22px", boxShadow: "4px 6px 0 rgba(0,0,0,.15)", zIndex: 40,
       cursor: "pointer",
     }}>
@@ -37,9 +40,13 @@ export default function Dialog({ lines, onDone }) {
       <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".15em", color: "#7a6648", marginTop: 10, textAlign: "right" }}>
         {i+1}/{lines.length} &nbsp; · &nbsp; CLICK ↵
       </div>
-      {/* wobble border — filter is on this fixed-content layer only. */}
+      {/* wobble border — filter on this fixed-content layer only.
+          `inset: -3px` pushes the overlay outward by the bubble's border
+          width so its 3px border sits on top of the bubble's straight
+          border (not adjacent inside it). Any outward wobble displacement
+          stays inside that combined ink region — no light seam. */}
       <div aria-hidden="true" style={{
-        position: "absolute", inset: 0,
+        position: "absolute", inset: -3,
         border: "3px solid #1b1b1b", filter: "url(#wobble)",
         pointerEvents: "none",
       }}/>

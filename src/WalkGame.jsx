@@ -30,7 +30,7 @@ import Gallery from './components/Gallery.jsx';
 import DoodleWall from './components/DoodleWall.jsx';
 import ContactCard from './components/ContactCard.jsx';
 import ShowcaseFrame from './components/ShowcaseFrame.jsx';
-import { HouseIcon, SpeakerIcon } from './components/Icons.jsx';
+import { HouseIcon, SpeakerIcon, ChunkyArrow } from './components/Icons.jsx';
 import {
   initAudio, startBgm, playStep, playJump, playSplash, playStar, playOpen, playWin,
   isMuted, setMuted,
@@ -63,6 +63,8 @@ export default function WalkGame({ onRoom }) {
   const [thought, setThought] = useState(null); // {id, text}
   const [muted, setMutedState] = useState(isMuted());
   const [showIntro, setShowIntro] = useState(true); // opening choice card
+  const [showTutorial, setShowTutorial] = useState(false); // first-time tap zones
+  const tutorialTimer = useRef();
   const [jumpPos, setJumpPos] = useState(() => {  // user-draggable jump button
     try {
       const s = JSON.parse(localStorage.getItem("mw-jump-pos") || "null");
@@ -121,7 +123,7 @@ export default function WalkGame({ onRoom }) {
 
   const onStageDown = (e) => {
     initAudio(); startBgm("walk"); // first tap unlocks audio + starts the music
-    if (overlay || dialog || showEnd || showGallery || showIntro) return;
+    if (overlay || dialog || showEnd || showGallery || showIntro || showTutorial) return;
     // ignore clicks on the HUD (handled separately)
     if (e.target.closest('.mw-skip, .mw-jump-btn, .mw-tap-zone')) return;
 
@@ -168,7 +170,7 @@ export default function WalkGame({ onRoom }) {
 
   // ----- jump button -----
   const onJump = () => {
-    if (charY !== 0 || overlay || dialog || showEnd || showGallery || showIntro) return;
+    if (charY !== 0 || overlay || dialog || showEnd || showGallery || showIntro || showTutorial) return;
     keys.current.jumpRequested = true;
     setShowStartHint(false);
     // On mobile there's no key to hold for forward motion, so the jump
@@ -218,7 +220,7 @@ export default function WalkGame({ onRoom }) {
   // ----- keyboard: ← → (or A/D) walk, Space / ↑ / W jump -----
   const keys = useRef({ jumpRequested: false, left: false, right: false });
   useEffect(() => {
-    const active = () => !dialog && !overlay && !showEnd && !showGallery && !showIntro;
+    const active = () => !dialog && !overlay && !showEnd && !showGallery && !showIntro && !showTutorial;
     const down = (e) => {
       if (!active()) return;
       if (e.key === " " || e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
@@ -242,7 +244,7 @@ export default function WalkGame({ onRoom }) {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
     };
-  }, [dialog, overlay, showEnd, showGallery, showIntro]);
+  }, [dialog, overlay, showEnd, showGallery, showIntro, showTutorial]);
 
   // ----- game loop -----
   const lastT = useRef(performance.now());
@@ -377,6 +379,17 @@ export default function WalkGame({ onRoom }) {
   }, [charX, overlay, dialog, showEnd, showGallery]);
 
   useEffect(() => () => clearTimeout(thoughtTimer.current), []);
+  useEffect(() => () => clearTimeout(tutorialTimer.current), []);
+
+  function openTutorial() {
+    setShowTutorial(true);
+    clearTimeout(tutorialTimer.current);
+    tutorialTimer.current = setTimeout(() => setShowTutorial(false), 5000);
+  }
+  function dismissTutorial() {
+    clearTimeout(tutorialTimer.current);
+    setShowTutorial(false);
+  }
 
   // Bounce in place when showEnd reached (continuously hop)
   useEffect(() => {
@@ -535,7 +548,7 @@ export default function WalkGame({ onRoom }) {
   // on desktop it just appears near the puddle, since Space already works.
   const puddleStop = STOPS.find(s => s.type === "puddle");
   const nearPuddle = puddleStop && Math.abs(charX - puddleStop.x) < 350;
-  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery && !showIntro;
+  const showJump = (isMobile || nearPuddle) && !overlay && !dialog && !showEnd && !showGallery && !showIntro && !showTutorial;
 
   const totalTime = (Date.now() - startTime.current) / 1000;
 
@@ -652,17 +665,25 @@ export default function WalkGame({ onRoom }) {
       <HUD charX={charX} time={time} stars={stars}
            onSkip={() => setShowGallery(true)}/>
 
-      {/* sound toggle */}
-      <button className="mw-skip" onClick={(e) => {
-          e.stopPropagation();
-          initAudio();
-          const m = !muted;
-          setMuted(m);
-          setMutedState(m);
-        }}
-        style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36 }}>
-        <SpeakerIcon muted={muted}/>{muted ? "静音" : "声音"}
-      </button>
+      {/* bottom-left controls — sound toggle, plus a how-to-play that
+          re-opens the tap-zone tutorial */}
+      <div style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36, display: "flex", gap: 8 }}>
+        <button className="mw-skip" onClick={(e) => {
+            e.stopPropagation();
+            initAudio();
+            const m = !muted;
+            setMuted(m);
+            setMutedState(m);
+          }}>
+          <SpeakerIcon muted={muted}/>{muted ? "静音" : "声音"}
+        </button>
+        {!showIntro && !showEnd && !showGallery && (
+          <button className="mw-skip"
+            onClick={(e) => { e.stopPropagation(); openTutorial(); }}>
+            ? 怎么玩
+          </button>
+        )}
+      </div>
 
       {/* switch to the room version (indoor mode) — press R also works.
           The standalone climb mode is gone; climbing lives inside the room. */}
@@ -850,6 +871,30 @@ export default function WalkGame({ onRoom }) {
         />
       )}
 
+      {/* First-time tutorial — highlight the left/right tap zones with a
+          live finger-pulse + arrow demo. Auto-dismisses after 5s, or tap
+          the bottom pill / anywhere on a zone to skip. Re-openable from
+          the 「怎么玩」 button. */}
+      {showTutorial && (
+        <div className="mw-tut" onMouseDown={(e) => { e.stopPropagation(); dismissTutorial(); }}
+             onTouchStart={(e) => { e.stopPropagation(); dismissTutorial(); }}>
+          <div className="mw-tut-zone mw-tut-zone-left">
+            <div className="mw-tut-finger"><ChunkyArrow size={48} dir="left"/></div>
+            <div className="mw-tut-label">点这边 · 往左走</div>
+          </div>
+          <div className="mw-tut-zone mw-tut-zone-right">
+            <div className="mw-tut-finger"><ChunkyArrow size={48} dir="right"/></div>
+            <div className="mw-tut-label">点这边 · 往右走</div>
+          </div>
+          <button className="mw-tut-dismiss"
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); dismissTutorial(); }}>
+            知道了 ✦
+          </button>
+        </div>
+      )}
+
       {/* Opening choice — play the walk, or skip straight to the works */}
       {showIntro && (
         <div style={{
@@ -873,7 +918,13 @@ export default function WalkGame({ onRoom }) {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
               <button className="mw-btn mw-btn-primary mw-btn-big"
-                onClick={(e) => { e.stopPropagation(); initAudio(); startBgm("walk"); setShowIntro(false); }}>
+                onClick={(e) => {
+                  e.stopPropagation(); initAudio(); startBgm("walk"); setShowIntro(false);
+                  if (!localStorage.getItem("mw-tut-seen")) {
+                    localStorage.setItem("mw-tut-seen", "1");
+                    openTutorial();
+                  }
+                }}>
                 出门散个步 →
               </button>
               {onRoom && (

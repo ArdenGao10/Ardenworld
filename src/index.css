@@ -576,3 +576,59 @@ input, textarea {
   34%  { transform: translate(-10px,-30px) rotate(-9deg) scale(1); opacity: 1; }
   100% { transform: translate(150px,-280px) rotate(-30deg) scale(.4); opacity: 0; }
 }
+
+/* === Tutorial overlay — left/right tap zones for first-time walkers === */
+.mw-tut {
+  position: fixed; inset: 0; z-index: 47;
+  display: flex; pointer-events: auto;
+  animation: mw-tut-in .25s ease-out both;
+}
+.mw-tut.mw-tut-out { animation: mw-tut-out .35s ease-in both; }
+@keyframes mw-tut-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mw-tut-out { from { opacity: 1; } to { opacity: 0; } }
+
+.mw-tut-zone {
+  flex: 1; position: relative;
+  background: rgba(27, 27, 27, .42);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px;
+}
+.mw-tut-zone-left  { border-right: 2px dashed rgba(255,253,246,.55); }
+.mw-tut-zone-right { border-left:  2px dashed rgba(255,253,246,.55); }
+
+.mw-tut-finger {
+  width: 84px; height: 84px; border-radius: 50%;
+  background: rgba(255,253,246,.18);
+  border: 3px solid #fffdf6;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 0 rgba(255,253,246,.6);
+  animation: mw-tut-pulse 1.6s ease-out infinite;
+}
+.mw-tut-zone-right .mw-tut-finger { animation-delay: .4s; }
+@keyframes mw-tut-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(255,253,246,.55); transform: scale(1); }
+  60%  { box-shadow: 0 0 0 24px rgba(255,253,246,0);   transform: scale(.95); }
+  100% { box-shadow: 0 0 0 0   rgba(255,253,246,0);   transform: scale(1); }
+}
+
+.mw-tut-label {
+  background: #fffdf6; color: #1b1b1b;
+  border: 2.5px solid #1b1b1b; filter: url(#wobble);
+  padding: 8px 16px; font-size: 18px;
+  font-family: "Caveat", "ZCOOL KuaiLe", sans-serif;
+  box-shadow: 2px 3px 0 rgba(0,0,0,.18);
+}
+
+.mw-tut-dismiss {
+  position: absolute; left: 50%; bottom: 36px;
+  transform: translateX(-50%);
+  background: #fffdf6; color: #1b1b1b;
+  border: 2px solid #1b1b1b; filter: url(#wobble);
+  padding: 8px 18px; font-size: 14px;
+  font-family: "JetBrains Mono", monospace; letter-spacing: .14em;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 2px 3px 0 rgba(0,0,0,.15);
+}
+.mw-tut-dismiss:active { transform: translate(-50%, 1px); }

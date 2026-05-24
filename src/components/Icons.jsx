@@ -40,6 +40,20 @@ export function SpeakerIcon({ size = 16, muted = false }) {
   );
 }
 
+export function ChunkyArrow({ size = 42, dir = "right" }) {
+  // Fat hand-drawn arrow. `dir` flips the shape so the same path data
+  // works for both directions without needing a second path.
+  return (
+    <svg width={size} height={size * 0.72} viewBox="0 0 40 30"
+         style={{ display: "block", filter: "url(#wobble)",
+                  transform: dir === "left" ? "scaleX(-1)" : undefined }}>
+      <path d="M3 11 L23 11 L23 3 L38 15 L23 27 L23 19 L3 19 Z"
+            fill="#fffdf6" stroke="#1b1b1b" strokeWidth="2.6"
+            strokeLinejoin="round" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 export function MountainIcon({ size = 15 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24"

@@ -25,7 +25,12 @@ export default function Overlay({ title, sub, children, onClose, accent = "#fffd
         position: "relative", boxShadow: "6px 8px 0 rgba(0,0,0,.2)"
       }}>
         <div style={{
-          background: accent, border: "3px solid transparent",
+          // Solid ink border under the wobble overlay. Without this, the
+          // overlay's wavy border moves outward (≤2 px) and exposes a sliver
+          // of modal backdrop where the panel's fill stops — visible as a
+          // thin white seam on Chrome (worst case) and Safari. The straight
+          // line underneath fills that gap; the wobble pass paints over it.
+          background: accent, border: "3px solid #1b1b1b",
           maxHeight: "85vh", overflowY: "auto",
           padding: "28px 32px", position: "relative"
         }}>
