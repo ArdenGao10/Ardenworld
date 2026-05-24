@@ -33,16 +33,23 @@ export default function ContactCard({ onClose, onSent }) {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("idle"); // idle | flying | sent | error
 
-  // No `filter: url(#wobble)` on inputs. Every keystroke rerenders the
-  // input's text inside the filter surface; WebKit re-runs the filter
-  // pass each time and leaves visible ghost trails on the input border.
-  // Crisp border is the trade — the Caveat font carries the handwritten
-  // feel on its own. The card's own wobble border (Overlay) is intact.
-  const inputStyle = {
+  // The input itself has no `filter: url(#wobble)` — every keystroke would
+  // rerender text inside the filter surface and leave ghost trails. The
+  // wavy border lives on a sibling overlay (fixed content: just the line
+  // rectangle), so WebKit caches its filter result; typing in the input
+  // never triggers a re-pass. The straight solid border on the input
+  // underneath fills any outward wobble shift, so there's no seam.
+  const baseField = {
     width: "100%", border: "2.5px solid #1b1b1b",
     padding: "9px 12px", fontFamily: "Caveat", fontSize: 19, lineHeight: 1.35,
-    background: "#fffdf6", marginBottom: 10,
+    background: "#fffdf6", display: "block",
   };
+  const wobbleOverlay = {
+    position: "absolute", inset: 0,
+    border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
+    pointerEvents: "none",
+  };
+  const fieldWrap = { position: "relative", marginBottom: 10 };
 
   const send = async () => {
     if (!message.trim() || status === "flying" || status === "sent") return;
@@ -92,13 +99,22 @@ export default function ContactCard({ onClose, onSent }) {
           <div className="mw-body" style={{ fontSize: 17, lineHeight: 1.55, color: "#444", marginBottom: 14 }}>
             随便说点什么都好 — 想合作、想吐槽、想聊天 :)
           </div>
-          <input style={inputStyle} placeholder="你是谁?(可不填)" value={name}
-            onChange={(e) => setName(e.target.value)} disabled={status === "flying"}/>
-          <input style={inputStyle} type="email" placeholder="你的邮箱?(想收到回信就填)" value={email}
-            onChange={(e) => setEmail(e.target.value)} disabled={status === "flying"}/>
-          <textarea rows={5} placeholder="写两句…" value={message}
-            onChange={(e) => setMessage(e.target.value)} disabled={status === "flying"}
-            style={{ ...inputStyle, fontSize: 20, lineHeight: 1.4, resize: "vertical" }}/>
+          <div style={fieldWrap}>
+            <input style={baseField} placeholder="你是谁?(可不填)" value={name}
+              onChange={(e) => setName(e.target.value)} disabled={status === "flying"}/>
+            <div aria-hidden="true" style={wobbleOverlay}/>
+          </div>
+          <div style={fieldWrap}>
+            <input style={baseField} type="email" placeholder="你的邮箱?(想收到回信就填)" value={email}
+              onChange={(e) => setEmail(e.target.value)} disabled={status === "flying"}/>
+            <div aria-hidden="true" style={wobbleOverlay}/>
+          </div>
+          <div style={fieldWrap}>
+            <textarea rows={5} placeholder="写两句…" value={message}
+              onChange={(e) => setMessage(e.target.value)} disabled={status === "flying"}
+              style={{ ...baseField, fontSize: 20, lineHeight: 1.4, resize: "vertical" }}/>
+            <div aria-hidden="true" style={wobbleOverlay}/>
+          </div>
 
           <div style={{
             position: "relative", display: "flex", justifyContent: "space-between",
