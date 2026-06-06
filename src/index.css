@@ -177,6 +177,21 @@ input, textarea {
   0%, 100% { opacity: .6; transform: scale(.9); }
   50% { opacity: 1; transform: scale(1.15); }
 }
+.mw-soft-hint {
+  color: #fef3a3;
+  text-shadow: 0 0 10px rgba(254,243,163,.95);
+  pointer-events: none;
+  animation: mw-soft-hint 2.4s ease-in-out infinite;
+}
+@keyframes mw-soft-hint {
+  0%, 100% { opacity: .28; transform: translateY(0) scale(.9); }
+  50% { opacity: .9; transform: translateY(-4px) scale(1.08); }
+}
+.mw-cat-encounter { animation: mw-cat-idle 2.8s ease-in-out infinite; transform-origin: bottom center; }
+@keyframes mw-cat-idle {
+  0%, 100% { margin-bottom: 0; }
+  50% { margin-bottom: 2px; }
+}
 
 /* Clouds */
 .mw-cloud {
@@ -643,3 +658,15 @@ input, textarea {
   box-shadow: 2px 3px 0 rgba(0,0,0,.15);
 }
 .mw-tut-dismiss:active { transform: translate(-50%, 1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .mw-cloud, .mw-bird { display: none; }
+  .mw-thought, .mw-thought-wide { animation: none !important; opacity: 1; }
+  .mw-soft-hint { animation: none !important; opacity: .55; }
+  .mw-world, .mw-far, .mw-mid { will-change: auto; }
+}

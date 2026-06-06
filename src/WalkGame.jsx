@@ -36,6 +36,11 @@ import {
   isMuted, setMuted,
 } from './world/sound.js';
 
+const CAT_ENCOUNTERS = [
+  { x: 1100, facing: -1, label: "喵" },
+  { x: 4740, facing: 1, label: "z z" },
+];
+
 export default function WalkGame({ onRoom }) {
   const [charX, setCharX] = useState(420);
   const [charY, setCharY] = useState(0);
@@ -56,6 +61,7 @@ export default function WalkGame({ onRoom }) {
   const [showGallery, setShowGallery] = useState(false);
   const [showcase, setShowcase] = useState(null); // { url, workId }
   const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight });
+  const [reducedMotion, setReducedMotion] = useState(() => matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [showStartHint, setShowStartHint] = useState(true);
   const [splash, setSplash] = useState(null); // {x, y} for splash drops
   const [flowered, setFlowered] = useState({});
@@ -90,6 +96,13 @@ export default function WalkGame({ onRoom }) {
     const r = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener("resize", r);
     return () => window.removeEventListener("resize", r);
+  }, []);
+
+  useEffect(() => {
+    const media = matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
   }, []);
 
   // If audio is already running (e.g. we just came back from the room),
@@ -406,11 +419,12 @@ export default function WalkGame({ onRoom }) {
   useEffect(() => {
     if (!showEnd) return;
     playWin();
+    if (reducedMotion) return;
     const id = setInterval(() => {
       if (stateRef.current.y < 5) keys.current.jumpRequested = true;
     }, 80);
     return () => clearInterval(id);
-  }, [showEnd]);
+  }, [showEnd, reducedMotion]);
 
   // ----- nearest interactable -----
   const nearest = (() => {
@@ -422,6 +436,12 @@ export default function WalkGame({ onRoom }) {
     }
     return best;
   })();
+
+  const softHintStopId = STOPS.find(s =>
+    ["notes", "lantern", "contact"].includes(s.type) &&
+    !reached[s.id] &&
+    Math.abs(charX - s.x) < 300
+  )?.id;
 
   // ----- memoised scene layers -----
   // The game loop runs ~60×/s. Without this, every frame would re-render
@@ -459,9 +479,10 @@ export default function WalkGame({ onRoom }) {
   const stopMarkers = useMemo(() => (
     STOPS.filter(s => s.x >= winStart && s.x <= winEnd).map(s => (
       <StopMarker key={s.id} stop={s} charNearby={nearest?.id === s.id}
-        lit={s.id === "lantern" && lanternLit}/>
+        lit={s.id === "lantern" && lanternLit}
+        softHint={softHintStopId === s.id}/>
     ))
-  ), [lanternLit, nearest?.id, winStart, winEnd]);
+  ), [lanternLit, nearest?.id, softHintStopId, winStart, winEnd]);
 
   const starEls = useMemo(() => (
     [[1700, 60], [1980, 85], [3400, 90], [5300, 70]].map(([sx, sy], i) => (
@@ -598,6 +619,24 @@ export default function WalkGame({ onRoom }) {
             ['--dy']: `${30 + (i % 3) * 10}px`
           }}/>
         ))}
+        {/* On the first walk the cat belongs to the world: glimpsed once in
+            daylight, then found asleep near the lantern. On later walks it
+            trusts the visitor enough to follow. */}
+        {playCount === 1 && CAT_ENCOUNTERS.map(cat => (
+          cat.x >= winStart && cat.x <= winEnd && (
+            <div key={cat.x} className="mw-cat-encounter" style={{
+              position: "absolute", left: cat.x,
+              bottom: GROUND_Y + groundLift(cat.x) - 4, zIndex: 4,
+              transform: `scaleX(${cat.facing})`,
+            }}>
+              <Cat size={34}/>
+              <div className="sk-hand" style={{
+                position: "absolute", left: 8, bottom: 30,
+                transform: `scaleX(${cat.facing})`, fontSize: 13, opacity: .7,
+              }}>{cat.label}</div>
+            </div>
+          )
+        ))}
         {/* cat (after first playthrough)
             Position is driven by transform: translate3d, not left/bottom.
             WebKit leaks paint when a child's left/top changes every frame
@@ -719,6 +758,15 @@ export default function WalkGame({ onRoom }) {
             <div className="sk-mono" style={{ fontSize: 9 * k, letterSpacing: ".22em", color: "#888" }}>END · 终点</div>
             <div className="mw-title" style={{ fontSize: 32 * k, lineHeight: 1, marginTop: 4 * k, color: "#d97757" }}>通关 ✦</div>
             <div className="sk-hand" style={{ fontSize: 14 * k, color: "#666", marginTop: 2 * k }}>你走完了 my world</div>
+            {stars === 4 && (
+              <div className="sk-hand mw-star-complete" style={{
+                marginTop: 8 * k, padding: `${5 * k}px ${8 * k}px`,
+                background: "#fef3a3", border: "1.5px solid #1b1b1b",
+                fontSize: 13 * k,
+              }}>
+                今晚的星星都亮了 ✦
+              </div>
+            )}
             <div style={{ marginTop: 12 * k, display: "flex", flexDirection: "column", gap: 4 * k }}>
               {[
                 { label: "停靠点", value: `${visitedStops}/${countedStops.length}` },

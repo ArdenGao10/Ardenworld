@@ -21,7 +21,13 @@ const Signpost = ({ x, y, label, sub, tint = "#fef3a3" }) => (
   </div>
 );
 
-export const StopMarker = ({ stop, charNearby, lit }) => {
+const SoftHint = ({ bottom, left = 0 }) => (
+  <div className="mw-soft-hint sk-hand" style={{ position: "absolute", bottom, left, fontSize: 18 }}>
+    ✦
+  </div>
+);
+
+export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
   const baseY = GROUND_Y + groundLift(stop.x);
   switch (stop.type) {
     case "start":
@@ -152,6 +158,7 @@ export const StopMarker = ({ stop, charNearby, lit }) => {
     case "notes":
       return (
         <div style={{ position: "absolute", bottom: baseY, left: stop.x - 30 }}>
+          {softHint && <SoftHint bottom={105} left={20}/>}
           <div style={{ width: 60, height: 90, background: "#7a4a32", border: "2.5px solid #1b1b1b", filter: "url(#wobble)", transform: "translateZ(0)", position: "relative" }}>
             <div style={{ position: "absolute", top: 14, left: 8, right: 8, height: 14, background: "#1b1b1b" }}/>
             <div className="sk-mono" style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", color: "#fffdf6", fontSize: 9, letterSpacing: ".1em" }}>NOTES</div>
@@ -164,6 +171,7 @@ export const StopMarker = ({ stop, charNearby, lit }) => {
       // the point of the stop, so it must not glow on its own.
       return (
         <div style={{ position: "absolute", bottom: baseY, left: stop.x - 15 }}>
+          {softHint && <SoftHint bottom={120} left={-5}/>}
           <div style={{ width: 5, height: 100, background: "#1b1b1b", margin: "0 auto" }}/>
           {/* Lantern body — translateZ(0) caches the wobble filter on its
               own compositor layer so the camera's per-frame transform
@@ -201,6 +209,7 @@ export const StopMarker = ({ stop, charNearby, lit }) => {
     case "contact":
       return (
         <div style={{ position: "absolute", bottom: baseY, left: stop.x - 30 }}>
+          {softHint && <SoftHint bottom={92} left={20}/>}
           <div style={{ width: 5, height: 70, background: "#1b1b1b", margin: "0 auto" }}/>
           <div style={{
             position: "absolute", top: -10, left: -25, width: 60, height: 40,
