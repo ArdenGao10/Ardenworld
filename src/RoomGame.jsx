@@ -622,8 +622,12 @@ export default function RoomGame({ onSwitch }) {
           <Bed highlighted={nearest === "bed"} lying={lying}/>
         </Anchored>
 
-        {/* 网吧考古学家 — a little Switch resting on the foot of the bed */}
-        <Anchored x={POS.cafe - 35} bottom={FLOOR_H + 38}
+        {/* 网吧考古学家 — a little Switch actually resting on the foot (right
+            end) of the bed. Placed relative to POS.bed, not POS.cafe, so it
+            sits on the blanket instead of floating off the bed's side: x lands
+            it on the foot half, bottom sits it on the mattress-top surface
+            (FLOOR_H + 64). The walk-to / interaction point stays at POS.cafe. */}
+        <Anchored x={POS.bed + 48} bottom={FLOOR_H + 54}
                   prompt={nearest === "cafe" && PROMPT_LABEL.cafe}
                   onActivate={() => interactWith("cafe")}
                   promptOffset={92}>
