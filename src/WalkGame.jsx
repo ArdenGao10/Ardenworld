@@ -473,7 +473,7 @@ export default function WalkGame({ onRoom }) {
           lines: [
             "诶 — 你来啦 :)",
             "我是 Arden。\n这是我做的小世界 — my world。",
-            "前面有两件我最近做的产品，\n几个停靠点，还有藏起来的小东西 ✦",
+            "前面有几件我做的东西，\n几个停靠点，还有藏起来的小玩意儿 ✦",
             "天会慢慢黑下来，但路上一直有灯 ✿\n随便逛 — 点招牌就能聊聊 :)",
           ]
         });
@@ -494,14 +494,6 @@ export default function WalkGame({ onRoom }) {
         break;
       case "doodle":  setOverlay({ type: "doodle" }); break;
       case "contact": setOverlay({ type: "contact" }); break;
-      case "soon":
-        setDialog({
-          lines: [
-            "你走过最热闹的一段了 :)",
-            "这块地以后会再长出一座山\n下一件作品还在做 — 等等我 ✦",
-          ]
-        });
-        break;
       case "peak":    setShowEnd(true); break;
       default: break;
     }

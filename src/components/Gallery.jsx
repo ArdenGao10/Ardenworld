@@ -9,9 +9,13 @@
 
 import { useState } from 'react';
 import { WORKS } from '../world/data.js';
-import { FocusDemo, MoodDemo } from './WorkDemo.jsx';
+import { FocusDemo, MoodDemo, CafeDemo, SparkDemo } from './WorkDemo.jsx';
 import { isMuted, setMuted, initAudio } from '../world/sound.js';
 import { SpeakerIcon } from './Icons.jsx';
+
+const DEMOS = { focus: FocusDemo, mood: MoodDemo, cafe: CafeDemo, spark: SparkDemo };
+// Which demos sit on a dark backdrop (night works) vs a light one.
+const DARK_DEMOS = new Set(["mood", "cafe"]);
 
 export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel = "← 还是想走一遍" }) {
   const [demoId, setDemoId] = useState(null);
@@ -92,7 +96,8 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
       {/* Inline demo popup — its own little card, dark or light to match the work */}
       {demoId && (() => {
         const w = WORKS[demoId];
-        const dark = demoId !== "focus";
+        const Demo = DEMOS[demoId] || FocusDemo;
+        const dark = DARK_DEMOS.has(demoId);
         return (
           <div onClick={() => setDemoId(null)} className="mw-themed-scroll" style={{
             position: "fixed", inset: 0, background: "rgba(27,27,27,.6)", zIndex: 60,
@@ -120,7 +125,7 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
                 {w.name}
               </div>
               <div style={{ marginTop: 18 }}>
-                {demoId === "focus" ? <FocusDemo/> : <MoodDemo/>}
+                <Demo/>
               </div>
               {/* No wobble — parent card already has it; double-displacing a
                   32×32 element ovals the circle on iOS. */}

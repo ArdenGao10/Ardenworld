@@ -5,7 +5,11 @@
  */
 
 import { useState, useEffect } from 'react';
-import { FocusDemo, MoodDemo } from './WorkDemo.jsx';
+import { FocusDemo, MoodDemo, CafeDemo, SparkDemo } from './WorkDemo.jsx';
+
+const DEMOS = { focus: FocusDemo, mood: MoodDemo, cafe: CafeDemo, spark: SparkDemo };
+// Each demo gets its own backdrop — light & airy or night-dark to match the work.
+const DEMO_BG = { focus: "#FBFBFB", mood: "#1E1711", cafe: "#0a0d12", spark: "#FFF7E6" };
 
 export default function WorkModal({ work, workId, onClose, onShowcase }) {
   const [demoOn, setDemoOn] = useState(false);
@@ -16,8 +20,8 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // demo gets its own backdrop — focus is light & airy, moodtune is night-dark
-  const demoBg = workId === "focus" ? "#FBFBFB" : "#1E1711";
+  const Demo = DEMOS[workId] || FocusDemo;
+  const demoBg = DEMO_BG[workId] || "#1E1711";
 
   return (
     <div onClick={onClose} className="mw-themed-scroll" style={{
@@ -47,7 +51,7 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
             : { height: 220, display: "flex", alignItems: "center", justifyContent: "center" }),
         }}>
           {demoOn ? (
-            workId === "focus" ? <FocusDemo/> : <MoodDemo/>
+            <Demo/>
           ) : (<>
             {workId === "focus" && (
               <div style={{ position: "relative", width: 160, height: 160 }}>
@@ -92,6 +96,51 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
                   <div className="sk-tag" style={{ background: "#fef3a3", fontSize: 9 }}>now playing</div>
                 </div>
                 <div style={{ position: "absolute", top: -4, right: 30, width: 8, height: 60, background: "#1b1b1b", transform: "rotate(20deg)", transformOrigin: "top right" }}/>
+              </div>
+            )}
+            {workId === "cafe" && (
+              <div style={{ position: "relative", width: 200, height: 150 }}>
+                {/* a dead CRT monitor flickering back to life: 17# · HOME */}
+                <div style={{
+                  position: "absolute", inset: 0, borderRadius: 10,
+                  background: "#11151b", border: "3px solid #1b1b1b", filter: "url(#wobble)",
+                  boxShadow: "inset 0 0 50px rgba(0,0,0,.85)",
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                }}>
+                  <div className="sk-mono" style={{ fontSize: 11, letterSpacing: ".3em", color: "#5f7d6a" }}>17#</div>
+                  <div className="mw-title" style={{
+                    fontSize: 40, color: "#aee3c0", marginTop: 4,
+                    textShadow: "0 0 14px rgba(120,230,170,.7)",
+                  }}>HOME</div>
+                  <div className="sk-mono" style={{ fontSize: 8, letterSpacing: ".2em", color: "#4a6356", marginTop: 6 }}>
+                    LAST_STATE ▮
+                  </div>
+                </div>
+                <div style={{ position: "absolute", top: -10, right: -10, transform: "rotate(8deg)" }}>
+                  <div className="sk-tag" style={{ background: "#fef3a3", fontSize: 9 }}>preview</div>
+                </div>
+              </div>
+            )}
+            {workId === "spark" && (
+              <div style={{ position: "relative", width: 150, height: 160 }}>
+                {/* a glass jar full of glowing fragments */}
+                <div style={{ position: "absolute", top: 18, left: 18, right: 18, height: 16, background: "#e0a96a", border: "2.5px solid #1b1b1b", filter: "url(#wobble)", borderRadius: 4, zIndex: 2 }}/>
+                <div style={{
+                  position: "absolute", top: 28, left: 10, right: 10, bottom: 0, borderRadius: "10px 10px 18px 18px",
+                  background: "radial-gradient(circle at 50% 30%, rgba(255,247,224,.95), rgba(243,200,122,.5))",
+                  border: "3px solid #1b1b1b", filter: "url(#wobble)", overflow: "hidden",
+                }}>
+                  {["✦","✶","✦","✷","✦","✶"].map((g, i) => (
+                    <div key={i} className="sk-hand" style={{
+                      position: "absolute", left: `${14 + (i % 3) * 30}%`, top: `${24 + Math.floor(i / 3) * 32}%`,
+                      fontSize: 16, color: "#b9802a",
+                      animation: `mw-jardrift ${0.9 + (i % 3) * 0.3}s ease-in-out infinite alternate`,
+                    }}>{g}</div>
+                  ))}
+                </div>
+                <div style={{ position: "absolute", top: -10, right: -14, transform: "rotate(8deg)", zIndex: 3 }}>
+                  <div className="sk-tag" style={{ background: "#fef3a3", fontSize: 9 }}>now mixing</div>
+                </div>
               </div>
             )}
           </>)}

@@ -51,7 +51,6 @@ export function InteractPrompt({ stop }) {
     lantern: "点灯",
     doodle: "看看",
     contact: "写信",
-    soon: "看一眼",
     peak: "到终点",
   };
   const label = labels[stop.type];

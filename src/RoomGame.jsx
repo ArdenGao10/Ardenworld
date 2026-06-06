@@ -18,7 +18,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { WORKS, WALK_SPEED, CHAR_BASE_W, DOODLES_ROOM } from './world/data.js';
+import { WORKS, WALK_SPEED, JUMP_VEL, GRAVITY, CHAR_BASE_W, DOODLES_ROOM } from './world/data.js';
 import { Char } from './world/Char.jsx';
 import WorkModal from './components/WorkModal.jsx';
 import ShowcaseFrame from './components/ShowcaseFrame.jsx';
@@ -37,14 +37,20 @@ const FLOOR_H = 170;
 const CHAR_FOOT = 18;
 const INTERACT_RADIUS = 110;
 
+// Two new works tuck into spots that already had air: the café game is a
+// little Switch resting on the foot of the bed (so the bed gives you both
+// "lie down" and "play"), and the spark jar sits on a small cabinet under
+// the window. Focus is the alarm clock on the desk. Width stays original.
 const POS = {
   outdoor:  140,
   climb:    340,
   bed:      640,
-  fishtank: 920,
+  cafe:     775,
+  fishtank: 940,
   desk:     1180,
-  plant:    1360,
-  shelf:    1520,
+  spark:    1340,
+  plant:    1440,
+  shelf:    1540,
   doodle:   1760,
   record:   1980,
   about:    2150,
@@ -59,6 +65,8 @@ const PROMPT_LABEL = {
   shelf:    "翻一本",
   doodle:   "看看实验",
   mood:     "放一张唱片",
+  cafe:     "玩一会儿",
+  spark:    "摇一摇",
   about:    "认识一下",
   mail:     "写一封信",
 };
@@ -116,6 +124,8 @@ const BOOK_QUOTES = [
 export default function RoomGame({ onSwitch }) {
   const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [charX, setCharX] = useState(POS.desk);
+  const [charY, setCharY] = useState(0);
+  const [vy, setVy] = useState(0);
   const [facing, setFacing] = useState(-1);
   const [walking, setWalking] = useState(false);
   const [target, setTarget] = useState(null);
@@ -141,11 +151,13 @@ export default function RoomGame({ onSwitch }) {
   const [rising, setRising] = useState(false); // brief wake-up fade-out
 
   const stageRef = useRef(null);
-  const stateRef = useRef({ x: POS.desk });
+  const stateRef = useRef({ x: POS.desk, y: 0, vy: 0 });
   stateRef.current.x = charX;
+  stateRef.current.y = charY;
+  stateRef.current.vy = vy;
   const lastT = useRef(performance.now());
   const stepAcc = useRef(0);
-  const keys = useRef({ left: false, right: false });
+  const keys = useRef({ left: false, right: false, jumpRequested: false });
   const thoughtTimer = useRef(null);
   const pigeonReturnTimer = useRef(null);
   // Timestamp of the last lie-down / get-up. A tap (and the synthetic mouse
@@ -205,8 +217,10 @@ export default function RoomGame({ onSwitch }) {
         { x: POS.outdoor,  approach: POS.outdoor + 40,  then: openOutdoor },
         { x: POS.climb,    approach: POS.climb + 90,    then: enterClimb },
         { x: POS.bed,      approach: POS.bed - 30,      then: lieDown },
+        { x: POS.cafe,     approach: POS.cafe,          then: () => openWork("cafe") },
         { x: POS.fishtank, approach: POS.fishtank,      then: feedFish },
         { x: POS.desk,     approach: POS.desk + 93,     then: () => openWork("focus") },
+        { x: POS.spark,    approach: POS.spark,         then: () => openWork("spark") },
         { x: POS.shelf,    approach: POS.shelf,         then: openBook },
         { x: POS.doodle,   approach: POS.doodle,        then: openDoodle },
         { x: POS.record,   approach: POS.record - 70,   then: () => openWork("mood") },
@@ -288,6 +302,8 @@ export default function RoomGame({ onSwitch }) {
   function interactWith(key) {
     if (key === "focus") openWork("focus");
     else if (key === "mood") openWork("mood");
+    else if (key === "cafe") openWork("cafe");
+    else if (key === "spark") openWork("spark");
     else if (key === "doodle") openDoodle();
     else if (key === "shelf") openBook();
     else if (key === "fishtank") feedFish();
@@ -312,6 +328,8 @@ export default function RoomGame({ onSwitch }) {
         if (!climbHold && !lying) { keys.current.left = true; e.preventDefault(); }
       } else if (k === "ArrowRight" || k === "d" || k === "D") {
         if (!climbHold && !lying) { keys.current.right = true; e.preventDefault(); }
+      } else if (k === "ArrowUp" || k === "w" || k === "W") {
+        if (!climbHold && !lying) { keys.current.jumpRequested = true; e.preventDefault(); }
       } else if (k === "e" || k === "E" || k === " " || k === "Enter") {
         if (!climbHold && !lying) {
           const n = findNearest(stateRef.current.x);
@@ -339,6 +357,8 @@ export default function RoomGame({ onSwitch }) {
       lastT.current = t;
 
       let x = stateRef.current.x;
+      let y = stateRef.current.y;
+      let v = stateRef.current.vy;
       let isWalking = false;
       let curFacing = facing;
       const paused = blocked || climbHold || lying;
@@ -365,13 +385,29 @@ export default function RoomGame({ onSwitch }) {
 
       x = Math.max(80, Math.min(ROOM_W - 80, x));
 
-      if (isWalking) {
+      // jump + gravity — a quick hop with ArrowUp / W (or the mobile button)
+      if (keys.current.jumpRequested && y === 0 && !paused) {
+        v = JUMP_VEL;
+        playJump();
+      }
+      keys.current.jumpRequested = false;
+      if (y > 0 || v !== 0) {
+        y += v * dt;
+        v -= GRAVITY * dt;
+        if (y <= 0) { y = 0; v = 0; }
+      }
+
+      if (isWalking && y < 6) {
         stepAcc.current += dt;
         if (stepAcc.current >= 0.3) { stepAcc.current = 0; playStep(); }
       } else stepAcc.current = 0.3;
 
       stateRef.current.x = x;
+      stateRef.current.y = y;
+      stateRef.current.vy = v;
       setCharX(x);
+      setCharY(y);
+      setVy(v);
       setWalking(isWalking);
       setFacing(curFacing);
       raf = requestAnimationFrame(loop);
@@ -586,6 +622,14 @@ export default function RoomGame({ onSwitch }) {
           <Bed highlighted={nearest === "bed"} lying={lying}/>
         </Anchored>
 
+        {/* 网吧考古学家 — a little Switch resting on the foot of the bed */}
+        <Anchored x={POS.cafe - 35} bottom={FLOOR_H + 38}
+                  prompt={nearest === "cafe" && PROMPT_LABEL.cafe}
+                  onActivate={() => interactWith("cafe")}
+                  promptOffset={92}>
+          <SwitchConsole highlighted={nearest === "cafe"}/>
+        </Anchored>
+
         <Anchored x={POS.fishtank - 90} bottom={FLOOR_H - 6}
                   prompt={nearest === "fishtank" && PROMPT_LABEL.fishtank}
                   onActivate={() => interactWith("fishtank")}
@@ -598,6 +642,14 @@ export default function RoomGame({ onSwitch }) {
                   onActivate={() => interactWith("focus")}
                   promptOffset={196}>
           <Desk highlighted={nearest === "focus"}/>
+        </Anchored>
+
+        {/* 灵感搜集器 — a glowing idea jar on a small cabinet under the window */}
+        <Anchored x={POS.spark - 40} bottom={FLOOR_H - 6}
+                  prompt={nearest === "spark" && PROMPT_LABEL.spark}
+                  onActivate={() => interactWith("spark")}
+                  promptOffset={150}>
+          <SparkCabinet highlighted={nearest === "spark"}/>
         </Anchored>
 
         {/* stool beside the desk — always there */}
@@ -672,10 +724,10 @@ export default function RoomGame({ onSwitch }) {
         {!lying && !climbHold && !sitting && !singing && (
           <div style={{
             position: "absolute", left: 0, bottom: 0, zIndex: 10,
-            transform: `translate3d(${charX - CHAR_BASE_W / 2}px, ${-charBottom}px, 0)`,
+            transform: `translate3d(${charX - CHAR_BASE_W / 2}px, ${-(charBottom + charY)}px, 0)`,
             willChange: "transform",
           }}>
-            <Char size={isMobile ? 70 : 90} walking={walking} facing={facing}
+            <Char size={isMobile ? 70 : 90} walking={walking} jumping={charY > 5} facing={facing}
                   mood={nearest ? "?" : ""}/>
             {thought && (
               <div className="mw-thought" key={thought.id}>
@@ -760,6 +812,18 @@ export default function RoomGame({ onSwitch }) {
         <SpeakerIcon muted={muted}/>{muted ? "静音" : "声音"}
       </button>
 
+      {/* mobile jump button — no keyboard there, so a tap-to-hop control */}
+      {isMobile && !blocked && !climbHold && !lying && (
+        <button className="mw-skip"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            if (stateRef.current.y === 0) keys.current.jumpRequested = true;
+          }}
+          style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 36 }}>
+          ↑ 跳
+        </button>
+      )}
+
       {climbHold ? (
         <button className="mw-skip"
                 onClick={(e) => { e.stopPropagation(); exitClimb(); }}
@@ -820,7 +884,7 @@ export default function RoomGame({ onSwitch }) {
             走到东西旁边 — 都能玩 ✦
           </div>
           <div className="mw-body" style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
-            攀岩·床·鱼缸·书桌·书架·涂鸦墙·唱片机·关于我·信鸽 &nbsp;·&nbsp; {isMobile ? "点屏幕走 · 点黑气泡互动 · 右上 SKIP 看作品" : "← → / A D 走 · E 互动 · 右上 SKIP 看作品"}
+            窗边灵感罐·攀岩·床上掌机·鱼缸·书桌闹钟·书架·涂鸦墙·唱片机·关于我·信鸽 &nbsp;·&nbsp; {isMobile ? "点屏幕走 · 点黑气泡互动 · 点 ↑跳 · 右上 SKIP 看作品" : "← → / A D 走 · W/↑ 跳 · E 互动 · 右上 SKIP 看作品"}
           </div>
         </div>
       )}
@@ -1030,6 +1094,8 @@ function findNearest(charX) {
     ["shelf",    POS.shelf],
     ["doodle",   POS.doodle],
     ["mood",     POS.record],
+    ["cafe",     POS.cafe],
+    ["spark",    POS.spark],
     ["about",    POS.about],
     ["mail",     POS.mail],
   ];
@@ -1769,16 +1835,21 @@ function Desk({ highlighted }) {
         <rect x="188" y="124" width="10" height="44" fill="#7a5a36" stroke="#1b1b1b" strokeWidth="2"/>
         <rect x="60" y="128" width="60" height="22" fill="#8b6539" stroke="#1b1b1b" strokeWidth="2" filter="url(#wobble)"/>
         <circle cx="90" cy="139" r="1.8" fill="#1b1b1b"/>
-        <rect x="100" y="98" width="20" height="12" fill="#1b1b1b"/>
-        <rect x="64" y="40" width="92" height="62" rx="3"
-              fill="#1b1b1b" stroke="#1b1b1b" strokeWidth="2.5" filter="url(#wobble)"/>
-        <rect x="68" y="44" width="84" height="54" fill="#FBFBFB"/>
-        <circle cx="110" cy="71" r="18" fill="none" stroke="#cfe0c6" strokeWidth="3"/>
-        <circle cx="110" cy="71" r="18" fill="none" stroke="#d97757" strokeWidth="3"
-                strokeDasharray="113" strokeDashoffset="40" strokeLinecap="round"
-                transform="rotate(-90 110 71)"/>
-        <text x="110" y="74" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono"
-              fill="#1b1b1b">12:30</text>
+        {/* 专注圈 — a small alarm clock; the pomodoro ring lives on its face */}
+        <line x1="100" y1="106" x2="96" y2="112" stroke="#1b1b1b" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="116" y1="106" x2="120" y2="112" stroke="#1b1b1b" strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="100" cy="78" r="5" fill="#d97757" stroke="#1b1b1b" strokeWidth="1.8" filter="url(#wobble)"/>
+        <circle cx="116" cy="78" r="5" fill="#d97757" stroke="#1b1b1b" strokeWidth="1.8" filter="url(#wobble)"/>
+        <path d="M103 74 Q108 68 113 74" fill="none" stroke="#1b1b1b" strokeWidth="1.8" strokeLinecap="round"/>
+        <line x1="108" y1="69" x2="108" y2="74" stroke="#1b1b1b" strokeWidth="1.6"/>
+        <circle cx="108" cy="93" r="15" fill="#fef3a3" stroke="#1b1b1b" strokeWidth="2.2" filter="url(#wobble)"/>
+        <circle cx="108" cy="93" r="11" fill="#fffdf6" stroke="#cfe0c6" strokeWidth="2.6"/>
+        <circle cx="108" cy="93" r="11" fill="none" stroke="#d97757" strokeWidth="2.6"
+                strokeDasharray="69" strokeDashoffset="26" strokeLinecap="round"
+                transform="rotate(-90 108 93)"/>
+        <line x1="108" y1="93" x2="108" y2="86" stroke="#1b1b1b" strokeWidth="1.6" strokeLinecap="round"/>
+        <line x1="108" y1="93" x2="113" y2="95" stroke="#1b1b1b" strokeWidth="1.6" strokeLinecap="round"/>
+        <circle cx="108" cy="93" r="1.6" fill="#1b1b1b"/>
         <g filter="url(#wobble)">
           <rect x="22" y="100" width="16" height="6" fill="#1b1b1b"/>
           <line x1="30" y1="100" x2="30" y2="76" stroke="#1b1b1b" strokeWidth="2.5"/>
@@ -1925,6 +1996,78 @@ function Plant() {
               fill="#9bb18e" stroke="#1b1b1b" strokeWidth="2"/>
       </g>
     </svg>
+  );
+}
+
+// ============================================================
+// Switch console — 网吧考古学家 (a small handheld on the bed)
+// ============================================================
+function SwitchConsole({ highlighted }) {
+  return (
+    <div style={{ position: "relative", width: 70, height: 50,
+                  filter: highlighted ? "drop-shadow(0 0 12px rgba(217,119,87,.6))" : "none",
+                  transition: "filter .25s" }}>
+      <svg width="70" height="50" viewBox="0 0 70 50" style={{ display: "block" }}>
+        <g transform="rotate(-6 35 28)">
+          {/* left Joy-Con (neon blue) */}
+          <path d="M11 18 Q6 18 6 23 L6 35 Q6 40 11 40 L18 40 L18 18 Z"
+                fill="#19b3e6" stroke="#1b1b1b" strokeWidth="1.8" filter="url(#wobble)"/>
+          <circle cx="12" cy="25" r="2.4" fill="#0a0d12" stroke="#1b1b1b" strokeWidth="1.2"/>
+          {/* right Joy-Con (neon red) */}
+          <path d="M59 18 Q64 18 64 23 L64 35 Q64 40 59 40 L52 40 L52 18 Z"
+                fill="#e84b4b" stroke="#1b1b1b" strokeWidth="1.8" filter="url(#wobble)"/>
+          <circle cx="58" cy="33" r="2.4" fill="#0a0d12" stroke="#1b1b1b" strokeWidth="1.2"/>
+          {/* screen body */}
+          <rect x="18" y="18" width="34" height="22" rx="2.5"
+                fill="#2b2f36" stroke="#1b1b1b" strokeWidth="1.8" filter="url(#wobble)"/>
+          {/* the dark café game on screen */}
+          <rect x="21" y="21" width="28" height="16" rx="1.5" fill="#0c1118"/>
+          <text x="35" y="32" textAnchor="middle" fontSize="6"
+                fontFamily="JetBrains Mono" fill="#aee3c0"
+                style={{ filter: "drop-shadow(0 0 3px rgba(120,230,170,.8))" }}>HOME</text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// ============================================================
+// Spark cabinet — 灵感搜集器 (idea jar on a small cabinet under the window)
+// ============================================================
+function SparkCabinet({ highlighted }) {
+  return (
+    <div style={{ position: "relative", width: 80, height: 150,
+                  filter: highlighted ? "drop-shadow(0 0 14px rgba(240,184,96,.6))" : "none",
+                  transition: "filter .25s" }}>
+      <svg width="80" height="150" viewBox="0 0 80 150" style={{ display: "block" }}>
+        {/* small cabinet */}
+        <rect x="10" y="92" width="60" height="48"
+              fill="#a77a4a" stroke="#1b1b1b" strokeWidth="2.4" filter="url(#wobble)"/>
+        <rect x="6" y="86" width="68" height="8" rx="2"
+              fill="#8b6539" stroke="#1b1b1b" strokeWidth="2.2" filter="url(#wobble)"/>
+        <line x1="40" y1="96" x2="40" y2="136" stroke="#1b1b1b" strokeWidth="1.6"/>
+        <circle cx="36" cy="116" r="1.8" fill="#1b1b1b"/>
+        <circle cx="44" cy="116" r="1.8" fill="#1b1b1b"/>
+        <rect x="14" y="140" width="8" height="7" fill="#7a5a36" stroke="#1b1b1b" strokeWidth="1.5"/>
+        <rect x="58" y="140" width="8" height="7" fill="#7a5a36" stroke="#1b1b1b" strokeWidth="1.5"/>
+
+        {/* warm glow + small jar on top */}
+        <circle cx="40" cy="56" r="24" fill="rgba(246,205,125,.4)"/>
+        <path d="M28 50 Q28 45 33 45 L47 45 Q52 45 52 50 L53 80 Q53 86 40 86 Q27 86 27 80 Z"
+              fill="rgba(246,205,125,.5)" stroke="#1b1b1b" strokeWidth="2.2"
+              strokeLinejoin="round" filter="url(#wobble)"/>
+        <path d="M32 53 Q30 70 34 82" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="2" strokeLinecap="round"/>
+        <rect x="32" y="38" width="16" height="8" rx="2"
+              fill="#e0a96a" stroke="#1b1b1b" strokeWidth="2" filter="url(#wobble)"/>
+        {[[34, 62], [46, 58], [40, 74]].map(([sx, sy], i) => (
+          <text key={i} x={sx} y={sy} textAnchor="middle"
+                fontSize={9} fontFamily="Caveat" fill="#b9802a"
+                style={{ animation: `mw-jardrift ${0.9 + (i % 3) * 0.4}s ease-in-out ${i * 0.15}s infinite alternate` }}>✦</text>
+        ))}
+        <text x="40" y="28" textAnchor="middle" fontSize="10" fontFamily="Caveat" fill="#e8975c"
+              style={{ animation: "mw-jardrift 1.4s ease-in-out infinite alternate" }}>✦</text>
+      </svg>
+    </div>
   );
 }
 

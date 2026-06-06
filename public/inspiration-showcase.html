@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>灵感搜集器 · Spark Jar —— Arden × Vesper</title>
+<meta name="description" content="灵感搜集器:把零散灵感摇一摇,让 AI 碰撞出新点子。Arden 和搭档 Vesper 一起做的。" />
+<link rel="stylesheet" href="/fonts/fonts.css" />
+<style>
+  /* ===========================================================
+     灵感搜集器 —— 互动介绍页(独立单文件,无外部依赖)
+     暖黄「光晕 / 太阳粒子」视觉 · 中英混排
+     Arden × Vesper 合作作品
+     =========================================================== */
+  :root {
+    --bg:      #fff7e6;
+    --bg-2:    #fdeecb;
+    --ink:     #1b1b1b;
+    --fg:      #3a2c12;
+    --muted:   #9a7a3a;
+    --faint:   #b9933f;
+    --accent:  #e8975c;
+    --accent-2:#f0b860;
+    --rose:    #e2a0a8;
+    --teal:    #8fb8a8;
+    --line:    rgba(122,90,26,.18);
+    --card:    rgba(255,255,255,.55);
+    --serif: Georgia, "Songti SC", "Noto Serif SC", serif;
+    /* All Chinese runs resolve to the same serif as the 专注圈 / 心情唱片
+       showcase pages, so the three product pages read as one family.
+       --hand keeps Caveat for the Latin names + ✦ only; its CJK fallback is
+       the serif (not a ZCOOL face) so no Chinese slips into a second style. */
+    --cn:    var(--serif);
+    --round: var(--serif);
+    --hand:  "Caveat", var(--serif);
+    --mono:  "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  html, body { scrollbar-width: none; -ms-overflow-style: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; }
+
+  body {
+    font-family: var(--cn);
+    background:
+      radial-gradient(60vw 60vw at 78% -8%, rgba(240,184,96,.55), transparent 60%),
+      radial-gradient(50vw 50vw at 8% 12%, rgba(232,151,92,.30), transparent 58%),
+      var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 72px 24px 96px; }
+
+  /* hand-drawn wobble on bordered things */
+  .wob { filter: url(#wobble); }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .26em;
+    text-transform: uppercase; color: var(--faint);
+  }
+
+  h1.title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(48px, 11vw, 92px); line-height: .98;
+    color: var(--ink); margin-top: 12px; letter-spacing: -.01em;
+  }
+  .title .cn { font-family: var(--cn); }
+  .subtitle {
+    font-family: var(--mono); font-size: 13px; letter-spacing: .2em;
+    color: var(--muted); margin-top: 14px;
+  }
+  .lede {
+    font-family: var(--cn); font-size: clamp(18px, 2.6vw, 22px);
+    line-height: 1.7; color: var(--fg); margin-top: 22px; max-width: 30em;
+  }
+
+  /* sun-particle drift behind the hero */
+  .motes { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .mote {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,240,200,.9), rgba(240,184,96,0));
+    animation: drift linear infinite;
+  }
+  @keyframes drift {
+    from { transform: translateY(20px); opacity: 0; }
+    20%  { opacity: .9; }
+    to   { transform: translateY(-110vh); opacity: 0; }
+  }
+  .wrap { position: relative; z-index: 1; }
+
+  /* === collaboration card === */
+  .collab {
+    margin-top: 44px;
+    background: var(--card);
+    border: 3px solid var(--ink);
+    box-shadow: 5px 7px 0 rgba(122,90,26,.16);
+    padding: 26px 26px 22px;
+    display: grid; grid-template-columns: 1fr; gap: 18px;
+  }
+  .collab-people {
+    display: flex; align-items: flex-end; justify-content: center;
+    gap: clamp(14px, 6vw, 54px);
+    position: relative;
+  }
+  .person { text-align: center; }
+  .person .nm { font-family: var(--hand); font-size: 26px; color: var(--ink); margin-top: 4px; line-height: 1; }
+  .person .rl { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; color: var(--muted); margin-top: 4px; }
+  .amp {
+    font-family: var(--serif); font-style: italic; font-size: 40px; color: var(--accent);
+    align-self: center; margin-bottom: 26px;
+  }
+  .collab-note {
+    text-align: center; font-family: var(--cn); font-size: 17px;
+    line-height: 1.7; color: var(--fg);
+    border-top: 1.5px dashed var(--line); padding-top: 16px;
+  }
+  .collab-note b { color: var(--accent-2); }
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .14em; padding: 4px 12px; border-radius: 999px;
+    border: 1.5px solid var(--ink); background: var(--accent-2); color: var(--ink);
+  }
+
+  /* === the loop === */
+  section { margin-top: 64px; }
+  .sec-h { font-family: var(--serif); font-size: clamp(26px, 5vw, 38px); color: var(--ink); }
+  .sec-h .cn { font-family: var(--cn); }
+  .sec-sub { font-family: var(--cn); font-size: 16px; color: var(--muted); margin-top: 6px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+  .step {
+    background: var(--card); border: 2.5px solid var(--ink);
+    box-shadow: 3px 4px 0 rgba(122,90,26,.14); padding: 20px 16px; text-align: center;
+  }
+  .step .ic { font-size: 34px; }
+  .step .n  { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; color: var(--faint); margin-top: 8px; }
+  .step .t  { font-family: var(--round); font-size: 19px; color: var(--ink); margin-top: 4px; }
+  .step .d  { font-family: var(--cn); font-size: 13px; line-height: 1.55; color: var(--fg); margin-top: 8px; }
+  @media (max-width: 560px) { .steps { grid-template-columns: 1fr; } }
+
+  /* === feature list === */
+  .feats { margin-top: 26px; display: grid; gap: 14px; }
+  .feat {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--card); border: 2px solid var(--ink); padding: 16px 18px;
+    box-shadow: 2px 3px 0 rgba(122,90,26,.12);
+  }
+  .feat .star { font-family: var(--hand); font-size: 22px; color: var(--accent); line-height: 1.2; }
+  .feat .ft { font-family: var(--round); font-size: 17px; color: var(--ink); }
+  .feat .fd { font-family: var(--cn); font-size: 14px; line-height: 1.6; color: var(--fg); margin-top: 3px; }
+
+  /* === CTA === */
+  .cta-row { margin-top: 56px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn {
+    font-family: var(--round); font-size: 19px; letter-spacing: .02em;
+    padding: 14px 30px; border: 2.5px solid var(--ink); border-radius: 999px;
+    cursor: pointer; text-decoration: none; display: inline-block;
+    box-shadow: 3px 4px 0 rgba(122,90,26,.18); transition: transform .15s ease;
+  }
+  .btn:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 rgba(122,90,26,.18); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ghost   { background: var(--bg); color: var(--ink); }
+
+  .foot {
+    margin-top: 56px; padding-top: 22px; border-top: 1.5px dashed var(--line);
+    font-family: var(--hand); font-size: 18px; color: var(--muted); text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- self-contained wobble filter (the parent app's #wobble lives outside this iframe) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="wobble">
+    <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/>
+  </filter>
+</defs></svg>
+
+<div class="motes" id="motes" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <header>
+    <div class="eyebrow">Arden × Vesper · 合作作品</div>
+    <h1 class="title"><span class="cn">灵感</span>搜集器</h1>
+    <div class="subtitle">SPARK JAR · an AI idea-collision jar</div>
+    <p class="lede">
+      把你平时攒下的零散灵感丢进一只玻璃罐，摇一摇 —— 让 AI 抽两三条
+      <em>撞</em>成一个新产品点子，再接着聊，把一句话聊成能落地的方案。
+    </p>
+  </header>
+
+  <!-- COLLABORATION -->
+  <div class="collab wob">
+    <div class="collab-people">
+      <!-- Arden — 小女孩 · 橙裙 · 马尾 -->
+      <div class="person">
+        <svg width="96" height="150" viewBox="0 0 96 150" aria-label="Arden">
+          <!-- ponytail -->
+          <path d="M62 44 Q86 50 80 86 Q78 100 68 104" fill="#caa15a" stroke="#1b1b1b" stroke-width="2.5" stroke-linejoin="round" filter="url(#wobble)"/>
+          <!-- head -->
+          <circle cx="46" cy="38" r="22" fill="#fffdf6" stroke="#1b1b1b" stroke-width="2.5" filter="url(#wobble)"/>
+          <!-- fringe -->
+          <path d="M26 32 Q46 14 66 32 Q58 24 46 24 Q34 24 26 32 Z" fill="#caa15a" stroke="#1b1b1b" stroke-width="2.2" stroke-linejoin="round" filter="url(#wobble)"/>
+          <!-- hair tie -->
+          <circle cx="63" cy="44" r="4" fill="#e8975c" stroke="#1b1b1b" stroke-width="1.6"/>
+          <!-- eyes + smile -->
+          <circle cx="39" cy="40" r="2.1" fill="#1b1b1b"/>
+          <circle cx="53" cy="40" r="2.1" fill="#1b1b1b"/>
+          <path d="M40 48 Q46 53 52 48" fill="none" stroke="#1b1b1b" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="33" cy="46" r="3" fill="rgba(232,151,92,.4)"/>
+          <circle cx="59" cy="46" r="3" fill="rgba(232,151,92,.4)"/>
+          <!-- dress (orange) -->
+          <path d="M30 64 L62 64 L74 124 L18 124 Z" fill="#d97757" stroke="#1b1b1b" stroke-width="2.4" stroke-linejoin="round" filter="url(#wobble)"/>
+          <!-- arms -->
+          <path d="M31 70 Q18 84 22 100" fill="none" stroke="#1b1b1b" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M61 70 Q74 82 70 96" fill="none" stroke="#1b1b1b" stroke-width="2.6" stroke-linecap="round"/>
+          <!-- legs -->
+          <path d="M38 124 L36 146 M54 124 L56 146" stroke="#1b1b1b" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+        <div class="nm">Arden</div>
+      </div>
+
+      <div class="amp">&amp;</div>
+
+      <!-- Vesper — 小女孩 · 双麻花辫 · 青/玫瑰裙 -->
+      <div class="person">
+        <svg width="96" height="150" viewBox="0 0 96 150" aria-label="Vesper">
+          <!-- twin braids -->
+          <path d="M28 46 Q14 64 20 96 Q22 106 30 108" fill="#a9794f" stroke="#1b1b1b" stroke-width="2.4" stroke-linejoin="round" filter="url(#wobble)"/>
+          <path d="M68 46 Q82 64 76 96 Q74 106 66 108" fill="#a9794f" stroke="#1b1b1b" stroke-width="2.4" stroke-linejoin="round" filter="url(#wobble)"/>
+          <!-- braid ties -->
+          <circle cx="20" cy="92" r="3.4" fill="#e2a0a8" stroke="#1b1b1b" stroke-width="1.4"/>
+          <circle cx="76" cy="92" r="3.4" fill="#e2a0a8" stroke="#1b1b1b" stroke-width="1.4"/>
+          <!-- head -->
+          <circle cx="48" cy="38" r="22" fill="#fffdf6" stroke="#1b1b1b" stroke-width="2.5" filter="url(#wobble)"/>
+          <!-- fringe (straight bangs) -->
+          <path d="M27 34 Q28 18 48 16 Q68 18 69 34 Q60 26 48 26 Q36 26 27 34 Z" fill="#a9794f" stroke="#1b1b1b" stroke-width="2.2" stroke-linejoin="round" filter="url(#wobble)"/>
+          <!-- little bow -->
+          <path d="M48 17 l-7 -5 v10 z M48 17 l7 -5 v10 z" fill="#e2a0a8" stroke="#1b1b1b" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="48" cy="17" r="2.4" fill="#1b1b1b"/>
+          <!-- eyes + smile -->
+          <circle cx="41" cy="40" r="2.1" fill="#1b1b1b"/>
+          <circle cx="55" cy="40" r="2.1" fill="#1b1b1b"/>
+          <path d="M42 48 Q48 53 54 48" fill="none" stroke="#1b1b1b" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="35" cy="46" r="3" fill="rgba(226,160,168,.5)"/>
+          <circle cx="61" cy="46" r="3" fill="rgba(226,160,168,.5)"/>
+          <!-- dress (teal w/ rose trim) -->
+          <path d="M32 64 L64 64 L76 124 L20 124 Z" fill="#8fb8a8" stroke="#1b1b1b" stroke-width="2.4" stroke-linejoin="round" filter="url(#wobble)"/>
+          <path d="M20 124 L76 124" stroke="#e2a0a8" stroke-width="4" stroke-linecap="round"/>
+          <!-- arms -->
+          <path d="M33 70 Q22 82 26 96" fill="none" stroke="#1b1b1b" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M63 70 Q76 84 72 100" fill="none" stroke="#1b1b1b" stroke-width="2.6" stroke-linecap="round"/>
+          <!-- legs -->
+          <path d="M40 124 L38 146 M56 124 L58 146" stroke="#1b1b1b" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+        <div class="nm">Vesper</div>
+      </div>
+    </div>
+
+    <div class="collab-note">
+      <span class="pill">合作作品 · made together</span><br/><br/>
+      和搭档 <b>Vesper</b> 一起做的 ✦
+    </div>
+  </div>
+
+  <!-- THE LOOP -->
+  <section>
+    <div class="sec-h"><span class="cn">怎么</span>玩</div>
+    <div class="sec-sub">三步：攒碎片 → 摇一摇 → 撞出新点子</div>
+    <div class="steps">
+      <div class="step wob">
+        <div class="ic">🫙</div><div class="n">01 · COLLECT</div>
+        <div class="t">攒碎片</div>
+        <div class="d">把平时一闪而过的灵感丢进灵感罐，一句话、一个词都行。</div>
+      </div>
+      <div class="step wob">
+        <div class="ic">✦</div><div class="n">02 · SHAKE</div>
+        <div class="t">摇一摇</div>
+        <div class="d">摇动罐子，AI 随机抽两三条碎片，按一个维度把它们撞在一起。</div>
+      </div>
+      <div class="step wob">
+        <div class="ic">💡</div><div class="n">03 · COLLIDE</div>
+        <div class="t">撞出点子</div>
+        <div class="d">得到一个新产品种子，再和 Agent 接着聊，把它展开成方案。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section>
+    <div class="sec-h"><span class="cn">里面</span>有什么</div>
+    <div class="feats">
+      <div class="feat wob"><div class="star">✦</div><div>
+        <div class="ft">暖黄「光晕 / 太阳粒子」视觉</div>
+        <div class="fd">editorial 衬线标题 + 一罐会发光的灵感，响应式，Web 和手机都能用。</div>
+      </div></div>
+      <div class="feat wob"><div class="star">✶</div><div>
+        <div class="ft">摇一摇 · 真实合成</div>
+        <div class="fd">抽 2–3 条素材 + 一个约束维度，交给智谱 GLM 当场碰撞出新点子。</div>
+      </div></div>
+      <div class="feat wob"><div class="star">✦</div><div>
+        <div class="ft">接着聊 · 把一句话聊成方案</div>
+        <div class="fd">对话 Agent 能顺着一个点子继续追问、展开，落到能动手的程度。</div>
+      </div></div>
+      <div class="feat wob"><div class="star">✷</div><div>
+        <div class="ft">社区接力（规划中）</div>
+        <div class="fd">把点子丢进社区，让别人「接力展开它」—— 灵感在人和人之间流转。</div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://inspriation.vercel.app" target="_blank" rel="noopener">去玩完整版 →</a>
+    <a class="btn btn-ghost" href="https://github.com/ArdenGao10/Inspriation" target="_blank" rel="noopener">看看代码 · GitHub</a>
+  </div>
+
+  <div class="foot">
+    Arden × Vesper · 一起做的 ✦
+  </div>
+
+</div>
+
+<script>
+  // a few warm motes drifting up, like sun particles
+  (function () {
+    const box = document.getElementById('motes');
+    const N = 16;
+    for (let i = 0; i < N; i++) {
+      const m = document.createElement('div');
+      m.className = 'mote';
+      const s = 6 + Math.random() * 22;
+      m.style.width = m.style.height = s + 'px';
+      m.style.left = Math.random() * 100 + 'vw';
+      m.style.bottom = '-40px';
+      m.style.animationDuration = (10 + Math.random() * 14) + 's';
+      m.style.animationDelay = (-Math.random() * 20) + 's';
+      m.style.opacity = (0.3 + Math.random() * 0.5).toFixed(2);
+      box.appendChild(m);
+    }
+  })();
+</script>
+
+</body>
+</html>

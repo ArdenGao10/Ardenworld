@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { playClick, playStar, startMood, stopMood } from '../world/sound.js';
+import { playClick, playStar, playOpen, startMood, stopMood } from '../world/sound.js';
 
 // ============================================================
 // 专注圈 — breathing aura-orb focus timer
@@ -295,6 +295,224 @@ export function MoodDemo() {
       </button>
       <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "#6B6052", marginTop: 10 }}>
         已选 {picked.length} / 3
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 网吧考古学家 — 遗物的「2077 误读」与「真相」两层文本
+// The game's core beat: every relic reads one way to the dig team,
+// another way once you know what the café really was. Flip to reveal.
+// ============================================================
+const CAFE_RELICS = [
+  { glyph: "🪙", name: "铜色代币",
+    misread: "一枚注意力货币 — 古人用它兑换专注。",
+    truth: "老周收银机里的代币。那一夜他还在前台，盯着每台机器的异常。" },
+  { glyph: "🎫", name: "包夜小票",
+    misread: "时间与货币的契约凭证。",
+    truth: "反复打印 2012-12-21 23:59 —— 最早被当成打印机坏了的那个预警。" },
+  { glyph: "⌨️", name: "掉了 W 键的键盘",
+    misread: "刻着字母禁忌的图腾。",
+    truth: "阿丁 17 号机的键盘，W 键磨没了，底下刻着「别后退」。" },
+  { glyph: "📼", name: "断裂的路由器",
+    misread: "一只小型祈愿器。",
+    truth: "老周临走前硬拔下来的。日志里有他看不懂的外部信号，先当成断网故障。" },
+];
+
+export function CafeDemo() {
+  const [i, setI] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const r = CAFE_RELICS[i];
+
+  const flip = () => { playOpen(); setFlipped(f => !f); };
+  const next = () => { playClick(); setFlipped(false); setI(n => (n + 1) % CAFE_RELICS.length); };
+
+  return (
+    <div style={{ textAlign: "center", color: "#dbe2ea" }}>
+      <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".18em", color: "#7d8a98" }}>
+        EVIDENCE {String(i + 1).padStart(2, "0")} / {String(CAFE_RELICS.length).padStart(2, "0")}
+      </div>
+
+      {/* relic card — dark “inspect” view, click to flip 误读 ↔ 真相 */}
+      <button onClick={flip} style={{
+        display: "block", width: "100%", marginTop: 12, cursor: "pointer",
+        background: "radial-gradient(ellipse at 50% 36%, #1d2530 0%, #0a0d12 84%)",
+        border: "2.5px solid #3a4654", borderRadius: 4, padding: "22px 18px 18px",
+        boxShadow: "inset 0 0 60px rgba(0,0,0,.7)", textAlign: "center",
+      }}>
+        <div style={{ fontSize: 46, lineHeight: 1, filter: "grayscale(.3)" }}>{r.glyph}</div>
+        <div className="mw-title" style={{ fontSize: 22, color: "#e8eef2", marginTop: 8 }}>{r.name}</div>
+        <div style={{
+          marginTop: 12, minHeight: 60,
+          borderTop: "1px dashed rgba(232,238,242,.18)", paddingTop: 10,
+        }}>
+          <div className="sk-mono" style={{
+            fontSize: 9, letterSpacing: ".16em",
+            color: flipped ? "#e0a96a" : "#6f7c8a",
+          }}>
+            {flipped ? "真相 · TRUTH" : "2077 误读 · MISREAD"}
+          </div>
+          <div className="mw-body" style={{
+            fontSize: 14, lineHeight: 1.6, marginTop: 6,
+            color: flipped ? "#f0e3cf" : "#aeb9c4",
+            fontStyle: flipped ? "normal" : "italic",
+          }}>
+            {flipped ? r.truth : r.misread}
+          </div>
+        </div>
+        <div className="sk-hand" style={{ fontSize: 13, color: "#5f6b78", marginTop: 10 }}>
+          {flipped ? "↺ 点一下，看考古队当初怎么读的" : "👆 点一下翻面 · 看真相"}
+        </div>
+      </button>
+
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 14 }}>
+        <button className="mw-btn mw-btn-primary" onClick={next}>下一件遗物 →</button>
+      </div>
+      <div className="mw-body" style={{ fontSize: 12, color: "#7d8a98", marginTop: 12, lineHeight: 1.6 }}>
+        完整版里，这些遗物串成一条解谜链 ——<br/>最后读出 2012 那份被当成故障的预警。
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 灵感搜集器 — 摇一摇，把灵感碎片撞成一个新点子
+// A canned echo of the real jar: pick a few fragments, shake, and a
+// little synthesizer collides them into a product seed (no live LLM here).
+// ============================================================
+const SPARK_FRAGMENTS = [
+  "地铁通勤", "白噪音", "植物养成", "手写笔记",
+  "深夜电台", "潮汐", "便利店", "旧照片",
+];
+function synthIdea(picks) {
+  const [a, b, c] = picks;
+  const join = picks.join(" × ");
+  const seeds = [
+    { name: `${a}罐`,   pitch: `把「${a}」变成可以每天往里丢一点的小仪式，${b ? `攒够了就和「${b}」撞一次。` : "攒够了摇一摇看看。"}` },
+    { name: `${b || a}电台`, pitch: `一个只在「${a}」时播放的频道${c ? `，背景是「${c}」。` : "。"}` },
+    { name: `${a}×${b || a}`, pitch: `${join} —— 一个把这些碎片缝在一起的小工具，主打“不高效，但有手感”。` },
+  ];
+  return seeds[Math.floor(Math.random() * seeds.length)];
+}
+
+export function SparkDemo() {
+  const [picked, setPicked] = useState([]);
+  const [phase, setPhase] = useState("idle"); // idle | shaking | result
+  const [idea, setIdea] = useState(null);
+
+  const toggle = (f) => {
+    playClick();
+    setPicked(p => p.includes(f) ? p.filter(x => x !== f)
+                                 : (p.length >= 3 ? p : [...p, f]));
+  };
+
+  const shake = () => {
+    if (picked.length < 2) return;
+    playClick();
+    setPhase("shaking");
+    setTimeout(() => {
+      setIdea(synthIdea(picked));
+      playStar();
+      setPhase("result");
+    }, 1400);
+  };
+
+  const again = () => { playClick(); setPhase("idle"); setPicked([]); setIdea(null); };
+
+  // ----- result -----
+  if (phase === "result" && idea) {
+    return (
+      <div style={{ textAlign: "center", color: "#6b4e1f" }}>
+        <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".14em", color: "#b9933f" }}>
+          为「{picked.join(" · ")}」撞出了一个点子
+        </div>
+        <div style={{
+          margin: "16px auto 0", maxWidth: 320,
+          background: "radial-gradient(circle at 50% 0%, #fff6e0 0%, #fbe9c2 100%)",
+          border: "2.5px solid #1b1b1b", borderRadius: 10, padding: "20px 18px",
+          boxShadow: "3px 4px 0 rgba(0,0,0,.12)",
+        }}>
+          <div style={{ fontSize: 30 }}>✦</div>
+          <div className="mw-title" style={{ fontSize: 26, color: "#1b1b1b", marginTop: 6 }}>{idea.name}</div>
+          <div className="mw-body" style={{ fontSize: 15, lineHeight: 1.65, color: "#5a4a2a", marginTop: 8 }}>
+            {idea.pitch}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16 }}>
+          <button className="mw-btn" onClick={shake}>↻ 再撞一次</button>
+          <button className="mw-btn mw-btn-primary" onClick={again}>换一批碎片</button>
+        </div>
+        <div className="mw-body" style={{ fontSize: 12, color: "#b9933f", marginTop: 12 }}>
+          完整版里这一步交给 AI，还能接着把它聊成可落地的方案。
+        </div>
+      </div>
+    );
+  }
+
+  // ----- shaking -----
+  if (phase === "shaking") {
+    return (
+      <div style={{ textAlign: "center", padding: "20px 0" }}>
+        <div style={{
+          width: 120, height: 140, margin: "0 auto", position: "relative",
+          animation: "mw-jarshake .5s ease-in-out infinite",
+        }}>
+          {/* glass jar */}
+          <div style={{
+            position: "absolute", inset: "18px 14px 0", borderRadius: "12px 12px 16px 16px",
+            border: "2.5px solid #1b1b1b",
+            background: "linear-gradient(180deg, rgba(246,205,125,.25), rgba(246,205,125,.55))",
+            overflow: "hidden",
+          }}>
+            {SPARK_FRAGMENTS.slice(0, 6).map((f, i) => (
+              <div key={f} className="sk-hand" style={{
+                position: "absolute", left: `${12 + (i % 3) * 30}%`, top: `${24 + Math.floor(i / 3) * 34}%`,
+                fontSize: 13, color: "#7a5a1a",
+                animation: `mw-jardrift ${0.5 + (i % 3) * 0.15}s ease-in-out infinite alternate`,
+              }}>✦</div>
+            ))}
+          </div>
+          {/* lid */}
+          <div style={{ position: "absolute", top: 6, left: 26, right: 26, height: 16, background: "#e0a96a", border: "2.5px solid #1b1b1b", borderRadius: 4 }}/>
+        </div>
+        <div className="mw-body" style={{ fontSize: 15, color: "#6b4e1f", marginTop: 16 }}>
+          摇一摇，让碎片互相撞一撞…
+        </div>
+        <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "#b9933f", marginTop: 6 }}>
+          GLM · colliding ideas
+        </div>
+      </div>
+    );
+  }
+
+  // ----- idle / pick -----
+  return (
+    <div style={{ textAlign: "center", color: "#6b4e1f" }}>
+      <div className="mw-body" style={{ fontSize: 14, color: "#9a7a3a" }}>
+        往灵感罐里挑 2–3 个碎片，再摇一摇。
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 7, marginTop: 14 }}>
+        {SPARK_FRAGMENTS.map(f => {
+          const on = picked.includes(f);
+          return (
+            <button key={f} onClick={() => toggle(f)} style={{
+              fontFamily: "ZCOOL KuaiLe, sans-serif", fontSize: 13, cursor: "pointer",
+              padding: "8px 15px", borderRadius: 999,
+              border: `1.5px solid ${on ? "#1b1b1b" : "rgba(122,90,26,.3)"}`,
+              background: on ? "#f3c069" : "rgba(246,205,125,.16)",
+              color: on ? "#1b1b1b" : "#7a5a1a",
+            }}>{f}</button>
+          );
+        })}
+      </div>
+      <button className="mw-btn mw-btn-primary" onClick={shake}
+        disabled={picked.length < 2}
+        style={{ marginTop: 18, opacity: picked.length < 2 ? 0.5 : 1 }}>
+        摇一摇 →
+      </button>
+      <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "#b9933f", marginTop: 10 }}>
+        已选 {picked.length} / 3 · 至少 2 个
       </div>
     </div>
   );

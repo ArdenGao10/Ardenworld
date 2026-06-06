@@ -94,7 +94,8 @@ export const StopMarker = ({ stop, charNearby, lit }) => {
       );
     case "work": {
       const w = WORKS[stop.workId];
-      const isMood = stop.workId === "mood";
+      const signBg = w.sign || "#fef3a3";
+      const signInk = w.signInk || "#1b1b1b";
       return (
         <div style={{ position: "absolute", bottom: baseY, left: stop.x - 110 }}>
           {/* halo — translateZ(0) gives this its own compositor layer so
@@ -111,9 +112,9 @@ export const StopMarker = ({ stop, charNearby, lit }) => {
           {/* BIG signboard — same isolation trick on the existing transform */}
           <div style={{
             position: "absolute", bottom: 120, left: 0, width: 220,
-            background: isMood ? "#d97757" : "#fef3a3",
+            background: signBg,
             border: "3px solid #1b1b1b", filter: "url(#wobble)",
-            color: isMood ? "#fffdf6" : "#1b1b1b",
+            color: signInk,
             padding: "12px 14px 14px",
             boxShadow: "3px 4px 0 rgba(0,0,0,.18)",
             transform: charNearby ? "translateZ(0) rotate(-1.5deg) translateY(-2px)" : "translateZ(0) rotate(0deg)",
@@ -132,7 +133,7 @@ export const StopMarker = ({ stop, charNearby, lit }) => {
             }}>
               <div className="sk-mono" style={{
                 fontSize: 9, letterSpacing: ".15em", textTransform: "uppercase",
-                color: isMood ? "#fffdf6" : "#1b1b1b", opacity: .7
+                color: signInk, opacity: .7
               }}>
                 {w.en} · click sign
               </div>
@@ -211,15 +212,6 @@ export const StopMarker = ({ stop, charNearby, lit }) => {
           </div>
           <div className="sk-hand" style={{ position: "absolute", bottom: 80, left: -10, fontSize: 14 }}>给我写信 ✉︎</div>
         </div>
-      );
-    case "soon":
-      return (
-        <>
-          <svg width="240" height="120" viewBox="0 0 240 120" style={{ position: "absolute", bottom: baseY, left: stop.x - 120, transform: "translateZ(0)" }}>
-            <path d="M 0 120 Q 120 30 240 120 Z" fill="rgba(27,27,27,.06)" stroke="#1b1b1b" strokeWidth="2" strokeDasharray="6 8" filter="url(#wobble)"/>
-          </svg>
-          <div className="sk-hand" style={{ position: "absolute", bottom: baseY + 70, left: stop.x - 50, fontSize: 18, color: "#888" }}>? coming</div>
-        </>
       );
     case "peak":
       return (
