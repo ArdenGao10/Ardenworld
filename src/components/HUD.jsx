@@ -2,8 +2,12 @@
 
 import { STOPS } from '../world/data.js';
 
-export function HUD({ charX, time, onSkip, stars }) {
-  const reached = STOPS.filter(s => s.x <= charX).length;
+// The meaningful stops the progress reflects — start / puddle / peak aren't
+// places you "visit", so they don't count here or on the end card.
+const COUNTED_STOPS = STOPS.filter(s => !["start", "puddle", "peak"].includes(s.type));
+
+export function HUD({ time, onSkip, stars, reached }) {
+  const visited = COUNTED_STOPS.filter(s => reached[s.id]).length;
   return (
     <>
       <div style={{
@@ -15,7 +19,7 @@ export function HUD({ charX, time, onSkip, stars }) {
           border: "2px solid #1b1b1b", padding: "6px 14px", filter: "url(#wobble)",
           boxShadow: "1px 2px 0 rgba(0,0,0,.1)", pointerEvents: "auto"
         }}>
-          MY WORLD &nbsp;·&nbsp; {time.toUpperCase()} &nbsp;·&nbsp; {reached}/{STOPS.length}
+          MY WORLD &nbsp;·&nbsp; {time.toUpperCase()} &nbsp;·&nbsp; {visited}/{COUNTED_STOPS.length}
         </div>
         <div style={{ display: "flex", gap: 8, pointerEvents: "auto" }}>
           {stars > 0 && (
@@ -32,9 +36,9 @@ export function HUD({ charX, time, onSkip, stars }) {
       <div style={{
         position: "fixed", top: 56, left: 16, right: 16, display: "flex", gap: 4, zIndex: 30, pointerEvents: "none"
       }}>
-        {STOPS.map(s => (
+        {COUNTED_STOPS.map(s => (
           <div key={s.id} style={{
-            flex: 1, height: 3, background: s.x <= charX ? "#1b1b1b" : "rgba(27,27,27,.2)"
+            flex: 1, height: 3, background: reached[s.id] ? "#1b1b1b" : "rgba(27,27,27,.2)"
           }}/>
         ))}
       </div>

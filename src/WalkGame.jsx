@@ -343,6 +343,17 @@ export default function WalkGame({ onRoom }) {
         }
       });
 
+      // Mark the meaningful stops "visited" as you pass near them, regardless
+      // of how you got there (walking or tap-to-go). This is the single source
+      // of truth the HUD progress and the end-card tally both read, so the two
+      // never disagree. (start / puddle / peak don't count as stops.)
+      STOPS.forEach(s => {
+        if (s.type === "start" || s.type === "puddle" || s.type === "peak") return;
+        if (Math.abs(x - s.x) < 90) {
+          setReached(prev => prev[s.id] ? prev : { ...prev, [s.id]: true });
+        }
+      });
+
       // peak end
       if (x > 6480 && !showEnd) setShowEnd(true);
 
@@ -654,7 +665,7 @@ export default function WalkGame({ onRoom }) {
         </div>
       </div>
 
-      <HUD charX={charX} time={time} stars={stars}
+      <HUD time={time} stars={stars} reached={reached}
            onSkip={() => setShowGallery(true)}/>
 
       {/* bottom-left controls — sound toggle, plus a how-to-play that
