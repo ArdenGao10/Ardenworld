@@ -38,7 +38,7 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
       position: "fixed", inset: 0, background: "#f3f1ec", zIndex: 55,
       overflowY: "auto", padding: "60px 24px"
     }}>
-      <div style={{ maxWidth: 720, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1180, margin: "0 auto" }}>
         <div className="sk-mono" style={{ fontSize: 11, letterSpacing: ".25em", color: "#666" }}>SKIPPED · 全部作品</div>
         <div className="mw-title" style={{ fontSize: 60, fontWeight: 600, lineHeight: 1, marginTop: 6 }}>My World</div>
         <div className="mw-body" style={{ fontSize: 19, color: "#555", marginTop: 4 }}>
@@ -47,7 +47,9 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
 
         <div style={{
           marginTop: 32, display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 22,
+          // Four works in one row on a wide screen; the cards drop to 2-up
+          // then 1-up on narrower viewports (auto-fit + a ~250px floor).
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20,
         }}>
           {Object.entries(WORKS).map(([id, w]) => (
             <div key={id} style={{
@@ -62,9 +64,9 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
               <div className="mw-body" style={{ color: "#666", fontSize: 16 }}>{w.tag}</div>
               <div className="mw-body" style={{ fontSize: 16, marginTop: 8, color: "#444" }}>{w.intro}</div>
 
-              <div style={{ marginTop: 18, display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <button style={cardBtn("#d97757")} onClick={() => setDemoId(id)}>▶︎ 小演示</button>
-                <button style={cardBtn("#6f8f6a")} onClick={() => onShowcase?.(w.showcase, id)}>
+              <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 10 }}>
+                <button style={{ ...cardBtn("#d97757"), width: "100%" }} onClick={() => setDemoId(id)}>▶︎ 小演示</button>
+                <button style={{ ...cardBtn("#6f8f6a"), width: "100%" }} onClick={() => onShowcase?.(w.showcase, id)}>
                   详细了解 →
                 </button>
               </div>
