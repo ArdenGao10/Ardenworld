@@ -627,10 +627,10 @@ export default function RoomGame({ onSwitch }) {
             sits on the blanket instead of floating off the bed's side: x lands
             it on the foot half, bottom sits it on the mattress-top surface
             (FLOOR_H + 64). The walk-to / interaction point stays at POS.cafe. */}
-        <Anchored x={POS.bed + 48} bottom={FLOOR_H + 54}
+        <Anchored x={POS.bed + 40} bottom={FLOOR_H + 56}
                   prompt={nearest === "cafe" && PROMPT_LABEL.cafe}
                   onActivate={() => interactWith("cafe")}
-                  promptOffset={92}>
+                  promptOffset={84}>
           <SwitchConsole highlighted={nearest === "cafe"}/>
         </Anchored>
 
@@ -1578,7 +1578,9 @@ function Bed({ highlighted, lying }) {
         <rect x="26" y="104" width="9" height="18" fill="#7a5a36" stroke="#1b1b1b" strokeWidth="2"/>
         <rect x="226" y="104" width="9" height="18" fill="#7a5a36" stroke="#1b1b1b" strokeWidth="2"/>
 
-        <g transform="translate(168, 36)" filter="url(#wobble)">
+        {/* sleeping cat — curled up by the pillow (head end) so it leaves the
+            foot of the bed clear for the Switch */}
+        <g transform="translate(92, 42)" filter="url(#wobble)">
           <ellipse cx="22" cy="22" rx="22" ry="9" fill="#1b1b1b"/>
           <circle cx="4" cy="18" r="7" fill="#1b1b1b"/>
           <path d="M-1 13 L-2 5 L3 12 Z" fill="#1b1b1b"/>
@@ -1586,7 +1588,7 @@ function Bed({ highlighted, lying }) {
           <circle cx="4" cy="20" r="0.7" fill="#fef3a3"/>
           <path d="M40 22 Q50 18 46 12" stroke="#1b1b1b" strokeWidth="2" fill="none" strokeLinecap="round"/>
         </g>
-        <text x="158" y="34" fontSize="14" fill="#1b1b1b" fontFamily="Caveat">zZ</text>
+        <text x="118" y="40" fontSize="14" fill="#1b1b1b" fontFamily="Caveat">zZ</text>
 
         {lying && (
           <g fontFamily="Caveat" fill="#1b1b1b">
@@ -2008,10 +2010,10 @@ function Plant() {
 // ============================================================
 function SwitchConsole({ highlighted }) {
   return (
-    <div style={{ position: "relative", width: 70, height: 50,
+    <div style={{ position: "relative", width: 52, height: 37,
                   filter: highlighted ? "drop-shadow(0 0 12px rgba(217,119,87,.6))" : "none",
                   transition: "filter .25s" }}>
-      <svg width="70" height="50" viewBox="0 0 70 50" style={{ display: "block" }}>
+      <svg width="52" height="37" viewBox="0 0 70 50" style={{ display: "block" }}>
         <g transform="rotate(-6 35 28)">
           {/* left Joy-Con (neon blue) */}
           <path d="M11 18 Q6 18 6 23 L6 35 Q6 40 11 40 L18 40 L18 18 Z"
