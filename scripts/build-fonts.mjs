@@ -11,6 +11,8 @@
  */
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
+import { spawnSync } from 'child_process';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = path.join(ROOT, 'public', 'fonts');
@@ -56,37 +58,79 @@ const FONTS = [
 
 const faceLines = [];
 
+const faceCss = (family, weight, srcSlug) =>
+  `@font-face {\n` +
+  `  font-family: "${family}";\n` +
+  `  font-style: normal;\n` +
+  `  font-weight: ${weight};\n` +
+  `  font-display: swap;\n` +
+  `  src: url("/fonts/${srcSlug}.woff2") format("woff2");\n` +
+  `}`;
+
+// Legacy UA → Google serves ONE combined font file (no unicode-range
+// sharding). A modern UA + `&text=` returns the subset split across ~90
+// shard files instead, and grabbing only the first shard silently drops
+// almost every glyph once the requested text outgrows one shard — that's
+// what broke the new titles. So for CJK we pull the whole font once here
+// and subset it ourselves locally (pyftsubset), producing one small woff2.
+const LEGACY_UA = 'Mozilla/5.0 (Linux; U; Android 2.3; en-us) AppleWebKit/533.1';
+const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mw-fonts-'));
+const unicodesArg = [...want].map(c => `U+${c.codePointAt(0).toString(16).toUpperCase()}`).join(',');
+
 for (const font of FONTS) {
-  const base = `https://fonts.googleapis.com/css2?family=${font.css}&display=swap`;
-  const url = font.cjk ? `${base}&text=${encodeURIComponent(text)}` : base;
-  const res = await fetch(url, { headers: { 'User-Agent': UA } });
-  if (!res.ok) throw new Error(`${font.slug}: ${res.status} ${res.statusText}`);
-  const css = await res.text();
+  if (font.cjk) {
+    // 1. fetch the full font (single file) via the legacy UA
+    const metaRes = await fetch(`https://fonts.googleapis.com/css2?family=${font.css}&display=swap`,
+                                { headers: { 'User-Agent': LEGACY_UA } });
+    if (!metaRes.ok) throw new Error(`${font.slug}: css ${metaRes.status}`);
+    const metaCss = await metaRes.text();
+    const family = metaCss.match(/font-family:\s*'([^']+)'/)[1];
+    const weight = (metaCss.match(/font-weight:\s*([\d ]+)/) || [, '400'])[1].trim();
+    const srcUrl = metaCss.match(/src:\s*url\(([^)]+)\)/)[1];
+    const ext = srcUrl.match(/\.(ttf|otf|woff2?|woff)/i)?.[1] || 'ttf';
 
-  // text= subsets come back with no `/* subset */` comment; Latin fonts get
-  // one block per subset — keep `latin`.
-  const blocks = [...css.matchAll(/(?:\/\*\s*([^*]+?)\s*\*\/\s*)?@font-face\s*{([^}]*)}/g)];
-  const chosen = font.cjk
-    ? blocks[0]
-    : (blocks.find(b => (b[1] || '').trim() === 'latin') || blocks[0]);
-  if (!chosen) throw new Error(`${font.slug}: no @font-face in response`);
-  const body = chosen[2];
-  const weight = (body.match(/font-weight:\s*([\d ]+)/) || [, '400'])[1].trim();
-  const family = body.match(/font-family:\s*'([^']+)'/)[1];
-  const src = body.match(/src:\s*url\(([^)]+)\)/)[1];
+    const full = Buffer.from(await (await fetch(srcUrl)).arrayBuffer());
+    const fullPath = path.join(tmpDir, `${font.slug}.${ext}`);
+    fs.writeFileSync(fullPath, full);
 
-  const woff2 = Buffer.from(await (await fetch(src)).arrayBuffer());
-  fs.writeFileSync(path.join(OUT, `${font.slug}.woff2`), woff2);
-  faceLines.push(
-    `@font-face {\n` +
-    `  font-family: "${family}";\n` +
-    `  font-style: normal;\n` +
-    `  font-weight: ${weight};\n` +
-    `  font-display: swap;\n` +
-    `  src: url("/fonts/${font.slug}.woff2") format("woff2");\n` +
-    `}`);
-  console.log(`  ${font.slug}.woff2  ${(woff2.length / 1024).toFixed(1)} KB  (weight ${weight})`);
+    // 2. subset locally to exactly the glyphs the app uses → one woff2
+    const outPath = path.join(OUT, `${font.slug}.woff2`);
+    const r = spawnSync('python3', [
+      '-m', 'fontTools.subset', fullPath,
+      `--unicodes=${unicodesArg}`,
+      '--flavor=woff2',
+      `--output-file=${outPath}`,
+      '--no-hinting', '--desubroutinize',
+    ], { encoding: 'utf8' });
+    if (r.status !== 0) {
+      throw new Error(`${font.slug}: pyftsubset failed — is fontTools+brotli installed? ` +
+                      `(pip3 install fonttools brotli)\n${r.stderr || r.stdout || r.error}`);
+    }
+    const bytes = fs.statSync(outPath).size;
+    faceLines.push(faceCss(family, weight, font.slug));
+    console.log(`  ${font.slug}.woff2  ${(bytes / 1024).toFixed(1)} KB  (from ${(full.length / 1024 / 1024).toFixed(1)} MB full, weight ${weight})`);
+  } else {
+    // Latin fonts are small and unsharded — take the `latin` subset as one file.
+    const res = await fetch(`https://fonts.googleapis.com/css2?family=${font.css}&display=swap`,
+                            { headers: { 'User-Agent': UA } });
+    if (!res.ok) throw new Error(`${font.slug}: ${res.status} ${res.statusText}`);
+    const css = await res.text();
+    const blocks = [...css.matchAll(/(?:\/\*\s*([^*]+?)\s*\*\/\s*)?@font-face\s*{([^}]*)}/g)];
+    const chosen = blocks.find(b => (b[1] || '').trim() === 'latin') || blocks[0];
+    if (!chosen) throw new Error(`${font.slug}: no @font-face in response`);
+    const body = chosen[2];
+    const weight = (body.match(/font-weight:\s*([\d ]+)/) || [, '400'])[1].trim();
+    const family = body.match(/font-family:\s*'([^']+)'/)[1];
+    const src = body.match(/src:\s*url\(([^)]+)\)/)[1];
+
+    const woff2 = Buffer.from(await (await fetch(src)).arrayBuffer());
+    fs.writeFileSync(path.join(OUT, `${font.slug}.woff2`), woff2);
+    faceLines.push(faceCss(family, weight, font.slug));
+    console.log(`  ${font.slug}.woff2  ${(woff2.length / 1024).toFixed(1)} KB  (weight ${weight})`);
+  }
 }
+
+fs.rmSync(tmpDir, { recursive: true, force: true });
 
 fs.writeFileSync(path.join(OUT, 'fonts.css'), faceLines.join('\n\n') + '\n');
 console.log(`\nwrote public/fonts/fonts.css (${faceLines.length} faces)`);
