@@ -342,6 +342,43 @@
   }
   function cssEscape(s) { return String(s).replace(/(["\\])/g, "\\$1"); }
 
+  // ---- URL 触发的「讲解链接」编解码 ----
+  // tour 数据 base64-url 进 URL hash → 任何人点这个链接,小人就开始讲;直接访问域名 → 什么都没有。
+  function utf8ToB64Url(s) {
+    const bytes = new TextEncoder().encode(s);
+    let bin = "";
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function b64UrlToUtf8(s) {
+    s = s.replace(/-/g, "+").replace(/_/g, "/");
+    while (s.length % 4) s += "=";
+    const bin = atob(s);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+  function parsePlayHash() {
+    const m = (typeof location !== "undefined" ? location.hash || "" : "").match(/^#demi-play=(.+)$/);
+    if (!m) return null;
+    try {
+      const obj = JSON.parse(b64UrlToUtf8(m[1]));
+      if (obj && Array.isArray(obj.steps) && obj.steps.length) return obj;
+    } catch (e) {}
+    return null;
+  }
+  function encodePlayLink(targetUrl, steps, opts) {
+    opts = opts || {};
+    const payload = { steps };
+    if (opts.name) payload.name = opts.name;
+    if (opts.rate) payload.rate = opts.rate;
+    let u;
+    try { u = new URL(targetUrl, typeof location !== "undefined" ? location.href : "http://example.com"); }
+    catch (e) { return ""; }
+    u.hash = "";
+    return u.toString() + "#demi-play=" + utf8ToB64Url(JSON.stringify(payload));
+  }
+
   let edit = null; // { steps: [{selector, line, label}], hoverRing, panel, listEl, name, prevHandler }
   function startEdit(opts) {
     opts = opts || {};
@@ -407,7 +444,8 @@
       <div class="tip" id="demi-ed-tip">把鼠标移到页面上 → 点击任意元素 → 添加一站</div>
       <div id="demi-edit-list"></div>
       <div class="foot">
-        <button id="demi-ed-export" class="primary">📋 复制嵌入代码</button>
+        <button id="demi-ed-link" class="primary">🔗 复制讲解链接</button>
+        <button id="demi-ed-export">📋 高级:复制嵌入代码(访客自动播)</button>
         <pre id="demi-ed-snippet" style="display:none"></pre>
       </div>`;
     document.body.appendChild(panel);
@@ -419,6 +457,7 @@
     };
     panel.querySelector("#demi-ed-preview").onclick = previewEdit;
     panel.querySelector("#demi-ed-export").onclick = exportEditSnippet;
+    panel.querySelector("#demi-ed-link").onclick = exportPlayLink;
     renderEditList();
   }
 
@@ -542,6 +581,20 @@
     setTimeout(() => { tip.textContent = orig; tip.style.background = origBg; }, 1800);
   }
 
+  function exportPlayLink() {
+    if (!edit) return;
+    const valid = edit.steps.filter(s => s.selector && s.line && s.line.trim());
+    if (!valid.length) { flashTip("还没有可生成的站点"); return; }
+    // 用当前页面的网址当目标(去掉 #demi-edit)
+    const targetUrl = location.origin + location.pathname + location.search;
+    const link = encodePlayLink(targetUrl, valid.map(s => ({ selector: s.selector, line: s.line.trim() })), { name: edit.name });
+    const box = document.getElementById("demi-ed-snippet");
+    if (box) { box.textContent = link; box.style.display = "block"; }
+    try {
+      navigator.clipboard.writeText(link).then(() => flashTip("已复制 ✓ 把这个链接分享出去就能播,直接访问网址什么都没有"));
+    } catch (e) { flashTip("链接生成完成,手动选中复制即可"); }
+  }
+
   function exportEditSnippet() {
     if (!edit) return;
     const valid = edit.steps.filter(s => s.selector && s.line && s.line.trim());
@@ -576,6 +629,11 @@ ${stepsLines}
         }
         return;
       }
+      // 链接触发的 tour 优先:页面自带的 start() 不抢
+      if (!opts._force && typeof location !== "undefined" && /^#demi-play=/.test(location.hash)) {
+        setTimeout(autoPlayIfHash, 0);
+        return;
+      }
       steps = Array.isArray(tourSteps) ? tourSteps : [];
       auto = opts.auto !== false;
       name = opts.name || "Demi";
@@ -596,6 +654,7 @@ ${stepsLines}
     stop,
     edit: startEdit,
     stopEdit,
+    encodeLink: encodePlayLink,
   };
 
   // 访问 yoursite.com#demi-edit 直接进入编辑模式
@@ -604,13 +663,30 @@ ${stepsLines}
       startEdit();
     }
   }
+  // 访问 yoursite.com#demi-play=<base64> 自动播放编码进 URL 的 tour
+  function autoPlayIfHash() {
+    if (edit) return; // 编辑模式优先
+    const tour = parsePlayHash();
+    if (!tour) return;
+    // 等 DOM body 就绪再 start
+    const launch = () => window.DemiTour.start(tour.steps, {
+      auto: true,
+      name: tour.name || "Demi",
+      rate: tour.rate,
+      _force: true,
+    });
+    if (document.body) setTimeout(launch, 60);
+    else window.addEventListener("DOMContentLoaded", () => setTimeout(launch, 60));
+  }
+  function autoOnHash() { autoEditIfHash(); autoPlayIfHash(); }
   if (document.readyState === "complete" || document.readyState === "interactive") {
-    setTimeout(autoEditIfHash, 0);
+    setTimeout(autoOnHash, 0);
   } else {
-    window.addEventListener("DOMContentLoaded", autoEditIfHash);
+    window.addEventListener("DOMContentLoaded", autoOnHash);
   }
   window.addEventListener("hashchange", () => {
     if (location.hash === "#demi-edit" && !edit) startEdit();
     else if (location.hash !== "#demi-edit" && edit) stopEdit();
+    else if (/^#demi-play=/.test(location.hash)) autoPlayIfHash();
   });
 })();
