@@ -8,18 +8,20 @@
 
 import { useState, useEffect } from 'react';
 import { playClick, playStar, playOpen, startMood, stopMood } from '../world/sound.js';
+import { useLang } from '../i18n/lang.jsx';
 
 // ============================================================
 // 专注圈 — breathing aura-orb focus timer
 // ============================================================
 const FOCUS_STATES = {
-  idle:   { core: "rgba(150,160,150,.40)", glow: "rgba(150,160,150,.22)", ink: "#7a7a7a", label: "准备好了吗" },
-  focus:  { core: "rgba(111,169,137,.62)", glow: "rgba(111,169,137,.40)", ink: "#5C8A70", label: "focusing · 专注中" },
-  paused: { core: "rgba(176,156,217,.58)", glow: "rgba(176,156,217,.34)", ink: "#8D83A6", label: "paused · 暂停" },
-  done:   { core: "rgba(220,178,138,.62)", glow: "rgba(220,178,138,.40)", ink: "#C99765", label: "complete · 完成 ✦" },
+  idle:   { core: "rgba(150,160,150,.40)", glow: "rgba(150,160,150,.22)", ink: "#7a7a7a", label: { zh: "准备好了吗", en: "ready?" } },
+  focus:  { core: "rgba(111,169,137,.62)", glow: "rgba(111,169,137,.40)", ink: "#5C8A70", label: { zh: "focusing · 专注中", en: "focusing" } },
+  paused: { core: "rgba(176,156,217,.58)", glow: "rgba(176,156,217,.34)", ink: "#8D83A6", label: { zh: "paused · 暂停", en: "paused" } },
+  done:   { core: "rgba(220,178,138,.62)", glow: "rgba(220,178,138,.40)", ink: "#C99765", label: { zh: "complete · 完成 ✦", en: "complete ✦" } },
 };
 
 export function FocusDemo() {
+  const { t, pick, lang } = useLang();
   const [state, setState] = useState("idle");
   const [secs, setSecs] = useState(0);
   const [traces, setTraces] = useState([]); // durations of finished sessions
@@ -56,38 +58,38 @@ export function FocusDemo() {
           <div className="mw-title" style={{ fontSize: 40, color: "#1b1b1b", lineHeight: 1 }}>
             {mm}:{ss}
           </div>
-          <div className="sk-hand" style={{ fontSize: 14, color: p.ink, marginTop: 3 }}>{p.label}</div>
+          <div className="sk-hand" style={{ fontSize: 14, color: p.ink, marginTop: 3 }}>{pick(p.label)}</div>
         </div>
       </div>
 
       {/* controls — match the real product's focus / pause / done loop */}
       <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 12, flexWrap: "wrap" }}>
         {state === "idle" && (
-          <button className="mw-btn mw-btn-primary" onClick={start}>开始专注 ✦</button>
+          <button className="mw-btn mw-btn-primary" onClick={start}>{t('wd.focusStart')}</button>
         )}
         {state === "focus" && (<>
-          <button className="mw-btn" onClick={pause}>暂停</button>
-          <button className="mw-btn mw-btn-primary" onClick={finish}>完成 ✦</button>
+          <button className="mw-btn" onClick={pause}>{t('wd.focusPause')}</button>
+          <button className="mw-btn mw-btn-primary" onClick={finish}>{t('wd.focusDone')}</button>
         </>)}
         {state === "paused" && (<>
-          <button className="mw-btn mw-btn-primary" onClick={resume}>继续</button>
-          <button className="mw-btn" onClick={finish}>完成 ✦</button>
+          <button className="mw-btn mw-btn-primary" onClick={resume}>{t('wd.focusResume')}</button>
+          <button className="mw-btn" onClick={finish}>{t('wd.focusDone')}</button>
         </>)}
         {state === "done" && (
-          <button className="mw-btn mw-btn-primary" onClick={again}>再专注一次</button>
+          <button className="mw-btn mw-btn-primary" onClick={again}>{t('wd.focusAgain')}</button>
         )}
       </div>
 
       {/* the trace it leaves behind */}
       <div className="mw-body" style={{ fontSize: 13, color: "#777", marginTop: 13, lineHeight: 1.6 }}>
         {traces.length === 0
-          ? "番茄钟是一片会呼吸的光晕 — 专注绿 · 暂停紫 · 完成橙。"
-          : (<>今天的轨迹{traces.map((t, i) => (
+          ? t('wd.focusHint')
+          : (<>{t('wd.focusTraces')}{traces.map((tr, i) => (
               <span key={i} style={{
                 display: "inline-block", width: 7, height: 17, borderRadius: 2,
                 background: "#C99765", margin: "0 0 0 4px", verticalAlign: "middle",
               }}/>
-            ))} · 共 {traces.length} 段专注</>)}
+            ))}{lang === 'zh' ? ` · 共 ${traces.length} 段专注` : ` · ${traces.length} sessions`}</>)}
       </div>
     </div>
   );
@@ -97,51 +99,51 @@ export function FocusDemo() {
 // Moodtune — pick moods, an AI DJ presses you a record
 // ============================================================
 const MD_MOODS = [
-  { key: "mellow", cn: "忧郁" }, { key: "tender", cn: "温柔" },
-  { key: "nostalgic", cn: "怀旧" }, { key: "restless", cn: "躁动" },
-  { key: "calm", cn: "平静" }, { key: "joyful", cn: "雀跃" },
-  { key: "latenight", cn: "深夜" }, { key: "healing", cn: "治愈" },
+  { key: "mellow", cn: "忧郁", en: "Melancholy" }, { key: "tender", cn: "温柔", en: "Tender" },
+  { key: "nostalgic", cn: "怀旧", en: "Nostalgic" }, { key: "restless", cn: "躁动", en: "Restless" },
+  { key: "calm", cn: "平静", en: "Calm" }, { key: "joyful", cn: "雀跃", en: "Joyful" },
+  { key: "latenight", cn: "深夜", en: "Late night" }, { key: "healing", cn: "治愈", en: "Healing" },
 ];
 const MD_LIB = {
   mellow: [
-    { t: "Mizu Iro No Yoru", a: "Aimer", note: "给凌晨三点的窗台" },
-    { t: "The Night We Met", a: "Lord Huron", note: "想起某个人时放这首" },
-    { t: "Liability", a: "Lorde", note: "一个人也没关系" },
+    { t: "Mizu Iro No Yoru", a: "Aimer", note: { zh: "给凌晨三点的窗台", en: "for the windowsill at 3am" } },
+    { t: "The Night We Met", a: "Lord Huron", note: { zh: "想起某个人时放这首", en: "for when someone comes to mind" } },
+    { t: "Liability", a: "Lorde", note: { zh: "一个人也没关系", en: "being alone is okay too" } },
   ],
   tender: [
-    { t: "Plastic Love", a: "Mariya Takeuchi", note: "城市霓虹里的温柔" },
-    { t: "Harvest Moon", a: "Neil Young", note: "像一只手轻搭上肩" },
-    { t: "Lover, You Should've Come Over", a: "Jeff Buckley", note: "温柔到几乎心碎" },
+    { t: "Plastic Love", a: "Mariya Takeuchi", note: { zh: "城市霓虹里的温柔", en: "tenderness in city neon" } },
+    { t: "Harvest Moon", a: "Neil Young", note: { zh: "像一只手轻搭上肩", en: "like a hand resting on your shoulder" } },
+    { t: "Lover, You Should've Come Over", a: "Jeff Buckley", note: { zh: "温柔到几乎心碎", en: "tender to the point of heartbreak" } },
   ],
   nostalgic: [
-    { t: "Landslide", a: "Fleetwood Mac", note: "翻旧照片的下午" },
-    { t: "Vienna", a: "Billy Joel", note: "慢一点,时间还够" },
-    { t: "Yesterday Once More", a: "Carpenters", note: "回不去的那些夏天" },
+    { t: "Landslide", a: "Fleetwood Mac", note: { zh: "翻旧照片的下午", en: "an afternoon of old photos" } },
+    { t: "Vienna", a: "Billy Joel", note: { zh: "慢一点,时间还够", en: "slow down, there's still time" } },
+    { t: "Yesterday Once More", a: "Carpenters", note: { zh: "回不去的那些夏天", en: "the summers you can't return to" } },
   ],
   restless: [
-    { t: "Mr. Brightside", a: "The Killers", note: "停不下来的那种夜" },
-    { t: "Heads Will Roll", a: "Yeah Yeah Yeahs", note: "把躁动跳出去" },
-    { t: "Such Great Heights", a: "The Postal Service", note: "心跳快了一拍" },
+    { t: "Mr. Brightside", a: "The Killers", note: { zh: "停不下来的那种夜", en: "the kind of night that won't stop" } },
+    { t: "Heads Will Roll", a: "Yeah Yeah Yeahs", note: { zh: "把躁动跳出去", en: "dance the restlessness out" } },
+    { t: "Such Great Heights", a: "The Postal Service", note: { zh: "心跳快了一拍", en: "a heartbeat quicker" } },
   ],
   calm: [
-    { t: "Weightless", a: "Marconi Union", note: "让呼吸慢下来" },
-    { t: "Saturn", a: "Sleeping at Last", note: "宇宙也在轻声说话" },
-    { t: "An Ending (Ascent)", a: "Brian Eno", note: "一片安静的光" },
+    { t: "Weightless", a: "Marconi Union", note: { zh: "让呼吸慢下来", en: "let your breathing slow" } },
+    { t: "Saturn", a: "Sleeping at Last", note: { zh: "宇宙也在轻声说话", en: "the universe speaking softly too" } },
+    { t: "An Ending (Ascent)", a: "Brian Eno", note: { zh: "一片安静的光", en: "a quiet field of light" } },
   ],
   joyful: [
-    { t: "Lovely Day", a: "Bill Withers", note: "窗外刚好有阳光" },
-    { t: "September", a: "Earth, Wind & Fire", note: "忍不住跟着点头" },
-    { t: "Walking on Sunshine", a: "Katrina & The Waves", note: "把音量调大" },
+    { t: "Lovely Day", a: "Bill Withers", note: { zh: "窗外刚好有阳光", en: "sunlight just outside the window" } },
+    { t: "September", a: "Earth, Wind & Fire", note: { zh: "忍不住跟着点头", en: "can't help nodding along" } },
+    { t: "Walking on Sunshine", a: "Katrina & The Waves", note: { zh: "把音量调大", en: "turn it up" } },
   ],
   latenight: [
-    { t: "Nightcall", a: "Kavinsky", note: "霓虹、引擎、午夜" },
-    { t: "Midnight City", a: "M83", note: "城市在凌晨发光" },
-    { t: "Sunset Lover", a: "Petit Biscuit", note: "黄昏与深夜之间" },
+    { t: "Nightcall", a: "Kavinsky", note: { zh: "霓虹、引擎、午夜", en: "neon, engines, midnight" } },
+    { t: "Midnight City", a: "M83", note: { zh: "城市在凌晨发光", en: "the city glowing before dawn" } },
+    { t: "Sunset Lover", a: "Petit Biscuit", note: { zh: "黄昏与深夜之间", en: "between dusk and deep night" } },
   ],
   healing: [
-    { t: "Holocene", a: "Bon Iver", note: "你比想象中更完整" },
-    { t: "First Day of My Life", a: "Bright Eyes", note: "重新开始,从今晚" },
-    { t: "Float On", a: "Modest Mouse", note: "一切都会过去的" },
+    { t: "Holocene", a: "Bon Iver", note: { zh: "你比想象中更完整", en: "you're more whole than you think" } },
+    { t: "First Day of My Life", a: "Bright Eyes", note: { zh: "重新开始,从今晚", en: "start over, from tonight" } },
+    { t: "Float On", a: "Modest Mouse", note: { zh: "一切都会过去的", en: "everything will pass" } },
   ],
 };
 const MD_COVERS = [
@@ -159,6 +161,7 @@ function coverFor(title) {
 }
 
 export function MoodDemo() {
+  const { t, pick, lang } = useLang();
   const [picked, setPicked] = useState([]);
   const [phase, setPhase] = useState("idle"); // idle | loading | result
   const [songs, setSongs] = useState([]);
@@ -203,7 +206,8 @@ export function MoodDemo() {
   useEffect(() => () => stopMood(), []);
 
   const moodNames = () => picked
-    .map(k => MD_MOODS.find(m => m.key === k)?.cn).join(" · ");
+    .map(k => { const m = MD_MOODS.find(m => m.key === k); return m ? (lang === 'zh' ? m.cn : m.en) : ''; })
+    .join(" · ");
 
   // ----- result view -----
   if (phase === "result") {
@@ -211,7 +215,7 @@ export function MoodDemo() {
     return (
       <div style={{ textAlign: "center", color: "#F4EFE6" }}>
         <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".1em", color: "#9C8E7A" }}>
-          为「{moodNames()}」压好了一张唱片
+          {lang === 'zh' ? `为「${moodNames()}」压好了一张唱片` : `Pressed a record for «${moodNames()}»`}
         </div>
         {/* spinning vinyl */}
         <div style={{ width: 130, height: 130, margin: "14px auto 0", position: "relative",
@@ -226,7 +230,7 @@ export function MoodDemo() {
         <div className="mw-title" style={{ fontSize: 21, marginTop: 14, color: "#F4EFE6" }}>{song.t}</div>
         <div className="mw-body" style={{ fontSize: 13, color: "#9C8E7A", marginTop: 2 }}>{song.a}</div>
         <div className="sk-hand" style={{ fontSize: 16, color: "#E8975C", marginTop: 8 }}>
-          DJ:「{song.note}」
+          DJ:「{pick(song.note)}」
         </div>
         {/* the three songs — tap to switch */}
         <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 14, flexWrap: "wrap" }}>
@@ -241,7 +245,7 @@ export function MoodDemo() {
           ))}
         </div>
         <button className="mw-btn" onClick={spin} style={{ marginTop: 14, fontSize: 14, padding: "6px 16px" }}>
-          ↻ 换一批
+          {t('wd.moodReshuffle')}
         </button>
       </div>
     );
@@ -259,7 +263,7 @@ export function MoodDemo() {
             borderRadius: "50%", background: "#E8975C" }}/>
         </div>
         <div className="mw-body" style={{ fontSize: 15, color: "#F4EFE6", marginTop: 18 }}>
-          AI DJ 正在听你的夜晚…
+          {t('wd.moodLoading')}
         </div>
         <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "#6B6052", marginTop: 6 }}>
           GLM · reading the mood
@@ -272,7 +276,7 @@ export function MoodDemo() {
   return (
     <div style={{ textAlign: "center", color: "#F4EFE6" }}>
       <div className="mw-body" style={{ fontSize: 14, color: "#9C8E7A" }}>
-        今晚的你,听起来是什么样子?挑 1–3 个心情。
+        {t('wd.moodPrompt')}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 7, marginTop: 14 }}>
         {MD_MOODS.map(m => {
@@ -284,17 +288,17 @@ export function MoodDemo() {
               border: `1px solid ${on ? "#E8975C" : "rgba(244,239,230,.18)"}`,
               background: on ? "#E8975C" : "rgba(244,239,230,.05)",
               color: on ? "#1F1308" : "#F4EFE6",
-            }}>{m.cn}</button>
+            }}>{lang === 'zh' ? m.cn : m.en}</button>
           );
         })}
       </div>
       <button className="mw-btn mw-btn-primary" onClick={spin}
         disabled={picked.length === 0}
         style={{ marginTop: 18, opacity: picked.length === 0 ? 0.5 : 1 }}>
-        为我压一张唱片 →
+        {t('wd.moodPress')}
       </button>
       <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "#6B6052", marginTop: 10 }}>
-        已选 {picked.length} / 3
+        {t('wd.selected')} {picked.length} / 3
       </div>
     </div>
   );
@@ -306,21 +310,22 @@ export function MoodDemo() {
 // another way once you know what the café really was. Flip to reveal.
 // ============================================================
 const CAFE_RELICS = [
-  { glyph: "🪙", name: "铜色代币",
-    misread: "一枚注意力货币 — 古人用它兑换专注。",
-    truth: "老周收银机里的代币。那一夜他还在前台，盯着每台机器的异常。" },
-  { glyph: "🎫", name: "包夜小票",
-    misread: "时间与货币的契约凭证。",
-    truth: "反复打印 2012-12-21 23:59 —— 最早被当成打印机坏了的那个预警。" },
-  { glyph: "⌨️", name: "掉了 W 键的键盘",
-    misread: "刻着字母禁忌的图腾。",
-    truth: "阿丁 17 号机的键盘，W 键磨没了，底下刻着「别后退」。" },
-  { glyph: "📼", name: "断裂的路由器",
-    misread: "一只小型祈愿器。",
-    truth: "老周临走前硬拔下来的。日志里有他看不懂的外部信号，先当成断网故障。" },
+  { glyph: "🪙", name: { zh: "铜色代币", en: "Copper token" },
+    misread: { zh: "一枚注意力货币 — 古人用它兑换专注。", en: "An attention currency — the ancients traded it for focus." },
+    truth: { zh: "老周收银机里的代币。那一夜他还在前台，盯着每台机器的异常。", en: "A token from Lao Zhou's register. That night he was still at the counter, watching every machine for anomalies." } },
+  { glyph: "🎫", name: { zh: "包夜小票", en: "All-nighter receipt" },
+    misread: { zh: "时间与货币的契约凭证。", en: "A contract binding time and money." },
+    truth: { zh: "反复打印 2012-12-21 23:59 —— 最早被当成打印机坏了的那个预警。", en: "Printed over and over: 2012-12-21 23:59 — the warning first dismissed as a broken printer." } },
+  { glyph: "⌨️", name: { zh: "掉了 W 键的键盘", en: "Keyboard missing its W" },
+    misread: { zh: "刻着字母禁忌的图腾。", en: "A totem inscribed with a forbidden letter." },
+    truth: { zh: "阿丁 17 号机的键盘，W 键磨没了，底下刻着「别后退」。", en: "A Ding's machine-17 keyboard — the W worn away, “don't go back” carved beneath it." } },
+  { glyph: "📼", name: { zh: "断裂的路由器", en: "Broken router" },
+    misread: { zh: "一只小型祈愿器。", en: "A small wishing device." },
+    truth: { zh: "老周临走前硬拔下来的。日志里有他看不懂的外部信号，先当成断网故障。", en: "Lao Zhou yanked it out before leaving. Its logs held an outside signal he couldn't read — first taken for an outage." } },
 ];
 
 export function CafeDemo() {
+  const { t, pick } = useLang();
   const [i, setI] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const r = CAFE_RELICS[i];
@@ -342,7 +347,7 @@ export function CafeDemo() {
         boxShadow: "inset 0 0 60px rgba(0,0,0,.7)", textAlign: "center",
       }}>
         <div style={{ fontSize: 46, lineHeight: 1, filter: "grayscale(.3)" }}>{r.glyph}</div>
-        <div className="mw-title" style={{ fontSize: 22, color: "#e8eef2", marginTop: 8 }}>{r.name}</div>
+        <div className="mw-title" style={{ fontSize: 22, color: "#e8eef2", marginTop: 8 }}>{pick(r.name)}</div>
         <div style={{
           marginTop: 12, minHeight: 60,
           borderTop: "1px dashed rgba(232,238,242,.18)", paddingTop: 10,
@@ -351,26 +356,26 @@ export function CafeDemo() {
             fontSize: 9, letterSpacing: ".16em",
             color: flipped ? "#e0a96a" : "#6f7c8a",
           }}>
-            {flipped ? "真相 · TRUTH" : "2077 误读 · MISREAD"}
+            {flipped ? t('wd.truth') : t('wd.misread')}
           </div>
           <div className="mw-body" style={{
             fontSize: 14, lineHeight: 1.6, marginTop: 6,
             color: flipped ? "#f0e3cf" : "#aeb9c4",
             fontStyle: flipped ? "normal" : "italic",
           }}>
-            {flipped ? r.truth : r.misread}
+            {flipped ? pick(r.truth) : pick(r.misread)}
           </div>
         </div>
         <div className="sk-hand" style={{ fontSize: 13, color: "#5f6b78", marginTop: 10 }}>
-          {flipped ? "↺ 点一下，看考古队当初怎么读的" : "👆 点一下翻面 · 看真相"}
+          {flipped ? t('wd.cafeFlipBack') : t('wd.cafeFlipFront')}
         </div>
       </button>
 
       <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 14 }}>
-        <button className="mw-btn mw-btn-primary" onClick={next}>下一件遗物 →</button>
+        <button className="mw-btn mw-btn-primary" onClick={next}>{t('wd.cafeNext')}</button>
       </div>
       <div className="mw-body" style={{ fontSize: 12, color: "#7d8a98", marginTop: 12, lineHeight: 1.6 }}>
-        完整版里，这些遗物串成一条解谜链 ——<br/>最后读出 2012 那份被当成故障的预警。
+        {t('wd.cafeFull1')}<br/>{t('wd.cafeFull2')}
       </div>
     </div>
   );
@@ -382,21 +387,28 @@ export function CafeDemo() {
 // little synthesizer collides them into a product seed (no live LLM here).
 // ============================================================
 const SPARK_FRAGMENTS = [
-  "地铁通勤", "白噪音", "植物养成", "手写笔记",
-  "深夜电台", "潮汐", "便利店", "旧照片",
+  { zh: "地铁通勤", en: "Commute" }, { zh: "白噪音", en: "White noise" },
+  { zh: "植物养成", en: "Growing plants" }, { zh: "手写笔记", en: "Handwritten notes" },
+  { zh: "深夜电台", en: "Late-night radio" }, { zh: "潮汐", en: "Tides" },
+  { zh: "便利店", en: "Convenience store" }, { zh: "旧照片", en: "Old photos" },
 ];
-function synthIdea(picks) {
-  const [a, b, c] = picks;
-  const join = picks.join(" × ");
-  const seeds = [
+function synthIdea(picks, lang) {
+  const [a, b, c] = picks.map(p => p[lang]);
+  const join = picks.map(p => p[lang]).join(" × ");
+  const seeds = lang === 'zh' ? [
     { name: `${a}罐`,   pitch: `把「${a}」变成可以每天往里丢一点的小仪式，${b ? `攒够了就和「${b}」撞一次。` : "攒够了摇一摇看看。"}` },
     { name: `${b || a}电台`, pitch: `一个只在「${a}」时播放的频道${c ? `，背景是「${c}」。` : "。"}` },
     { name: `${a}×${b || a}`, pitch: `${join} —— 一个把这些碎片缝在一起的小工具，主打“不高效，但有手感”。` },
+  ] : [
+    { name: `${a} Jar`, pitch: `Turn “${a}” into a small daily ritual you drop a bit into${b ? `, and once it's full, collide it with “${b}”.` : `, then shake when it's full.`}` },
+    { name: `${b || a} Radio`, pitch: `A channel that only plays during “${a}”${c ? `, with “${c}” in the background.` : `.`}` },
+    { name: `${a} × ${b || a}`, pitch: `${join} —— a little tool that stitches these fragments together: “not efficient, but tactile.”` },
   ];
   return seeds[Math.floor(Math.random() * seeds.length)];
 }
 
 export function SparkDemo() {
+  const { t, lang } = useLang();
   const [picked, setPicked] = useState([]);
   const [phase, setPhase] = useState("idle"); // idle | shaking | result
   const [idea, setIdea] = useState(null);
@@ -412,7 +424,7 @@ export function SparkDemo() {
     playClick();
     setPhase("shaking");
     setTimeout(() => {
-      setIdea(synthIdea(picked));
+      setIdea(synthIdea(picked, lang));
       playStar();
       setPhase("result");
     }, 1400);
@@ -425,7 +437,9 @@ export function SparkDemo() {
     return (
       <div style={{ textAlign: "center", color: "#6b4e1f" }}>
         <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".14em", color: "#b9933f" }}>
-          为「{picked.join(" · ")}」撞出了一个点子
+          {lang === 'zh'
+            ? `为「${picked.map(p => p.zh).join(" · ")}」撞出了一个点子`
+            : `An idea from «${picked.map(p => p.en).join(" · ")}»`}
         </div>
         <div style={{
           margin: "16px auto 0", maxWidth: 320,
@@ -440,11 +454,11 @@ export function SparkDemo() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16 }}>
-          <button className="mw-btn" onClick={shake}>↻ 再撞一次</button>
-          <button className="mw-btn mw-btn-primary" onClick={again}>换一批碎片</button>
+          <button className="mw-btn" onClick={shake}>{t('wd.sparkAgain')}</button>
+          <button className="mw-btn mw-btn-primary" onClick={again}>{t('wd.sparkNewBatch')}</button>
         </div>
         <div className="mw-body" style={{ fontSize: 12, color: "#b9933f", marginTop: 12 }}>
-          完整版里这一步交给 AI，还能接着把它聊成可落地的方案。
+          {t('wd.sparkFull')}
         </div>
       </div>
     );
@@ -466,7 +480,7 @@ export function SparkDemo() {
             overflow: "hidden",
           }}>
             {SPARK_FRAGMENTS.slice(0, 6).map((f, i) => (
-              <div key={f} className="sk-hand" style={{
+              <div key={f.zh} className="sk-hand" style={{
                 position: "absolute", left: `${12 + (i % 3) * 30}%`, top: `${24 + Math.floor(i / 3) * 34}%`,
                 fontSize: 13, color: "#7a5a1a",
                 animation: `mw-jardrift ${0.5 + (i % 3) * 0.15}s ease-in-out infinite alternate`,
@@ -477,7 +491,7 @@ export function SparkDemo() {
           <div style={{ position: "absolute", top: 6, left: 26, right: 26, height: 16, background: "#e0a96a", border: "2.5px solid #1b1b1b", borderRadius: 4 }}/>
         </div>
         <div className="mw-body" style={{ fontSize: 15, color: "#6b4e1f", marginTop: 16 }}>
-          摇一摇，让碎片互相撞一撞…
+          {t('wd.sparkShaking')}
         </div>
         <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "#b9933f", marginTop: 6 }}>
           GLM · colliding ideas
@@ -490,29 +504,29 @@ export function SparkDemo() {
   return (
     <div style={{ textAlign: "center", color: "#6b4e1f" }}>
       <div className="mw-body" style={{ fontSize: 14, color: "#9a7a3a" }}>
-        往灵感罐里挑 2–3 个碎片，再摇一摇。
+        {t('wd.sparkPrompt')}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 7, marginTop: 14 }}>
         {SPARK_FRAGMENTS.map(f => {
           const on = picked.includes(f);
           return (
-            <button key={f} onClick={() => toggle(f)} style={{
+            <button key={f.zh} onClick={() => toggle(f)} style={{
               fontFamily: "ZCOOL KuaiLe, sans-serif", fontSize: 13, cursor: "pointer",
               padding: "8px 15px", borderRadius: 999,
               border: `1.5px solid ${on ? "#1b1b1b" : "rgba(122,90,26,.3)"}`,
               background: on ? "#f3c069" : "rgba(246,205,125,.16)",
               color: on ? "#1b1b1b" : "#7a5a1a",
-            }}>{f}</button>
+            }}>{f[lang]}</button>
           );
         })}
       </div>
       <button className="mw-btn mw-btn-primary" onClick={shake}
         disabled={picked.length < 2}
         style={{ marginTop: 18, opacity: picked.length < 2 ? 0.5 : 1 }}>
-        摇一摇 →
+        {t('wd.sparkShake')}
       </button>
       <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".12em", color: "#b9933f", marginTop: 10 }}>
-        已选 {picked.length} / 3 · 至少 2 个
+        {t('wd.selected')} {picked.length} / 3 {t('wd.atLeast2')}
       </div>
     </div>
   );

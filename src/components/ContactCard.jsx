@@ -13,6 +13,7 @@
 import { useState } from 'react';
 import Overlay from './Overlay.jsx';
 import { playClick, playStar } from '../world/sound.js';
+import { useLang } from '../i18n/lang.jsx';
 
 // ⬇⬇⬇  PASTE YOUR WEB3FORMS ACCESS KEY HERE  ⬇⬇⬇
 const ACCESS_KEY = "45dfc353-bd06-4248-9d1a-0a823280eeb0";
@@ -28,6 +29,7 @@ function Plane() {
 }
 
 export default function ContactCard({ onClose, onSent }) {
+  const { t, lang } = useLang();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -65,11 +67,11 @@ export default function ContactCard({ onClose, onSent }) {
         body: JSON.stringify({
           access_key: ACCESS_KEY,
           subject: "my world — 有人给你写信了 ✦",
-          from_name: name.trim() || "一位散步的访客",
+          from_name: name.trim() || (lang === 'zh' ? "一位散步的访客" : "A passing visitor"),
           email: email.trim() || undefined,
           message:
             message.trim() +
-            `\n\n— ${name.trim() || "匿名"}` +
+            `\n\n— ${name.trim() || (lang === 'zh' ? "匿名" : "Anonymous")}` +
             (email.trim() ? ` · ${email.trim()}` : ""),
         }),
       });
@@ -84,33 +86,33 @@ export default function ContactCard({ onClose, onSent }) {
   };
 
   return (
-    <Overlay title="写信给我" sub="CONTACT" onClose={onClose} accent="#fffdf6">
+    <Overlay title={t('contact.title')} sub="CONTACT" onClose={onClose} accent="#fffdf6">
       {status === "sent" ? (
         <div style={{ textAlign: "center", padding: "12px 0 6px" }}>
           <div className="mw-twinkle" style={{ fontSize: 46, color: "#d97757" }}>✦</div>
-          <div className="mw-title" style={{ fontSize: 30, marginTop: 6 }}>寄出啦</div>
+          <div className="mw-title" style={{ fontSize: 30, marginTop: 6 }}>{t('contact.sentTitle')}</div>
           <div className="mw-body" style={{ fontSize: 16, color: "#666", marginTop: 8, lineHeight: 1.65 }}>
-            纸飞机已经飞到 Arden 那儿了 —<br/>谢谢你写的这两句 :)
+            {t('contact.sentBody1')}<br/>{t('contact.sentBody2')}
           </div>
-          <button className="mw-btn" style={{ marginTop: 18 }} onClick={onClose}>← 继续走</button>
+          <button className="mw-btn" style={{ marginTop: 18 }} onClick={onClose}>{t('contact.continue')}</button>
         </div>
       ) : (
         <>
           <div className="mw-body" style={{ fontSize: 17, lineHeight: 1.55, color: "#444", marginBottom: 14 }}>
-            随便说点什么都好 — 想合作、想吐槽、想聊天 :)
+            {t('contact.prompt')}
           </div>
           <div style={fieldWrap}>
-            <input style={baseField} placeholder="你是谁?(可不填)" value={name}
+            <input style={baseField} placeholder={t('contact.phName')} value={name}
               onChange={(e) => setName(e.target.value)} disabled={status === "flying"}/>
             <div aria-hidden="true" style={wobbleOverlay}/>
           </div>
           <div style={fieldWrap}>
-            <input style={baseField} type="email" placeholder="你的邮箱?(想收到回信就填)" value={email}
+            <input style={baseField} type="email" placeholder={t('contact.phEmail')} value={email}
               onChange={(e) => setEmail(e.target.value)} disabled={status === "flying"}/>
             <div aria-hidden="true" style={wobbleOverlay}/>
           </div>
           <div style={fieldWrap}>
-            <textarea rows={5} placeholder="写两句…" value={message}
+            <textarea rows={5} placeholder={t('contact.phMsg')} value={message}
               onChange={(e) => setMessage(e.target.value)} disabled={status === "flying"}
               style={{ ...baseField, fontSize: 20, lineHeight: 1.4, resize: "vertical" }}/>
             <div aria-hidden="true" style={wobbleOverlay}/>
@@ -122,12 +124,12 @@ export default function ContactCard({ onClose, onSent }) {
           }}>
             <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".12em",
               color: status === "error" ? "#c0563f" : "#888" }}>
-              {status === "error" ? "没寄出去 — 再试一次?" : "会直接寄到 Arden 的邮箱"}
+              {status === "error" ? t('contact.errHint') : t('contact.okHint')}
             </div>
             <button className="mw-btn mw-btn-primary" onClick={send}
               disabled={status === "flying" || !message.trim()}
               style={{ opacity: (status === "flying" || !message.trim()) ? 0.55 : 1 }}>
-              {status === "flying" ? "寄出中…" : "寄出 →"}
+              {status === "flying" ? t('contact.flying') : t('contact.send')}
             </button>
 
             {/* the paper plane folds up and flies away */}

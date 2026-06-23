@@ -31,6 +31,8 @@ import {
   initAudio, startBgm, playStep, playOpen, playClick, playJump, playWin,
   isMuted, setMuted,
 } from './world/sound.js';
+import { useLang } from './i18n/lang.jsx';
+import LangToggle from './components/LangToggle.jsx';
 
 const ROOM_W = 2480;
 const FLOOR_H = 170;
@@ -57,33 +59,45 @@ const POS = {
   mail:     2360,
 };
 const PROMPT_LABEL = {
-  outdoor:  "去野外 →",
-  climb:    "上墙试试",
-  bed:      "躺一下",
-  fishtank: "喂喂鱼",
-  focus:    "坐下专注",
-  shelf:    "翻一本",
-  doodle:   "看看实验",
-  mood:     "放一张唱片",
-  cafe:     "玩一会儿",
-  spark:    "摇一摇",
-  about:    "认识一下",
-  mail:     "写一封信",
+  outdoor:  { zh: "去野外 →",   en: "Go outside →" },
+  climb:    { zh: "上墙试试",   en: "Try the wall" },
+  bed:      { zh: "躺一下",     en: "Lie down" },
+  fishtank: { zh: "喂喂鱼",     en: "Feed the fish" },
+  focus:    { zh: "坐下专注",   en: "Sit & focus" },
+  shelf:    { zh: "翻一本",     en: "Pick a book" },
+  doodle:   { zh: "看看实验",   en: "See experiments" },
+  mood:     { zh: "放一张唱片", en: "Play a record" },
+  cafe:     { zh: "玩一会儿",   en: "Play a bit" },
+  spark:    { zh: "摇一摇",     en: "Shake it" },
+  about:    { zh: "认识一下",   en: "Get to know me" },
+  mail:     { zh: "写一封信",   en: "Write a letter" },
 };
 
 // ⬇⬇⬇  自我介绍 — 随便改成你自己的  ⬇⬇⬇
 const ABOUT_ME = {
-  name: "我是 Arden",
-  lines: [
-    "一个喜欢自己做小东西的人 —",
-    "网页、小游戏、会动的小玩意儿。",
-    "",
-    "这间屋子里的家具,差不多都是",
-    "我做过的、或还想做的东西。",
-    "",
-    "想合作、想聊天 —",
-    "墙边笼子里有只鸽子,它会送信 :)",
-  ],
+  name: { zh: "我是 Arden", en: "I'm Arden" },
+  lines: {
+    zh: [
+      "一个喜欢自己做小东西的人 —",
+      "网页、小游戏、会动的小玩意儿。",
+      "",
+      "这间屋子里的家具,差不多都是",
+      "我做过的、或还想做的东西。",
+      "",
+      "想合作、想聊天 —",
+      "墙边笼子里有只鸽子,它会送信 :)",
+    ],
+    en: [
+      "Someone who likes making little things —",
+      "webpages, small games, animated little toys.",
+      "",
+      "Almost all the furniture in this room is",
+      "something I've made, or still want to make.",
+      "",
+      "Want to collaborate, or just chat —",
+      "there's a pigeon in the cage by the wall; it delivers letters :)",
+    ],
+  },
 };
 
 // Window — placed between desk and plant; used as the pigeon's exit point
@@ -111,17 +125,18 @@ const CLIMB_HOLDS = [
 ];
 
 const BOOK_QUOTES = [
-  { q: "「冬天里,被子是最好的房子。」",       from: "—某本随笔" },
-  { q: "「我在路上看到一只猫,它没看我。」",   from: "—某本散文集" },
-  { q: "「重要的事情,慢慢说。」",             from: "—某本小书" },
-  { q: "「光从窗户进来,落在桌上,我就什么都没做。」", from: "—某本日记" },
-  { q: "「茶凉了,故事还在。」",               from: "—某本短篇集" },
-  { q: "「人最难的,是允许自己慢一点。」",     from: "—某本随感" },
-  { q: "「下雨的下午,什么也不做也好。」",     from: "—某本旅行手账" },
-  { q: "「家不是地方,是肯让你坐下来的灯光。」", from: "—某本散文" },
+  { q: { zh: "「冬天里,被子是最好的房子。」", en: "“In winter, a quilt is the best house.”" },                       from: { zh: "—某本随笔", en: "—from some essays" } },
+  { q: { zh: "「我在路上看到一只猫,它没看我。」", en: "“I saw a cat on the road; it didn't look at me.”" },          from: { zh: "—某本散文集", en: "—from a prose collection" } },
+  { q: { zh: "「重要的事情,慢慢说。」", en: "“Important things, say them slowly.”" },                                from: { zh: "—某本小书", en: "—from a little book" } },
+  { q: { zh: "「光从窗户进来,落在桌上,我就什么都没做。」", en: "“Light came through the window onto the desk, and I did nothing.”" }, from: { zh: "—某本日记", en: "—from a diary" } },
+  { q: { zh: "「茶凉了,故事还在。」", en: "“The tea went cold; the story stayed.”" },                                from: { zh: "—某本短篇集", en: "—from a story collection" } },
+  { q: { zh: "「人最难的,是允许自己慢一点。」", en: "“The hardest thing is letting yourself slow down.”" },          from: { zh: "—某本随感", en: "—from some reflections" } },
+  { q: { zh: "「下雨的下午,什么也不做也好。」", en: "“A rainy afternoon — doing nothing is fine too.”" },            from: { zh: "—某本旅行手账", en: "—from a travel journal" } },
+  { q: { zh: "「家不是地方,是肯让你坐下来的灯光。」", en: "“Home isn't a place; it's the light that lets you sit down.”" }, from: { zh: "—某本散文", en: "—from an essay" } },
 ];
 
 export default function RoomGame({ onSwitch }) {
+  const { t, pick, lang } = useLang();
   const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight });
   const [charX, setCharX] = useState(POS.desk);
   const [charY, setCharY] = useState(0);
@@ -736,7 +751,7 @@ export default function RoomGame({ onSwitch }) {
             {thought && (
               <div className="mw-thought" key={thought.id}>
                 <div className="sk-hand" style={{ fontSize: 17, lineHeight: 1.3, color: "#1b1b1b" }}>
-                  {thought.text}
+                  {pick(thought.text)}
                 </div>
               </div>
             )}
@@ -795,15 +810,17 @@ export default function RoomGame({ onSwitch }) {
           border: "2px solid #1b1b1b", padding: "6px 12px", filter: "url(#wobble)",
           pointerEvents: "auto",
         }}>
-          MY WORLD &nbsp;·&nbsp; 房间版 · ROOM
-          {climbHold && <span style={{ marginLeft: 8 }}>· 攀岩中</span>}
-          {lying && <span style={{ marginLeft: 8 }}>· 睡了 zZ</span>}
+          MY WORLD &nbsp;·&nbsp; {t('room.label')}
+          {climbHold && <span style={{ marginLeft: 8 }}>{t('room.climbing')}</span>}
+          {lying && <span style={{ marginLeft: 8 }}>{t('room.sleeping')}</span>}
         </div>
-        {/* gallery shortcut — top right */}
-        <button className="mw-skip" onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}
-                style={{ pointerEvents: "auto" }}>
-          SKIP · 看作品 →
-        </button>
+        {/* lang toggle + gallery shortcut — top right */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center", pointerEvents: "auto" }}>
+          <LangToggle/>
+          <button className="mw-skip" onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}>
+            SKIP · {t('walk.seeWorks')} →
+          </button>
+        </div>
       </div>
 
       <button className="mw-skip" onClick={(e) => {
@@ -813,7 +830,7 @@ export default function RoomGame({ onSwitch }) {
           setMuted(m); setMutedState(m);
         }}
         style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36 }}>
-        <SpeakerIcon muted={muted}/>{muted ? "静音" : "声音"}
+        <SpeakerIcon muted={muted}/>{muted ? t('common.mute') : t('common.sound')}
       </button>
 
       {/* mobile jump button — no keyboard there, so a tap-to-hop control */}
@@ -824,7 +841,7 @@ export default function RoomGame({ onSwitch }) {
             if (stateRef.current.y === 0) keys.current.jumpRequested = true;
           }}
           style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 36 }}>
-          ↑ 跳
+          {t('room.jump')}
         </button>
       )}
 
@@ -832,12 +849,12 @@ export default function RoomGame({ onSwitch }) {
         <button className="mw-skip"
                 onClick={(e) => { e.stopPropagation(); exitClimb(); }}
                 style={{ position: "fixed", bottom: 24, right: 24, zIndex: 36 }}>
-          ↓ 下来
+          {t('room.getDown')}
         </button>
       ) : (
         <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onSwitch(); }}
                 style={{ position: "fixed", bottom: 24, right: 24, zIndex: 36 }}>
-          ← 散步版
+          {t('room.walkVersion')}
         </button>
       )}
 
@@ -850,15 +867,15 @@ export default function RoomGame({ onSwitch }) {
           boxShadow: "4px 6px 0 rgba(0,0,0,.2)", zIndex: 45,
         }}>
           <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".22em", color: "#888" }}>
-            CLIMB · 登顶
+            CLIMB · {t('room.summitWord')}
           </div>
           <div className="mw-title" style={{ fontSize: 32, lineHeight: 1, marginTop: 4, color: "#d97757" }}>
-            登顶 ✦
+            {t('room.summit')}
           </div>
-          
+
           <button className="mw-btn" style={{ marginTop: 14, fontSize: 14, padding: "6px 18px" }}
                   onClick={() => exitClimb()}>
-            ↓ 下来
+            {t('room.getDown')}
           </button>
         </div>
       )}
@@ -876,7 +893,7 @@ export default function RoomGame({ onSwitch }) {
               border: "2px solid #1b1b1b", filter: "url(#wobble)", padding: "8px 18px",
               pointerEvents: "auto",
             }}>
-              {isMobile ? "点一下屏幕起床" : "点一下 / 按空格起床"}
+              {isMobile ? t('room.wakeMobile') : t('room.wakeDesktop')}
             </div>
           )}
         </div>
@@ -885,10 +902,10 @@ export default function RoomGame({ onSwitch }) {
       {showHint && !blocked && !climbHold && !lying && (
         <div className="mw-start-hint">
           <div className="sk-hand" style={{ fontSize: isMobile ? 22 : 26, color: "#1b1b1b" }}>
-            走到东西旁边 — 都能玩 ✦
+            {t('room.hintMain')}
           </div>
           <div className="mw-body" style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
-            窗边灵感罐·攀岩·床上掌机·鱼缸·书桌闹钟·书架·涂鸦墙·唱片机·关于我·信鸽 &nbsp;·&nbsp; {isMobile ? "点屏幕走 · 点黑气泡互动 · 点 ↑跳 · 右上 SKIP 看作品" : "← → / A D 走 · W/↑ 跳 · E 互动 · 右上 SKIP 看作品"}
+            {t('room.hintList')} &nbsp;·&nbsp; {isMobile ? t('room.ctrlMobile') : t('room.ctrlDesktop')}
           </div>
         </div>
       )}
@@ -927,7 +944,7 @@ export default function RoomGame({ onSwitch }) {
         <Gallery
           onClose={() => setShowGallery(false)}
           onBackToWalk={() => setShowGallery(false)}
-          backLabel="← 回房间走走"
+          backLabel={t('room.backToRoom')}
           onShowcase={(url, workId) =>
             setShowcase({ url, workId, fromX: stateRef.current.x })
           }
@@ -935,18 +952,18 @@ export default function RoomGame({ onSwitch }) {
       )}
 
       {bookQuote && (
-        <Overlay title="翻一页" sub="BOOKSHELF · 书架"
+        <Overlay title={t('room.bookTitle')} sub={`BOOKSHELF · ${t('room.shelfWord')}`}
                  onClose={() => setBookQuote(null)} accent="#fffdf6">
           <div style={{ textAlign: "center", padding: "10px 4px" }}>
             <div className="mw-title" style={{ fontSize: 32, lineHeight: 1.35, color: "#1b1b1b" }}>
-              {bookQuote.q}
+              {pick(bookQuote.q)}
             </div>
             <div className="sk-hand" style={{ fontSize: 17, color: "#7a6648", marginTop: 14 }}>
-              {bookQuote.from}
+              {pick(bookQuote.from)}
             </div>
             <button className="mw-btn" style={{ marginTop: 22 }}
                     onClick={() => { playOpen(); setBookQuote(BOOK_QUOTES[Math.floor(Math.random() * BOOK_QUOTES.length)]); }}>
-              ↺ 再翻一本
+              {t('room.anotherBook')}
             </button>
           </div>
         </Overlay>
@@ -960,7 +977,7 @@ export default function RoomGame({ onSwitch }) {
       )}
 
       {showAbout && (
-        <Overlay title="关于我" sub="ABOUT · 自我介绍"
+        <Overlay title={t('room.aboutTitle')} sub={`ABOUT · ${t('room.aboutSub')}`}
                  onClose={() => setShowAbout(false)} accent="#fffdf6">
           <div style={{ textAlign: "center", padding: "6px 4px 2px" }}>
             <svg width="116" height="116" viewBox="0 0 116 116"
@@ -1007,23 +1024,23 @@ export default function RoomGame({ onSwitch }) {
                     fill="none" strokeLinecap="round"/>
             </svg>
             <div className="mw-title" style={{ fontSize: 32, color: "#1b1b1b" }}>
-              {ABOUT_ME.name}
+              {pick(ABOUT_ME.name)}
             </div>
             <div className="mw-body" style={{ fontSize: 17, color: "#555", marginTop: 12, lineHeight: 1.75 }}>
-              {ABOUT_ME.lines.map((line, i) => (
+              {pick(ABOUT_ME.lines).map((line, i) => (
                 <div key={i}>{line || " "}</div>
               ))}
             </div>
             <button className="mw-btn" style={{ marginTop: 20 }}
                     onClick={() => setShowAbout(false)}>
-              ← 回屋里
+              {t('room.backInside')}
             </button>
           </div>
         </Overlay>
       )}
 
       {showOutdoor && (
-        <Overlay title="去野外攀岩" sub="OUTDOOR · 施工中"
+        <Overlay title={t('room.outdoorTitle')} sub={`OUTDOOR · ${t('room.outdoorSub')}`}
                  onClose={() => setShowOutdoor(false)} accent="#fffdf6">
           <div style={{ textAlign: "center", padding: "4px 0" }}>
             <svg width="220" height="160" viewBox="0 0 220 160"
@@ -1072,12 +1089,12 @@ export default function RoomGame({ onSwitch }) {
               </g>
             </svg>
             <div className="mw-body" style={{ fontSize: 17, color: "#555", marginTop: 14, lineHeight: 1.6 }}>
-              锁扣还在拧 — 改天再来 ✿<br/>
-              想去爬墙? 屋里就有一面手绘的 ↓
+              {t('room.outdoorBody1')}<br/>
+              {t('room.outdoorBody2')}
             </div>
             <button className="mw-btn" style={{ marginTop: 18 }}
                     onClick={() => setShowOutdoor(false)}>
-              ← 回屋里
+              {t('room.backInside')}
             </button>
           </div>
         </Overlay>
@@ -1115,13 +1132,14 @@ function findNearest(charX) {
 // Anchored — world-layer object with a floating black prompt
 // ============================================================
 function Anchored({ x, bottom, prompt, promptOffset, onActivate, children }) {
+  const { pick } = useLang();
   return (
     <div style={{ position: "absolute", left: x, bottom }}>
       {children}
       {prompt && (
         <div className="mw-prompt-anchor mw-prompt-tap" style={{ bottom: promptOffset }}
              onPointerDown={onActivate ? (e) => { e.stopPropagation(); onActivate(); } : undefined}>
-          ▾ &nbsp; {prompt} &nbsp; ▾
+          ▾ &nbsp; {pick(prompt)} &nbsp; ▾
         </div>
       )}
     </div>
@@ -1238,6 +1256,7 @@ function PendantLamp({ cx, bottom }) {
 // Outdoor portal — exterior door on the left wall (under construction)
 // ============================================================
 function OutdoorPortal({ highlighted }) {
+  const { t } = useLang();
   return (
     <div style={{ position: "relative", width: 100, height: 220,
                   filter: highlighted ? "drop-shadow(0 0 14px rgba(217,119,87,.55))" : "none",
@@ -1266,7 +1285,7 @@ function OutdoorPortal({ highlighted }) {
         <rect x="-2" y="-6" width="104" height="22" fill="#fffdf6"
               stroke="#1b1b1b" strokeWidth="2" filter="url(#wobble)"/>
         <text x="50" y="10" fontSize="13" textAnchor="middle"
-              fontFamily="Caveat" fill="#1b1b1b">野外攀岩 →</text>
+              fontFamily="Caveat" fill="#1b1b1b">{t('room.outdoorClimb')}</text>
       </svg>
     </div>
   );
@@ -1417,6 +1436,7 @@ function ClimberSprite() {
 // Climbing wall — hand-drawn holds + click-to-hop mini-game
 // ============================================================
 function ClimbingWall({ holds, highlighted, climbHold, onHoldClick }) {
+  const { t } = useLang();
   const W = 240, H = 360;
   const current = climbHold ? holds.find(h => h.id === climbHold) : null;
   return (
@@ -1522,7 +1542,7 @@ function ClimbingWall({ holds, highlighted, climbHold, onHoldClick }) {
           );
         })}
         <text x={W / 2} y="22" fontSize="14" textAnchor="middle"
-              fontFamily="Caveat" fill="#d97757">登顶 ✦</text>
+              fontFamily="Caveat" fill="#d97757">{t('room.summit')}</text>
       </svg>
     </div>
   );
@@ -1930,6 +1950,7 @@ function SittingChar() {
 // About-me easel — a canvas on a tripod with a little portrait
 // ============================================================
 function AboutEasel({ highlighted }) {
+  const { t } = useLang();
   return (
     <div style={{ position: "relative", width: 120, height: 210,
                   filter: highlighted ? "drop-shadow(0 0 14px rgba(217,119,87,.55))" : "none",
@@ -1977,7 +1998,7 @@ function AboutEasel({ highlighted }) {
         <rect x="34" y="150" width="52" height="20" rx="2"
               fill="#fef3a3" stroke="#1b1b1b" strokeWidth="2" filter="url(#wobble)"/>
         <text x="60" y="164" fontSize="13" textAnchor="middle"
-              fontFamily="Caveat" fill="#1b1b1b">关于我</text>
+              fontFamily="Caveat" fill="#1b1b1b">{t('room.aboutTitle')}</text>
       </svg>
     </div>
   );

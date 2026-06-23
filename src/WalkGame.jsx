@@ -35,13 +35,16 @@ import {
   initAudio, startBgm, playStep, playJump, playSplash, playStar, playOpen, playWin,
   isMuted, setMuted,
 } from './world/sound.js';
+import { useLang } from './i18n/lang.jsx';
+import LangToggle from './components/LangToggle.jsx';
 
 const CAT_ENCOUNTERS = [
-  { x: 1100, facing: -1, label: "喵" },
-  { x: 4740, facing: 1, label: "z z" },
+  { x: 1100, facing: -1, labelKey: "cat.meow" },
+  { x: 4740, facing: 1, labelKey: "cat.zz" },
 ];
 
 export default function WalkGame({ onRoom }) {
+  const { t, pick, lang } = useLang();
   const [charX, setCharX] = useState(420);
   const [charY, setCharY] = useState(0);
   const [vy, setVy] = useState(0);
@@ -174,7 +177,7 @@ export default function WalkGame({ onRoom }) {
   function showLeftWallThought() {
     setThought({
       id: `leftwall-${Date.now()}`,
-      text: "往右走哦 →\n左边开发中,可以留言告诉我还想玩啥 (=^▽^=)",
+      text: t('walk.leftEdge'),
       wrap: true,
     });
     clearTimeout(thoughtTimer.current);
@@ -503,10 +506,10 @@ export default function WalkGame({ onRoom }) {
       case "knock":
         setDialog({
           lines: [
-            "诶 — 你来啦 :)",
-            "我是 Arden。\n这是我做的小世界 — my world。",
-            "前面有几件我做的东西，\n几个停靠点，还有藏起来的小玩意儿 ✦",
-            "天会慢慢黑下来，但路上一直有灯 ✿\n随便逛 — 点招牌就能聊聊 :)",
+            t('knock.0'),
+            t('knock.1'),
+            t('knock.2'),
+            t('knock.3'),
           ]
         });
         break;
@@ -518,9 +521,9 @@ export default function WalkGame({ onRoom }) {
         setLanternLit(true);
         setDialog({
           lines: [
-            "天黑了。",
-            "灯笼是路上最温柔的东西 ✦",
-            "以前我觉得「效率」最重要 —\n后来发现，慢一点也没什么不好。",
+            t('lantern.0'),
+            t('lantern.1'),
+            t('lantern.2'),
           ]
         });
         break;
@@ -633,7 +636,7 @@ export default function WalkGame({ onRoom }) {
               <div className="sk-hand" style={{
                 position: "absolute", left: 8, bottom: 30,
                 transform: `scaleX(${cat.facing})`, fontSize: 13, opacity: .7,
-              }}>{cat.label}</div>
+              }}>{t(cat.labelKey)}</div>
             </div>
           )
         ))}
@@ -698,7 +701,7 @@ export default function WalkGame({ onRoom }) {
               <div className="sk-hand" style={{
                 fontSize: 17, lineHeight: 1.3, color: "#1b1b1b",
                 whiteSpace: thought.wrap ? "pre-line" : undefined,
-              }}>{thought.text}</div>
+              }}>{pick(thought.text)}</div>
             </div>
           )}
         </div>
@@ -717,12 +720,12 @@ export default function WalkGame({ onRoom }) {
             setMuted(m);
             setMutedState(m);
           }}>
-          <SpeakerIcon muted={muted}/>{muted ? "静音" : "声音"}
+          <SpeakerIcon muted={muted}/>{muted ? t('common.mute') : t('common.sound')}
         </button>
         {!showIntro && !showEnd && !showGallery && (
           <button className="mw-skip"
             onClick={(e) => { e.stopPropagation(); openTutorial(); }}>
-            ? 怎么玩
+            {t('walk.howto')}
           </button>
         )}
       </div>
@@ -732,7 +735,7 @@ export default function WalkGame({ onRoom }) {
       {onRoom && (
         <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onRoom(); }}
           style={{ position: "fixed", bottom: 24, right: 24, zIndex: 36 }}>
-<HouseIcon/>房间版 →
+<HouseIcon/>{t('walk.roomBtn')}
         </button>
       )}
 
@@ -755,24 +758,24 @@ export default function WalkGame({ onRoom }) {
             boxShadow: "3px 4px 0 rgba(0,0,0,.15)",
             pointerEvents: "auto"
           }}>
-            <div className="sk-mono" style={{ fontSize: 9 * k, letterSpacing: ".22em", color: "#888" }}>END · 终点</div>
-            <div className="mw-title" style={{ fontSize: 32 * k, lineHeight: 1, marginTop: 4 * k, color: "#d97757" }}>通关 ✦</div>
-            <div className="sk-hand" style={{ fontSize: 14 * k, color: "#666", marginTop: 2 * k }}>你走完了 my world</div>
+            <div className="sk-mono" style={{ fontSize: 9 * k, letterSpacing: ".22em", color: "#888" }}>END · {t('walk.end')}</div>
+            <div className="mw-title" style={{ fontSize: 32 * k, lineHeight: 1, marginTop: 4 * k, color: "#d97757" }}>{t('walk.complete')}</div>
+            <div className="sk-hand" style={{ fontSize: 14 * k, color: "#666", marginTop: 2 * k }}>{t('walk.endSub')}</div>
             {stars === 4 && (
               <div className="sk-hand mw-star-complete" style={{
                 marginTop: 8 * k, padding: `${5 * k}px ${8 * k}px`,
                 background: "#fef3a3", border: "1.5px solid #1b1b1b",
                 fontSize: 13 * k,
               }}>
-                今晚的星星都亮了 ✦
+                {t('walk.allStars')}
               </div>
             )}
             <div style={{ marginTop: 12 * k, display: "flex", flexDirection: "column", gap: 4 * k }}>
               {[
-                { label: "停靠点", value: `${visitedStops}/${countedStops.length}` },
-                { label: "捡到的星", value: `${stars} 颗` },
-                { label: "花的时间", value: timeStr },
-                { label: "通关次数", value: `# ${playCount}` },
+                { label: t('walk.statStops'), value: `${visitedStops}/${countedStops.length}` },
+                { label: t('walk.statStars'), value: lang === 'zh' ? `${stars} 颗` : `${stars}` },
+                { label: t('walk.statTime'), value: timeStr },
+                { label: t('walk.statPlays'), value: `# ${playCount}` },
               ].map(s => (
                 <div key={s.label} style={{
                   display: "flex", justifyContent: "space-between", alignItems: "baseline",
@@ -785,17 +788,17 @@ export default function WalkGame({ onRoom }) {
             </div>
             <div style={{ marginTop: 12 * k, display: "flex", gap: 6 * k }}>
               <button className="mw-btn" style={{ flex: 1, fontSize: 13 * k, padding: `${5 * k}px ${8 * k}px` }} onClick={(e) => { e.stopPropagation(); replay(); }}>
-                ↺ 再走一遍
+                {t('walk.replay')}
               </button>
               <button className="mw-btn" style={{ flex: 1, fontSize: 13 * k, padding: `${5 * k}px ${8 * k}px` }} onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}>
-                看作品
+                {t('walk.seeWorks')}
               </button>
             </div>
             {onRoom && (
               <button className="mw-btn mw-btn-primary"
                 style={{ width: "100%", marginTop: 6 * k, fontSize: 13 * k, padding: `${6 * k}px ${8 * k}px` }}
                 onClick={(e) => { e.stopPropagation(); onRoom(); }}>
-<HouseIcon size={15}/>没玩够? 回 Arden 家再看看 →
+<HouseIcon size={15}/>{t('walk.endRoom')}
               </button>
             )}
           </div>
@@ -815,7 +818,7 @@ export default function WalkGame({ onRoom }) {
           onPointerUp={onJumpUp}
         >
           <div className="sk-hand" style={{ fontSize: 22, lineHeight: 1 }}>↑</div>
-          <div className="sk-mono" style={{ fontSize: 7, letterSpacing: ".14em" }}>拖我·跳</div>
+          <div className="sk-mono" style={{ fontSize: 7, letterSpacing: ".14em" }}>{t('walk.dragJump')}</div>
         </button>
       )}
 
@@ -853,24 +856,32 @@ export default function WalkGame({ onRoom }) {
       )}
 
       {overlay?.type === "about" && (
-        <Overlay title="关于" sub="ABOUT" onClose={() => setOverlay(null)}>
+        <Overlay title={t('walk.aboutTitle')} sub="ABOUT" onClose={() => setOverlay(null)}>
           <div className="mw-body" style={{ fontSize: 18, lineHeight: 1.7, color: "#1b1b1b" }}>
-            我是 <b>Arden</b> — 还在探索。<br/><br/>
-            住在北京。<br/>
-            白天学习➕做产品 — 喜欢简单、有手感、解决一个真问题的小东西；<br/>
-            晚上偶尔写点想法。<br/><br/>
-            <i style={{ color: "#666" }}>这个网站本身也是我的一件作品。</i>
+            {lang === 'zh' ? (<>
+              我是 <b>Arden</b> — 还在探索。<br/><br/>
+              住在北京。<br/>
+              白天学习➕做产品 — 喜欢简单、有手感、解决一个真问题的小东西；<br/>
+              晚上偶尔写点想法。<br/><br/>
+              <i style={{ color: "#666" }}>这个网站本身也是我的一件作品。</i>
+            </>) : (<>
+              I'm <b>Arden</b> — still exploring.<br/><br/>
+              Based in Beijing.<br/>
+              By day I study and build products — I like things that are simple, tactile, and solve one real problem;<br/>
+              at night I jot down a few thoughts.<br/><br/>
+              <i style={{ color: "#666" }}>This site itself is one of my works too.</i>
+            </>)}
           </div>
           <div style={{ marginTop: 18, display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {["在探索","product","ai","calm-tech","小工具","handmade"].map(t => (
-              <span key={t} className="sk-tag">{t}</span>
+            {[t('walk.tagExploring'),"product","ai","calm-tech",t('walk.tagTools'),"handmade"].map(tag => (
+              <span key={tag} className="sk-tag">{tag}</span>
             ))}
           </div>
         </Overlay>
       )}
 
       {overlay?.type === "notes" && (
-        <Overlay title="一些想法" sub="NOTES" onClose={() => setOverlay(null)} accent="#fffdf6">
+        <Overlay title={t('walk.notesTitle')} sub="NOTES" onClose={() => setOverlay(null)} accent="#fffdf6">
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {NOTES.map((n, i) => (
               <div key={i} style={{
@@ -881,7 +892,7 @@ export default function WalkGame({ onRoom }) {
               }}>
                 <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".2em", color: "#7a6648" }}>{n.date}</div>
                 <div style={{ fontFamily: '"Caveat", "ZCOOL XiaoWei", sans-serif', fontSize: 22, lineHeight: 1.5, whiteSpace: "pre-line", marginTop: 4 }}>
-                  {n.text}
+                  {pick(n.text)}
                 </div>
               </div>
             ))}
@@ -902,12 +913,10 @@ export default function WalkGame({ onRoom }) {
       {showStartHint && charX < 460 && !dialog && !overlay && !showIntro && (
         <div className="mw-start-hint">
           <div className="sk-hand" style={{ fontSize: isMobile ? 22 : 28, color: "#1b1b1b" }}>
-            {isMobile ? "点屏幕往那边走 ✦" : "点屏幕走,或按 ← → 键 ✦"}
+            {isMobile ? t('walk.hintMobile') : t('walk.hintDesktop')}
           </div>
           <div className="mw-body" style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
-            {isMobile
-              ? "点招牌互动 · 点 ↑ 按钮 = 前进跳"
-              : "← → = 走路 · 空格 = 跳 · 点招牌互动"}
+            {isMobile ? t('walk.hintMobileSub') : t('walk.hintDesktopSub')}
           </div>
         </div>
       )}
@@ -931,17 +940,17 @@ export default function WalkGame({ onRoom }) {
              onTouchStart={(e) => { e.stopPropagation(); dismissTutorial(); }}>
           <div className="mw-tut-zone mw-tut-zone-left">
             <div className="mw-tut-finger"><ChunkyArrow size={48} dir="left"/></div>
-            <div className="mw-tut-label">点这边 · 往左走</div>
+            <div className="mw-tut-label">{t('walk.tutLeft')}</div>
           </div>
           <div className="mw-tut-zone mw-tut-zone-right">
             <div className="mw-tut-finger"><ChunkyArrow size={48} dir="right"/></div>
-            <div className="mw-tut-label">点这边 · 往右走</div>
+            <div className="mw-tut-label">{t('walk.tutRight')}</div>
           </div>
           <button className="mw-tut-dismiss"
             onMouseDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); dismissTutorial(); }}>
-            知道了 ✦
+            {t('walk.tutGotIt')}
           </button>
         </div>
       )}
@@ -957,15 +966,18 @@ export default function WalkGame({ onRoom }) {
             filter: "url(#wobble)", padding: "26px 26px 22px", textAlign: "center",
             boxShadow: "5px 7px 0 rgba(0,0,0,.18)", transform: "rotate(-1deg)",
           }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+              <LangToggle/>
+            </div>
             <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".24em", color: "#888" }}>
               MY WORLD
             </div>
             <div className="mw-title" style={{ fontSize: 40, lineHeight: 1.05, marginTop: 6 }}>
-              散步 60 秒 ✦
+              {t('walk.introTitle')}
             </div>
             <div className="mw-body" style={{ fontSize: 16, color: "#555", marginTop: 10, lineHeight: 1.6 }}>
-              往右走一段路 — 路上都是 Arden 做的东西。<br/>
-              想换个玩法?也可以去 Arden 家的房间逛逛。
+              {t('walk.introBody1')}<br/>
+              {t('walk.introBody2')}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
               <button className="mw-btn mw-btn-primary mw-btn-big"
@@ -976,12 +988,12 @@ export default function WalkGame({ onRoom }) {
                     openTutorial();
                   }
                 }}>
-                出门散个步 →
+                {t('walk.introStroll')}
               </button>
               {onRoom && (
                 <button className="mw-btn"
                   onClick={(e) => { e.stopPropagation(); initAudio(); setShowIntro(false); onRoom(); }}>
-<HouseIcon/>去 Arden 家逛逛
+<HouseIcon/>{t('walk.introRoom')}
                 </button>
               )}
               <button className="mw-btn"
@@ -989,7 +1001,7 @@ export default function WalkGame({ onRoom }) {
                   e.stopPropagation(); initAudio(); startBgm("walk");
                   setShowIntro(false); setShowGallery(true);
                 }}>
-                直接看作品
+                {t('walk.introWorks')}
               </button>
             </div>
           </div>

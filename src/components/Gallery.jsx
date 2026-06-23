@@ -12,14 +12,17 @@ import { WORKS } from '../world/data.js';
 import { FocusDemo, MoodDemo, CafeDemo, SparkDemo } from './WorkDemo.jsx';
 import { isMuted, setMuted, initAudio } from '../world/sound.js';
 import { SpeakerIcon } from './Icons.jsx';
+import { useLang } from '../i18n/lang.jsx';
 
 const DEMOS = { focus: FocusDemo, mood: MoodDemo, cafe: CafeDemo, spark: SparkDemo };
 // Which demos sit on a dark backdrop (night works) vs a light one.
 const DARK_DEMOS = new Set(["mood", "cafe"]);
 
-export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel = "← 还是想走一遍" }) {
+export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel }) {
+  const { t, pick, lang } = useLang();
   const [demoId, setDemoId] = useState(null);
   const [muted, setMutedState] = useState(isMuted());
+  const backText = backLabel ?? t('gallery.backToWalk');
 
   // Card-level call-to-action — pill, colored, more substantial than mw-skip.
   const cardBtn = (bg) => ({
@@ -39,10 +42,10 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
       overflowY: "auto", padding: "60px 24px"
     }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div className="sk-mono" style={{ fontSize: 11, letterSpacing: ".25em", color: "#666" }}>SKIPPED · 全部作品</div>
+        <div className="sk-mono" style={{ fontSize: 11, letterSpacing: ".25em", color: "#666" }}>SKIPPED · {t('gallery.allWorks')}</div>
         <div className="mw-title" style={{ fontSize: 60, fontWeight: 600, lineHeight: 1, marginTop: 6 }}>My World</div>
         <div className="mw-body" style={{ fontSize: 19, color: "#555", marginTop: 4 }}>
-          跳过散步直接看 :)
+          {t('gallery.skipIntro')}
         </div>
 
         <div style={{
@@ -60,14 +63,14 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
                 height: 150, background: w.bg,
                 border: "2px solid #1b1b1b", filter: "url(#wobble)",
               }}/>
-              <div className="mw-title" style={{ fontSize: 30, marginTop: 14 }}>{w.name}</div>
-              <div className="mw-body" style={{ color: "#666", fontSize: 16 }}>{w.tag}</div>
-              <div className="mw-body" style={{ fontSize: 16, marginTop: 8, color: "#444" }}>{w.intro}</div>
+              <div className="mw-title" style={{ fontSize: 30, marginTop: 14 }}>{lang === 'zh' ? w.name : w.en}</div>
+              <div className="mw-body" style={{ color: "#666", fontSize: 16 }}>{pick(w.tag)}</div>
+              <div className="mw-body" style={{ fontSize: 16, marginTop: 8, color: "#444" }}>{pick(w.intro)}</div>
 
               <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 10 }}>
-                <button style={{ ...cardBtn("#d97757"), width: "100%" }} onClick={() => setDemoId(id)}>▶︎ 小演示</button>
+                <button style={{ ...cardBtn("#d97757"), width: "100%" }} onClick={() => setDemoId(id)}>{t('wm.openDemo')}</button>
                 <button style={{ ...cardBtn("#6f8f6a"), width: "100%" }} onClick={() => onShowcase?.(w.showcase, id)}>
-                  详细了解 →
+                  {t('wm.learnMore')}
                 </button>
               </div>
             </div>
@@ -78,8 +81,8 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
         <div style={{
           marginTop: 32, display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap"
         }}>
-          <button className="mw-skip" onClick={onBackToWalk}>{backLabel}</button>
-          <button className="mw-skip" onClick={onClose}>关闭</button>
+          <button className="mw-skip" onClick={onBackToWalk}>{backText}</button>
+          <button className="mw-skip" onClick={onClose}>{t('gallery.close')}</button>
         </div>
       </div>
 
@@ -92,7 +95,7 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
           setMutedState(m);
         }}
         style={{ position: "fixed", top: 24, right: 24, zIndex: 61 }}>
-        <SpeakerIcon muted={muted}/>{muted ? "静音" : "声音"}
+        <SpeakerIcon muted={muted}/>{muted ? t('common.mute') : t('common.sound')}
       </button>
 
       {/* Inline demo popup — its own little card, dark or light to match the work */}
@@ -118,13 +121,13 @@ export default function Gallery({ onClose, onBackToWalk, onShowcase, backLabel =
                 fontSize: 10, letterSpacing: ".2em",
                 color: dark ? "#9C8E7A" : "#888"
               }}>
-                WORK · {w.en.toUpperCase()} · 演示
+                WORK · {w.en.toUpperCase()} · {t('gallery.demo')}
               </div>
               <div className="mw-title" style={{
                 fontSize: 36, fontWeight: 600, marginTop: 6, lineHeight: 1.05,
                 color: dark ? "#F4EFE6" : "#1b1b1b"
               }}>
-                {w.name}
+                {lang === 'zh' ? w.name : w.en}
               </div>
               <div style={{ marginTop: 18 }}>
                 <Demo/>

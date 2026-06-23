@@ -1,6 +1,8 @@
 /* My World — top HUD (progress + skip) and interact prompt */
 
 import { STOPS } from '../world/data.js';
+import { useLang } from '../i18n/lang.jsx';
+import LangToggle from './LangToggle.jsx';
 
 // The meaningful stops the progress reflects — start / puddle / peak aren't
 // places you "visit", so they don't count here or on the end card.
@@ -22,6 +24,7 @@ export function HUD({ time, onSkip, stars, reached }) {
           MY WORLD &nbsp;·&nbsp; {time.toUpperCase()} &nbsp;·&nbsp; {visited}/{COUNTED_STOPS.length}
         </div>
         <div style={{ display: "flex", gap: 8, pointerEvents: "auto" }}>
+          <LangToggle/>
           {stars > 0 && (
             <div className="sk-mono" style={{
               fontSize: 11, letterSpacing: ".15em", background: "#fef3a3",
@@ -47,21 +50,22 @@ export function HUD({ time, onSkip, stars, reached }) {
 }
 
 export function InteractPrompt({ stop }) {
-  const labels = {
-    knock: "敲门",
-    about: "看看",
-    work: "进入",
-    notes: "翻翻",
-    lantern: "点灯",
-    doodle: "看看",
-    contact: "写信",
-    peak: "到终点",
+  const { t } = useLang();
+  const PROMPT_KEYS = {
+    knock: 'prompt.knock',
+    about: 'prompt.about',
+    work: 'prompt.work',
+    notes: 'prompt.notes',
+    lantern: 'prompt.lantern',
+    doodle: 'prompt.doodle',
+    contact: 'prompt.contact',
+    peak: 'prompt.peak',
   };
-  const label = labels[stop.type];
-  if (!label) return null;
+  const key = PROMPT_KEYS[stop.type];
+  if (!key) return null;
   return (
     <div className="mw-prompt">
-      ▾ &nbsp; 点 &nbsp; {label} &nbsp; ▾
+      ▾ &nbsp; {t('prompt.tap')} &nbsp; {t(key)} &nbsp; ▾
     </div>
   );
 }

@@ -9,6 +9,7 @@ import Overlay from './Overlay.jsx';
 import { DOODLES_WALK } from '../world/data.js';
 import { Cat } from '../world/Char.jsx';
 import { playClick, playPianoNote, playPop, initAudio } from '../world/sound.js';
+import { useLang } from '../i18n/lang.jsx';
 
 // Shared palette — same family of colours as the rest of the world.
 const PALETTE = ["#d97757", "#cfe0c6", "#6f8f6a", "#fef3a3", "#c97a83", "#6a8ab0", "#e7d4c4"];
@@ -46,6 +47,7 @@ function Caption({ children }) {
 // move via `transform: translate3d` + `will-change`, the filter parent is
 // safe to keep here. See the inner divs below for the transform pattern.
 function CatLight() {
+  const { t } = useLang();
   const boxRef = useRef(null);
   const target = useRef({ x: 280, y: 110 });
   const pos = useRef({ x: 80, y: 175 });
@@ -103,9 +105,9 @@ function CatLight() {
           willChange: "transform" }}>
           <Cat size={58}/>
         </div>
-        {!moved && <Hint>{isTouch ? "在屏幕上划一下" : "动动鼠标"} — 小猫会追那点光 ✦</Hint>}
+        {!moved && <Hint>{isTouch ? t('dw.catHintTouch') : t('dw.catHintMouse')}</Hint>}
       </div>
-      <Caption>一只 svg 小猫,和一点跑来跑去的光 — 它永远追不上,但永远在追。</Caption>
+      <Caption>{t('dw.catCaption')}</Caption>
     </div>
   );
 }
@@ -177,10 +179,11 @@ function WeatherGlyph({ kind, active }) {
   </>);
 }
 function Weather() {
+  const { t } = useLang();
   const [w, setW] = useState("sun");
   const opts = [
-    { id: "sun", name: "晴" }, { id: "cloud", name: "阴" },
-    { id: "rain", name: "雨" }, { id: "snow", name: "雪" },
+    { id: "sun", name: t('dw.wSun') }, { id: "cloud", name: t('dw.wCloud') },
+    { id: "rain", name: t('dw.wRain') }, { id: "snow", name: t('dw.wSnow') },
   ];
   const sky = {
     sun:   "linear-gradient(180deg,#bfe0f5 0%,#fef3a3 100%)",
@@ -227,7 +230,7 @@ function Weather() {
           </button>
         ))}
       </div>
-      <Caption>点一种天气 — 整片小天空,连同雨雪都跟着变。</Caption>
+      <Caption>{t('dw.weatherCaption')}</Caption>
     </div>
   );
 }
@@ -236,6 +239,7 @@ function Weather() {
 // Toy 3 — 字母重力场 · type, and letters fall with gravity
 // ============================================================
 function Letters() {
+  const { t } = useLang();
   const boxRef = useRef(null);
   const inputRef = useRef(null);
   const size = useRef({ w: 500, h: 240 });
@@ -310,7 +314,7 @@ function Letters() {
     e.target.value = "";
   };
 
-  const handful = [..."ARDEN好玩✦"];
+  const handful = [...t('dw.lettersHandful')];
   return (
     <div>
       <div ref={boxRef}
@@ -320,7 +324,7 @@ function Letters() {
           drop("✦", e.clientX - r.left);
         }}
         style={{ ...boxStyle, height: 240, background: "#fffdf6" }}>
-        <input ref={inputRef} aria-label="打字" tabIndex={-1}
+        <input ref={inputRef} aria-label={t('dw.lettersAria')} tabIndex={-1}
           onInput={onType} onCompositionEnd={onType}
           autoComplete="off" autoCorrect="off" autoCapitalize="characters" spellCheck={false}
           style={{
@@ -339,16 +343,16 @@ function Letters() {
             fontSize: 34, color: it.color, lineHeight: 1,
           }}>{it.ch}</div>
         ))}
-        {items.current.length === 0 && <Hint>打字试试 — 字母会掉下来 ✦</Hint>}
+        {items.current.length === 0 && <Hint>{t('dw.lettersHint')}</Hint>}
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
         <button className="mw-btn" style={{ fontSize: 15, padding: "6px 14px" }}
-          onClick={() => handful.forEach((c, i) => setTimeout(() => drop(c), i * 90))}>撒一把 →</button>
+          onClick={() => handful.forEach((c, i) => setTimeout(() => drop(c), i * 90))}>{t('dw.lettersToss')}</button>
         <button className="mw-btn" style={{ fontSize: 15, padding: "6px 14px" }}
-          onClick={() => { items.current = []; }}>清空</button>
-        <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>或直接打字 / 点框里</span>
+          onClick={() => { items.current = []; }}>{t('dw.clear')}</button>
+        <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>{t('dw.lettersOr')}</span>
       </div>
-      <Caption>每个字母都有重量 — 打出来,看它们落下、回弹、堆起来。</Caption>
+      <Caption>{t('dw.lettersCaption')}</Caption>
     </div>
   );
 }
@@ -357,6 +361,7 @@ function Letters() {
 // Toy 4 — 夜里的钟 · a clock that turns blue at night
 // ============================================================
 function NightClock() {
+  const { t } = useLang();
   const now = () => { const d = new Date(); return d.getHours() + d.getMinutes() / 60; };
   const [hour, setHour] = useState(now);
   const [live, setLive] = useState(true);
@@ -411,16 +416,16 @@ function NightClock() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
           <span className="mw-title" style={{ fontSize: 26 }}>{hh}:{mm}</span>
           <span className="sk-hand" style={{ fontSize: 17, color: night ? "#6a8ab0" : "#888" }}>
-            {night ? "夜里了 — 钟变蓝了" : "白天"}
+            {night ? t('dw.clockNight') : t('dw.clockDay')}
           </span>
         </div>
         <input type="range" min="0" max="23.99" step="0.25" value={h}
           onChange={(e) => { setLive(false); setHour(parseFloat(e.target.value)); }}
           style={{ width: "100%", marginTop: 8, accentColor: "#d97757" }}/>
         <button className="mw-btn" style={{ fontSize: 14, padding: "5px 12px", marginTop: 4 }}
-          onClick={() => { setHour(now()); setLive(true); }}>回到现在</button>
+          onClick={() => { setHour(now()); setLive(true); }}>{t('dw.clockNow')}</button>
       </div>
-      <Caption>滑到晚上 11 点 — 看这只钟自己睡过去,变成一片夜的蓝色。</Caption>
+      <Caption>{t('dw.clockCaption')}</Caption>
     </div>
   );
 }
@@ -441,6 +446,7 @@ function Crane({ color }) {
   );
 }
 function CraneToy() {
+  const { t } = useLang();
   const [flock, setFlock] = useState([]);
   const idRef = useRef(0);
   const add = () => { playClick(); setFlock(prev => [...prev, {
@@ -461,13 +467,13 @@ function CraneToy() {
             <Crane color={f.color}/>
           </div>
         ))}
-        {flock.length === 0 && <Hint>按下面的按钮 — 折一只纸鹤 ✦</Hint>}
+        {flock.length === 0 && <Hint>{t('dw.craneHint')}</Hint>}
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        <button className="mw-btn mw-btn-primary" style={{ fontSize: 15, padding: "6px 16px" }} onClick={add}>折一只 →</button>
-        <button className="mw-btn" style={{ fontSize: 15, padding: "6px 14px" }} onClick={() => setFlock([])}>收起来</button>
+        <button className="mw-btn mw-btn-primary" style={{ fontSize: 15, padding: "6px 16px" }} onClick={add}>{t('dw.craneFold')}</button>
+        <button className="mw-btn" style={{ fontSize: 15, padding: "6px 14px" }} onClick={() => setFlock([])}>{t('dw.craneAway')}</button>
       </div>
-      <Caption>颜色、角度、大小全是随机的 — 折一百只,也不会有两只一样。</Caption>
+      <Caption>{t('dw.craneCaption')}</Caption>
     </div>
   );
 }
@@ -497,6 +503,7 @@ function makeCollage() {
   return cells;
 }
 function Collage() {
+  const { t, lang } = useLang();
   const [art, setArt] = useState(makeCollage);
   const [n, setN] = useState(1);
   return (
@@ -516,10 +523,10 @@ function Collage() {
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
         <button className="mw-btn mw-btn-primary" style={{ fontSize: 15, padding: "6px 16px" }}
-          onClick={() => { playClick(); setArt(makeCollage()); setN(v => v + 1); }}>换一张 →</button>
-        <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>第 {n} 张</span>
+          onClick={() => { playClick(); setArt(makeCollage()); setN(v => v + 1); }}>{t('dw.collageNext')}</button>
+        <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>{lang === 'zh' ? `第 ${n} 张` : `#${n}`}</span>
       </div>
-      <Caption>我不会画画 — 所以写了这个,让它替我画。每一张都不重样。</Caption>
+      <Caption>{t('dw.collageCaption')}</Caption>
     </div>
   );
 }
@@ -540,6 +547,7 @@ const PIANO_KEYS = [
 // 小星星 — twinkle twinkle little star (indexes into PIANO_KEYS)
 const PIANO_TUNE = [0,0,4,4,5,5,4, 3,3,2,2,1,1,0];
 function Piano() {
+  const { t } = useLang();
   const [pressed, setPressed] = useState({});
   const press = (i) => {
     initAudio();
@@ -576,10 +584,10 @@ function Piano() {
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
         <button className="mw-btn mw-btn-primary" style={{ fontSize: 15, padding: "6px 14px" }}
-          onClick={playTune}>来一段 ♪</button>
-        <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>或自己点琴键</span>
+          onClick={playTune}>{t('dw.pianoPlay')}</button>
+        <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>{t('dw.pianoOr')}</span>
       </div>
-      <Caption>八个键、八个音 — 弹什么都行。最普通的小事最好玩。</Caption>
+      <Caption>{t('dw.pianoCaption')}</Caption>
     </div>
   );
 }
@@ -588,6 +596,7 @@ function Piano() {
 // Toy 8 — 肥皂泡 · bubbles drift up, click to pop
 // ============================================================
 function Bubbles() {
+  const { t } = useLang();
   const boxRef = useRef(null);
   const items = useRef([]);
   const idRef = useRef(0);
@@ -685,9 +694,9 @@ function Bubbles() {
               background: "rgba(255,255,255,.8)" }}/>
           </div>
         ))}
-        {popped === 0 && <Hint>点泡泡 — 戳破它 ✦</Hint>}
+        {popped === 0 && <Hint>{t('dw.bubbleHint')}</Hint>}
       </div>
-      <Caption>戳破了 {popped} 个 — 都是空的,可是听见啵的一声还是很好玩。</Caption>
+      <Caption>{t('dw.bubbleCapA')}{popped}{t('dw.bubbleCapB')}</Caption>
     </div>
   );
 }
@@ -837,22 +846,23 @@ function GiftIcon({ kind }) {
   }
 }
 const GIFTS = [
-  { kind: "star",     note: "一颗小星星 — 你看,它亮的" },
-  { kind: "sprout",   note: "一棵小芽 — 等等它" },
-  { kind: "cup",      note: "一杯热的 — 喝慢点" },
-  { kind: "postcard", note: "一张明信片 — 路上写的" },
-  { kind: "note",     note: "一段调子 — 自己哼" },
-  { kind: "mirror",   note: "一面小镜子 — 看自己" },
-  { kind: "key",      note: "一把小钥匙 — 不知开什么" },
-  { kind: "leaf",     note: "一片叶子 — 春天的" },
-  { kind: "camera",   note: "一张老照片 — 记得" },
-  { kind: "letter",   note: "一封没寄的信 — 收着" },
-  { kind: "yarn",     note: "一团毛线 — 慢慢绕" },
-  { kind: "candle",   note: "一支蜡烛 — 慢慢的" },
-  { kind: "shell",    note: "一只小贝壳 — 海带回来的" },
-  { kind: "cookie",   note: "一块小饼干 — 自己吃" },
+  { kind: "star",     note: { zh: "一颗小星星 — 你看,它亮的", en: "A little star — look, it's shining" } },
+  { kind: "sprout",   note: { zh: "一棵小芽 — 等等它", en: "A little sprout — give it time" } },
+  { kind: "cup",      note: { zh: "一杯热的 — 喝慢点", en: "Something warm — sip slowly" } },
+  { kind: "postcard", note: { zh: "一张明信片 — 路上写的", en: "A postcard — written on the road" } },
+  { kind: "note",     note: { zh: "一段调子 — 自己哼", en: "A little tune — hum it yourself" } },
+  { kind: "mirror",   note: { zh: "一面小镜子 — 看自己", en: "A little mirror — look at yourself" } },
+  { kind: "key",      note: { zh: "一把小钥匙 — 不知开什么", en: "A little key — opens who knows what" } },
+  { kind: "leaf",     note: { zh: "一片叶子 — 春天的", en: "A leaf — from spring" } },
+  { kind: "camera",   note: { zh: "一张老照片 — 记得", en: "An old photo — remember" } },
+  { kind: "letter",   note: { zh: "一封没寄的信 — 收着", en: "An unsent letter — keep it" } },
+  { kind: "yarn",     note: { zh: "一团毛线 — 慢慢绕", en: "A ball of yarn — wind it slowly" } },
+  { kind: "candle",   note: { zh: "一支蜡烛 — 慢慢的", en: "A candle — slowly" } },
+  { kind: "shell",    note: { zh: "一只小贝壳 — 海带回来的", en: "A little shell — from the sea" } },
+  { kind: "cookie",   note: { zh: "一块小饼干 — 自己吃", en: "A little cookie — for you" } },
 ];
 function MysteryBox() {
+  const { t, lang } = useLang();
   const [gift, setGift] = useState(null);
   const [count, setCount] = useState(0);
   const draw = () => {
@@ -868,21 +878,21 @@ function MysteryBox() {
         {!gift ? (
           <button onClick={draw} className="mw-btn mw-btn-primary"
             style={{ fontSize: 19, padding: "14px 30px" }}>
-            拆一个 →
+            {t('dw.boxOpen')}
           </button>
         ) : (
           <div key={count} className="dw-fade" style={{ textAlign: "center" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
               <GiftIcon kind={gift.kind}/>
             </div>
-            <div className="sk-hand" style={{ fontSize: 22, color: "#1b1b1b" }}>{gift.note}</div>
+            <div className="sk-hand" style={{ fontSize: 22, color: "#1b1b1b" }}>{gift.note[lang]}</div>
             <button onClick={draw} className="mw-btn" style={{ fontSize: 14, padding: "5px 14px", marginTop: 14 }}>
-              ↺ 再来一个
+              {t('dw.boxAnother')}
             </button>
           </div>
         )}
       </div>
-      <Caption>抽到的不重样 — 一共十多种, 全是手绘的小礼物{count > 0 && <> · 你拆了 {count} 次</>}。</Caption>
+      <Caption>{t('dw.boxCaption')}{count > 0 && <>{t('dw.boxCount')}{count}{t('dw.boxTimes')}</>}。</Caption>
     </div>
   );
 }
@@ -891,6 +901,7 @@ function MysteryBox() {
 // Toy 10 — 泡杯茶 · click to dip the bag, water deepens over time
 // ============================================================
 function TeaBrew() {
+  const { t: tr, lang } = useLang();
   const STEEP_MAX = 6;
   const [n, setN] = useState(0);
   const dip = () => {
@@ -914,7 +925,7 @@ function TeaBrew() {
            style={{ ...boxStyle, height: 240, cursor: n >= STEEP_MAX ? "default" : "pointer",
              background: "linear-gradient(180deg,#eef0e6 0%,#fdf6e6 100%)",
              display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 20 }}>
-        {n === 0 && <Hint>点茶杯泡一下 ✦</Hint>}
+        {n === 0 && <Hint>{tr('dw.teaHint')}</Hint>}
         <svg width="220" height="200" viewBox="0 0 220 200" style={{ pointerEvents: "none" }}>
           {/* steam — only after a steep or two */}
           {n > 1 && (
@@ -951,18 +962,18 @@ function TeaBrew() {
           disabled={n >= STEEP_MAX}
           style={{ fontSize: 15, padding: "6px 14px",
                    opacity: n >= STEEP_MAX ? 0.5 : 1 }}>
-          {n >= STEEP_MAX ? "泡得正好" : "再泡一下 ↓"}
+          {n >= STEEP_MAX ? tr('dw.teaReady') : tr('dw.teaMore')}
         </button>
         {n > 0 && (
           <button className="mw-btn" onClick={() => setN(0)} style={{ fontSize: 14, padding: "5px 12px" }}>
-            倒了重来
+            {tr('dw.teaRestart')}
           </button>
         )}
         <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>
-          {n === 0 ? "点茶杯" : n >= STEEP_MAX ? "慢慢喝 ✦" : `泡了 ${n} 次`}
+          {n === 0 ? tr('dw.teaTap') : n >= STEEP_MAX ? tr('dw.teaSip') : (lang === 'zh' ? `泡了 ${n} 次` : `${n} steeps`)}
         </span>
       </div>
-      <Caption>淡到浓 — 一杯茶要泡几次, 看你自己。</Caption>
+      <Caption>{tr('dw.teaCaption')}</Caption>
     </div>
   );
 }
@@ -972,6 +983,7 @@ function TeaBrew() {
 // ============================================================
 const FLOWER_COLORS = ["#d97757", "#c97a83", "#fef3a3", "#a8c8e0", "#cfe0c6", "#9a6fb0"];
 function Flowers() {
+  const { t, lang } = useLang();
   const boxRef = useRef(null);
   const [items, setItems] = useState([]);
   const idRef = useRef(0);
@@ -1019,14 +1031,14 @@ function Flowers() {
             <circle cx="22" cy="20" r="4.5" fill={f.center} stroke="#1b1b1b" strokeWidth="1.6"/>
           </svg>
         ))}
-        {items.length === 0 && <Hint>点土里 — 给我种一朵 ✦</Hint>}
+        {items.length === 0 && <Hint>{t('dw.flowerHint')}</Hint>}
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
         <button className="mw-btn" style={{ fontSize: 15, padding: "6px 14px" }}
-          onClick={() => setItems([])}>清空</button>
-        <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>种了 {items.length} 朵</span>
+          onClick={() => setItems([])}>{t('dw.clear')}</button>
+        <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>{lang === 'zh' ? `种了 ${items.length} 朵` : `Planted ${items.length}`}</span>
       </div>
-      <Caption>颜色、瓣数都随机 — 一整片小野花,谁也不一样。</Caption>
+      <Caption>{t('dw.flowerCaption')}</Caption>
     </div>
   );
 }
@@ -1036,6 +1048,7 @@ function Flowers() {
 // ============================================================
 const SKETCH_COLORS = ["#1b1b1b", "#d97757", "#9bb18e", "#a8c8e0", "#c97a83", "#efb24a"];
 function SketchPad() {
+  const { t, lang } = useLang();
   const boxRef = useRef(null);
   const drawing = useRef(false);
   const cur = useRef(null);
@@ -1092,7 +1105,7 @@ function SketchPad() {
                     fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             ))}
           </svg>
-          {paths.length === 0 && <Hint>{isTouch ? "用手指画" : "用鼠标画"} — 想画啥画啥</Hint>}
+          {paths.length === 0 && <Hint>{isTouch ? t('dw.sketchHintTouch') : t('dw.sketchHintMouse')}</Hint>}
         </div>
         {/* decorative wobble border — pointer-events:none so it never eats
             strokes; sits exactly on top so the hand-drawn look survives. */}
@@ -1110,12 +1123,12 @@ function SketchPad() {
             }}/>
         ))}
         <button className="mw-btn" onClick={() => setPaths([])}
-          style={{ fontSize: 14, padding: "5px 12px", marginLeft: 6 }}>清空</button>
+          style={{ fontSize: 14, padding: "5px 12px", marginLeft: 6 }}>{t('dw.clear')}</button>
         <span className="sk-hand" style={{ fontSize: 16, color: "#888" }}>
-          {paths.length === 0 ? "一张白纸" : `${paths.length} 笔`}
+          {paths.length === 0 ? t('dw.sketchBlank') : (lang === 'zh' ? `${paths.length} 笔` : `${paths.length} strokes`)}
         </span>
       </div>
-      <Caption>一张白纸 — 想画的、写的、随便画。糟一点也没关系。</Caption>
+      <Caption>{t('dw.sketchCaption')}</Caption>
     </div>
   );
 }
@@ -1131,26 +1144,27 @@ const TOYS = {
 };
 
 export default function DoodleWall({ onClose, doodles = DOODLES_WALK }) {
+  const { t, lang } = useLang();
   const [active, setActive] = useState(null);
   const doodle = active ? doodles.find(d => d.id === active) : null;
   const Toy = doodle ? TOYS[doodle.id] : null;
 
   return (
     <Overlay
-      title={doodle ? doodle.name : "涂鸦墙"}
-      sub={doodle ? "DOODLE · 玩玩看" : "DOODLE · 小实验"}
+      title={doodle ? doodle.name[lang] : t('dw.wallTitle')}
+      sub={doodle ? `DOODLE · ${t('dw.subPlay')}` : `DOODLE · ${t('dw.subExp')}`}
       onClose={onClose}
     >
       {doodle ? (
         <div>
           <button className="mw-btn" style={{ fontSize: 15, padding: "6px 14px", marginBottom: 16 }}
-            onClick={() => setActive(null)}>← 涂鸦墙</button>
+            onClick={() => setActive(null)}>{t('dw.backWall')}</button>
           <Toy/>
         </div>
       ) : (
         <>
           <div className="mw-body" style={{ fontSize: 16, color: "#555", marginBottom: 14 }}>
-            一些 30 分钟以内能做完的小东西。点一个 — 它们都能真的玩。
+            {t('dw.wallIntro')}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
             {doodles.map((d, i) => (
@@ -1160,10 +1174,10 @@ export default function DoodleWall({ onClose, doodles = DOODLES_WALK }) {
                 textAlign: "left", display: "flex", flexDirection: "column",
                 justifyContent: "space-between", boxShadow: "2px 3px 0 rgba(0,0,0,.12)",
               }}>
-                <div className="mw-title" style={{ fontSize: 21, lineHeight: 1.2 }}>{d.name}</div>
+                <div className="mw-title" style={{ fontSize: 21, lineHeight: 1.2 }}>{d.name[lang]}</div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 8 }}>
-                  <span className="sk-mono" style={{ fontSize: 9, letterSpacing: ".1em", color: "#555" }}>{d.note}</span>
-                  <span className="sk-hand" style={{ fontSize: 16, color: "#1b1b1b" }}>玩 →</span>
+                  <span className="sk-mono" style={{ fontSize: 9, letterSpacing: ".1em", color: "#555" }}>{d.note[lang]}</span>
+                  <span className="sk-hand" style={{ fontSize: 16, color: "#1b1b1b" }}>{t('dw.play')}</span>
                 </div>
               </button>
             ))}

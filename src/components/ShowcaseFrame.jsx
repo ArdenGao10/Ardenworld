@@ -13,9 +13,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Char } from '../world/Char.jsx';
+import { useLang } from '../i18n/lang.jsx';
 
 export default function ShowcaseFrame({ url, onClose }) {
+  const { t, lang } = useLang();
   const isMobile = window.innerWidth < 720;
+
+  // Pass the game's current language to our own showcase pages (those served
+  // from this origin, i.e. relative "/...html" urls) so they open matching
+  // the game. External live deploys are left untouched.
+  const framedUrl = url && url.startsWith('/')
+    ? url + (url.includes('?') ? '&' : '?') + 'lang=' + lang
+    : url;
   const size = isMobile ? 54 : 70;  // smaller — just a little fellow at the edge
 
   // `side` = which wall the character clings to; `y` = distance from the bottom.
@@ -72,7 +81,7 @@ export default function ShowcaseFrame({ url, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 70, background: "#fffdf6" }}>
       <iframe
-        src={url}
+        src={framedUrl}
         title="showcase"
         style={{ width: "100%", height: "100%", border: "none", display: "block", background: "#fffdf6" }}
       />
@@ -110,7 +119,7 @@ export default function ShowcaseFrame({ url, onClose }) {
           pointerEvents: "none",
         }}>
           <span className="sk-hand" style={{ fontSize: isMobile ? 14 : 16, color: "#1b1b1b" }}>
-            {onRight ? "点我回去继续走 →" : "← 点我回去继续走 :)"}
+            {onRight ? t('showcase.backRight') : t('showcase.backLeft')}
           </span>
           {/* tail pointing back toward the character */}
           <div style={{

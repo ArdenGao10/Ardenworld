@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import WalkGame from './WalkGame.jsx';
 import RoomGame from './RoomGame.jsx';
+import { LangProvider } from './i18n/lang.jsx';
 
 export default function App() {
   const [mode, setMode] = useState('simple'); // 'simple' | 'room'
@@ -27,11 +28,11 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <LangProvider>
       {mode === 'room'
         ? <RoomGame onSwitch={() => setMode('simple')} />
         : <WalkGame onRoom={() => setMode('room')} />}
       <Analytics mode="production"/>
-    </>
+    </LangProvider>
   );
 }

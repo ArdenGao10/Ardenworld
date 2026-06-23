@@ -430,29 +430,40 @@
     .band p{font-size:14px;margin:13px auto 24px}
     footer{padding:42px 20px 48px}
   }
+  /* language toggle — shared 中 / EN pill */
+  .lang-toggle{position:fixed;top:14px;right:14px;z-index:200;display:inline-flex;
+    border:2px solid #1b1b1b;background:#fffdf6;overflow:hidden;box-shadow:1px 2px 0 rgba(0,0,0,.12);}
+  .lang-toggle button{border:none;background:transparent;cursor:pointer;padding:6px 11px;
+    font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;color:#1b1b1b;}
+  .lang-toggle button.on{background:#1b1b1b;color:#fffdf6;}
 </style>
 </head>
 <body>
 
+<div class="lang-toggle" role="group" aria-label="language">
+  <button class="lang-btn" data-l="zh">中</button>
+  <button class="lang-btn" data-l="en">EN</button>
+</div>
+
 <div id="petals"></div>
 
 <!-- floating ball — same look as the real desktop floating ball, links to the live app -->
-<a class="float-ball" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener" aria-label="打开专注圈在线体验">
+<a class="float-ball" href="https://focus-circle.3214175397.workers.dev/" target="_blank" rel="noopener" aria-label="打开专注圈在线体验">
   <span class="fb-glow"></span>
   <span class="fb-pulse"></span>
   <span class="fb-core"></span>
   <span class="fb-time" id="fbClock">00:00</span>
-  <span class="fb-tip">立即体验&nbsp;→</span>
+  <span class="fb-tip" data-en="Try it&nbsp;→">立即体验&nbsp;→</span>
 </a>
 
 <nav id="nav">
-  <a class="brand" href="#top"><span class="dot"></span>专注圈</a>
+  <a class="brand" href="#top"><span class="dot"></span><span data-en="Focus Circle">专注圈</span></a>
   <div class="nav-links">
-    <a href="#features">功能</a>
-    <a href="#aura">灵气流动</a>
-    <a href="#community">社群</a>
-    <a href="#stack">技术</a>
-    <a class="nav-cta" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener">立即体验</a>
+    <a href="#features" data-en="Features">功能</a>
+    <a href="#aura" data-en="Aura">灵气流动</a>
+    <a href="#community" data-en="Community">社群</a>
+    <a href="#stack" data-en="Stack">技术</a>
+    <a class="nav-cta" href="https://focus-circle.3214175397.workers.dev/" target="_blank" rel="noopener" data-en="Try it">立即体验</a>
   </div>
   <button class="menu-btn" id="menuBtn" aria-label="目录" aria-expanded="false">
     <span></span><span></span><span></span>
@@ -461,12 +472,12 @@
 
 <!-- mobile 目录 -->
 <div class="menu-panel" id="menuPanel">
-  <a href="#top">首页</a>
-  <a href="#features">功能</a>
-  <a href="#aura">灵气流动</a>
-  <a href="#community">社群</a>
-  <a href="#stack">技术栈</a>
-  <a class="mp-cta" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener">立即体验专注圈 →</a>
+  <a href="#top" data-en="Home">首页</a>
+  <a href="#features" data-en="Features">功能</a>
+  <a href="#aura" data-en="Aura">灵气流动</a>
+  <a href="#community" data-en="Community">社群</a>
+  <a href="#stack" data-en="Stack">技术栈</a>
+  <a class="mp-cta" href="https://focus-circle.3214175397.workers.dev/" target="_blank" rel="noopener" data-en="Try Focus Circle →">立即体验专注圈 →</a>
 </div>
 
 <header id="top">
@@ -478,14 +489,14 @@
       <div class="lbl">focusing</div>
     </div>
   </div>
-  <div class="eyebrow">FOCUS · CIRCLE · 灵气流动</div>
-  <h1>静下来，<em>一起</em>专注</h1>
-  <p class="sub">专注圈是一款面向学习社群的专注计时应用。和志同道合的伙伴一起打卡、追踪专注时长，在排行榜上彼此见证每一段心流。</p>
+  <div class="eyebrow" data-en="FOCUS · CIRCLE · AURA FLOW">FOCUS · CIRCLE · 灵气流动</div>
+  <h1 data-en="Settle in, <em>focus</em> together">静下来，<em>一起</em>专注</h1>
+  <p class="sub" data-en="Focus Circle is a focus-timer app for study communities. Check in with like-minded partners, track your focus hours, and witness each other's flow on the leaderboard.">专注圈是一款面向学习社群的专注计时应用。和志同道合的伙伴一起打卡、追踪专注时长，在排行榜上彼此见证每一段心流。</p>
   <div class="cta-row">
-    <a class="btn btn-primary" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener">立即体验 · 打开专注圈 →</a>
-    <a class="btn btn-ghost" href="#features">了解功能</a>
+    <a class="btn btn-primary" href="https://focus-circle.3214175397.workers.dev/" target="_blank" rel="noopener" data-en="Try it · open Focus Circle →">立即体验 · 打开专注圈 →</a>
+    <a class="btn btn-ghost" href="#features" data-en="See features">了解功能</a>
   </div>
-  <div class="scroll-hint">向下滚动 ↓</div>
+  <div class="scroll-hint" data-en="Scroll down ↓">向下滚动 ↓</div>
 </header>
 
 <!-- ── features ── -->
@@ -493,33 +504,33 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="tag">Features</div>
-      <h2>陪伴每一段专注</h2>
-      <p>从计时到社群，专注圈把学习的仪式感融进每一个细节。</p>
+      <h2 data-en="With you through every focus session">陪伴每一段专注</h2>
+      <p data-en="From the timer to the community, Focus Circle weaves the ritual of study into every detail.">从计时到社群，专注圈把学习的仪式感融进每一个细节。</p>
     </div>
     <div class="grid">
       <div class="card reveal">
         <div class="ic g"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2.2"/><path d="M9.2 3h5.6M12 6V3"/></svg></div>
-        <h3>专注计时</h3><p>正计时模式，自由暂停与继续。跨设备实时同步，心流不被打断。</p>
+        <h3 data-en="Focus timer">专注计时</h3><p data-en="A count-up timer you can freely pause and resume. Real-time sync across devices keeps your flow unbroken.">正计时模式，自由暂停与继续。跨设备实时同步，心流不被打断。</p>
       </div>
       <div class="card reveal">
         <div class="ic w"><svg viewBox="0 0 24 24"><path d="M10 6.5h10M10 12h10M10 17.5h10"/><path d="M3.5 6.5l1.4 1.4 2.6-2.8"/><path d="M3.5 12l1.4 1.4 2.6-2.8"/><path d="M3.5 17.5l1.4 1.4 2.6-2.8"/></svg></div>
-        <h3>每日任务</h3><p>细粒度的可勾选清单，配合 AI 智能拆解，让目标清晰可执行。</p>
+        <h3 data-en="Daily tasks">每日任务</h3><p data-en="A fine-grained checklist with AI breakdown, so goals stay clear and doable.">细粒度的可勾选清单，配合 AI 智能拆解，让目标清晰可执行。</p>
       </div>
       <div class="card reveal">
         <div class="ic c"><svg viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><rect x="4.2" y="13" width="4.4" height="7.5" rx="1.3"/><rect x="9.8" y="8" width="4.4" height="12.5" rx="1.3"/><rect x="15.4" y="4" width="4.4" height="16.5" rx="1.3"/></svg></div>
-        <h3>实时排行榜</h3><p>按当日专注时长排名，活跃用户脉冲提示，与伙伴共同进步。</p>
+        <h3 data-en="Live leaderboard">实时排行榜</h3><p data-en="Ranked by today's focus hours, with pulse hints for active users — progress, together.">按当日专注时长排名，活跃用户脉冲提示，与伙伴共同进步。</p>
       </div>
       <div class="card reveal">
         <div class="ic g"><svg viewBox="0 0 24 24"><path d="M12 21V10.5"/><path d="M12 11C12 6.8 9 4 4 4c0 5.2 3.2 7.5 8 7Z"/><path d="M12 14.5c0-3.2 3-5.2 7.2-5.2 0 4.2-3.4 6.2-7.2 5.2Z"/></svg></div>
-        <h3>学习广场</h3><p>社区分享学习资源，每日限发一条，让每次表达都更有分量。</p>
+        <h3 data-en="Study square">学习广场</h3><p data-en="Share study resources with the community — one post a day, so every word carries weight.">社区分享学习资源，每日限发一条，让每次表达都更有分量。</p>
       </div>
       <div class="card reveal">
         <div class="ic c"><svg viewBox="0 0 24 24"><path d="M20 11.5A8 8 0 0 0 6.5 6.2"/><path d="M4 12.5A8 8 0 0 0 17.5 17.8"/><path d="M6.6 3.4 6.4 6.6l3.2-.2"/><path d="M17.4 20.6l.2-3.2-3.2.2"/></svg></div>
-        <h3>离线与恢复</h3><p>网络异常自动缓存补传；遗忘的「僵尸计时器」可一键修复。</p>
+        <h3 data-en="Offline & recovery">离线与恢复</h3><p data-en="Auto-caches and resyncs when the network drops; forgotten “zombie timers” fix in one tap.">网络异常自动缓存补传；遗忘的「僵尸计时器」可一键修复。</p>
       </div>
       <div class="card reveal">
         <div class="ic w"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5.4"/><path d="M12 3.4v1.8M12 18.8v1.8M3.4 12h1.8M18.8 12h1.8M6 6l1.3 1.3M16.7 16.7 18 18M18 6l-1.3 1.3M7.3 16.7 6 18"/></svg></div>
-        <h3>桌面悬浮球</h3><p>透明悬浮窗常驻桌面，一眼掌握专注进度，随手拖拽收纳。</p>
+        <h3 data-en="Desktop floating ball">桌面悬浮球</h3><p data-en="A transparent floating window stays on your desktop — see your progress at a glance, drag to tuck away.">透明悬浮窗常驻桌面，一眼掌握专注进度，随手拖拽收纳。</p>
       </div>
     </div>
   </div>
@@ -530,13 +541,13 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="tag">Design System</div>
-      <h2>灵气流动</h2>
-      <p>计时器是一颗会呼吸的光球。状态改变时，光晕的颜色随之流转，形状始终如一。</p>
+      <h2 data-en="Aura flow">灵气流动</h2>
+      <p data-en="The timer is a breathing orb of light. As the state changes, the halo's color shifts while its shape stays the same.">计时器是一颗会呼吸的光球。状态改变时，光晕的颜色随之流转，形状始终如一。</p>
     </div>
     <div class="states">
-      <div class="state reveal"><div class="mini focus aura-orb">scale 1.0×</div><div class="nm">Focus</div><div class="ds">沉静的绿，专注进行中</div></div>
-      <div class="state reveal"><div class="mini paused aura-orb">paused</div><div class="nm">Paused</div><div class="ds">柔和的紫，短暂停留</div></div>
-      <div class="state reveal"><div class="mini done aura-orb">complete</div><div class="nm">Complete</div><div class="ds">温暖的橙，圆满收束</div></div>
+      <div class="state reveal"><div class="mini focus aura-orb">scale 1.0×</div><div class="nm">Focus</div><div class="ds" data-en="Calm green, focus in progress">沉静的绿，专注进行中</div></div>
+      <div class="state reveal"><div class="mini paused aura-orb">paused</div><div class="nm">Paused</div><div class="ds" data-en="Soft purple, a brief pause">柔和的紫，短暂停留</div></div>
+      <div class="state reveal"><div class="mini done aura-orb">complete</div><div class="nm">Complete</div><div class="ds" data-en="Warm orange, a full close">温暖的橙，圆满收束</div></div>
     </div>
   </div>
 </section>
@@ -546,12 +557,12 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="tag">Community</div>
-      <h2>不是一个人在专注</h2>
-      <p>今日实时排行榜 — 看着伙伴的进度条增长，是最温柔的督促。</p>
+      <h2 data-en="You're not focusing alone">不是一个人在专注</h2>
+      <p data-en="Today's live leaderboard — watching a partner's bar grow is the gentlest nudge.">今日实时排行榜 — 看着伙伴的进度条增长，是最温柔的督促。</p>
     </div>
     <div class="panel reveal">
       <div class="panel-top">
-        <span class="t">今日专注榜</span>
+        <span class="t" data-en="Today's focus board">今日专注榜</span>
         <span class="live"><span class="blip"></span>LIVE</span>
       </div>
       <div id="board"></div>
@@ -563,9 +574,9 @@
 <section style="padding:80px 0">
   <div class="wrap">
     <div class="stats">
-      <div class="stat reveal"><div class="num" data-to="128" data-suf="h">0</div><div class="cap">累计专注 · 示例</div></div>
-      <div class="stat reveal"><div class="num" data-to="36" data-suf="天">0</div><div class="cap">连续打卡</div></div>
-      <div class="stat reveal"><div class="num" data-to="92" data-suf="%">0</div><div class="cap">任务完成率</div></div>
+      <div class="stat reveal"><div class="num" data-to="128" data-suf="h">0</div><div class="cap" data-en="Total focus · sample">累计专注 · 示例</div></div>
+      <div class="stat reveal"><div class="num" data-to="36" data-suf="天" data-suf-en="d">0</div><div class="cap" data-en="Day streak">连续打卡</div></div>
+      <div class="stat reveal"><div class="num" data-to="92" data-suf="%">0</div><div class="cap" data-en="Task completion">任务完成率</div></div>
     </div>
   </div>
 </section>
@@ -575,8 +586,8 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="tag">Built With</div>
-      <h2>稳健的技术底座</h2>
-      <p>现代 Web 技术栈，离线优先，可安装为 PWA 与桌面应用。</p>
+      <h2 data-en="A solid technical foundation">稳健的技术底座</h2>
+      <p data-en="A modern web stack, offline-first, installable as a PWA and a desktop app.">现代 Web 技术栈，离线优先，可安装为 PWA 与桌面应用。</p>
     </div>
     <div class="stack reveal">
       <span class="chip">Next.js 16</span>
@@ -593,7 +604,7 @@
     <div class="repo-link reveal">
       <a href="https://github.com/ArdenGao10/focus-circle" target="_blank" rel="noopener">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        在 GitHub 查看源码 →
+        <span data-en="View source on GitHub →">在 GitHub 查看源码 →</span>
       </a>
     </div>
   </div>
@@ -603,16 +614,16 @@
 <section>
   <div class="wrap">
     <div class="band reveal">
-      <h2>找回属于你的专注节奏</h2>
-      <p>从今天起，让每一段心流都被看见、被记录、被陪伴。</p>
-      <a class="btn btn-primary" href="https://focus-circle-six.vercel.app/" target="_blank" rel="noopener">立即体验专注圈 →</a>
+      <h2 data-en="Find your own rhythm of focus">找回属于你的专注节奏</h2>
+      <p data-en="Starting today, let every stretch of flow be seen, recorded, and kept company.">从今天起，让每一段心流都被看见、被记录、被陪伴。</p>
+      <a class="btn btn-primary" href="https://focus-circle.3214175397.workers.dev/" target="_blank" rel="noopener" data-en="Try Focus Circle →">立即体验专注圈 →</a>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="brand"><span class="dot"></span>专注圈 Focus Circle</div>
-  <div>和志同道合的人一起学习打卡</div>
+  <div class="brand"><span class="dot"></span><span data-en="Focus Circle">专注圈 Focus Circle</span></div>
+  <div data-en="Study and check in with like-minded people">和志同道合的人一起学习打卡</div>
   <div class="mono">灵气流动 · AURA FOCUS · MIT LICENSE</div>
 </footer>
 
@@ -757,6 +768,31 @@
   document.querySelectorAll('.aura-orb').forEach((o,i)=>{
     o.style.animation=`breathe 7s ease-in-out ${i*1.4}s infinite`;
   });
+
+  // --- bilingual toggle: ?lang= → shared localStorage('mw-lang') → default zh ---
+  (function () {
+    const KEY = 'mw-lang';
+    const TITLE = { zh: '专注圈 Focus Circle — 灵气流动', en: 'Focus Circle — focus together' };
+    const els = Array.prototype.slice.call(document.querySelectorAll('[data-en]'));
+    els.forEach(function (el) { el.dataset.zh = el.innerHTML; });
+    function initial() {
+      const u = new URLSearchParams(location.search).get('lang');
+      if (u === 'zh' || u === 'en') return u;
+      try { const s = localStorage.getItem(KEY); if (s === 'zh' || s === 'en') return s; } catch (e) {}
+      return 'zh';
+    }
+    function apply(l) {
+      els.forEach(function (el) { el.innerHTML = l === 'en' ? el.dataset.en : el.dataset.zh; });
+      document.documentElement.lang = l === 'en' ? 'en' : 'zh-CN';
+      document.title = TITLE[l] || TITLE.zh;
+      document.querySelectorAll('.lang-btn').forEach(function (b) { b.classList.toggle('on', b.dataset.l === l); });
+      try { localStorage.setItem(KEY, l); } catch (e) {}
+    }
+    document.querySelectorAll('.lang-btn').forEach(function (b) {
+      b.addEventListener('click', function () { apply(b.dataset.l); });
+    });
+    apply(initial());
+  })();
 </script>
 </body>
 </html>

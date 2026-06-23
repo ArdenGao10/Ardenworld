@@ -6,12 +6,14 @@
 
 import { useState, useEffect } from 'react';
 import { FocusDemo, MoodDemo, CafeDemo, SparkDemo } from './WorkDemo.jsx';
+import { useLang } from '../i18n/lang.jsx';
 
 const DEMOS = { focus: FocusDemo, mood: MoodDemo, cafe: CafeDemo, spark: SparkDemo };
 // Each demo gets its own backdrop — light & airy or night-dark to match the work.
 const DEMO_BG = { focus: "#FBFBFB", mood: "#1E1711", cafe: "#0a0d12", spark: "#FFF7E6" };
 
 export default function WorkModal({ work, workId, onClose, onShowcase }) {
+  const { t, pick, lang } = useLang();
   const [demoOn, setDemoOn] = useState(false);
 
   useEffect(() => {
@@ -37,9 +39,9 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
           WORK · {work.en.toUpperCase()}
         </div>
         <div className="mw-title" style={{ fontSize: 56, fontWeight: 600, marginTop: 6, lineHeight: 1 }}>
-          {work.name}
+          {lang === 'zh' ? work.name : work.en}
         </div>
-        <div className="mw-body" style={{ fontSize: 18, marginTop: 4, color: "#666" }}>{work.tag}</div>
+        <div className="mw-body" style={{ fontSize: 18, marginTop: 4, color: "#666" }}>{pick(work.tag)}</div>
 
         {/* === preview / live demo === */}
         <div style={{
@@ -64,7 +66,7 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
                   flexDirection: "column", pointerEvents: "none"
                 }}>
                   <div className="mw-title" style={{ fontSize: 38, fontWeight: 600, color: "#1b1b1b", lineHeight: 1 }}>18:42</div>
-                  <div className="sk-hand" style={{ fontSize: 14, color: "#666", marginTop: 4 }}>专注中 · 写代码</div>
+                  <div className="sk-hand" style={{ fontSize: 14, color: "#666", marginTop: 4 }}>{t('wm.focusPreview')}</div>
                 </div>
                 <div style={{ position: "absolute", top: -10, right: -10, transform: "rotate(8deg)" }}>
                   <div className="sk-tag" style={{ background: "#fef3a3", fontSize: 9 }}>preview</div>
@@ -90,7 +92,7 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   animation: "mw-spin 8s linear infinite"
                 }}>
-                  <div className="mw-title" style={{ fontSize: 14, textAlign: "center", padding: "0 4px", lineHeight: 1.1, color: "#1b1b1b" }}>夜里的湖</div>
+                  <div className="mw-title" style={{ fontSize: 14, textAlign: "center", padding: "0 4px", lineHeight: 1.1, color: "#1b1b1b" }}>{t('wm.moodRecord')}</div>
                 </div>
                 <div style={{ position: "absolute", top: -10, right: -10, transform: "rotate(8deg)", zIndex: 5 }}>
                   <div className="sk-tag" style={{ background: "#fef3a3", fontSize: 9 }}>now playing</div>
@@ -147,21 +149,21 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
         </div>
 
         <div className="mw-body" style={{ fontSize: 19, marginTop: 20, lineHeight: 1.5, color: "#1b1b1b" }}>
-          {work.intro}
+          {pick(work.intro)}
         </div>
         <div className="mw-body" style={{ fontSize: 17, marginTop: 10, lineHeight: 1.65, color: "#444" }}>
-          {work.body.map((line, i) => <div key={i}>{line}</div>)}
+          {pick(work.body).map((line, i) => <div key={i}>{line}</div>)}
         </div>
 
         {/* === three actions === */}
         <div style={{ marginTop: 22, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <button className="mw-btn mw-btn-primary" onClick={() => setDemoOn(d => !d)}>
-            {demoOn ? "✕ 收起演示" : "▶︎ 小演示"}
+            {demoOn ? t('wm.collapseDemo') : t('wm.openDemo')}
           </button>
           <button className="mw-btn" onClick={() => onShowcase?.(work.showcase, workId)}>
-            详细了解 →
+            {t('wm.learnMore')}
           </button>
-          <button className="mw-btn" onClick={onClose}>继续走</button>
+          <button className="mw-btn" onClick={onClose}>{t('wm.keepWalking')}</button>
         </div>
 
         {/* No wobble — parent modal already has it; stacking another on a

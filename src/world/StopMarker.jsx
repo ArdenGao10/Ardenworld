@@ -1,6 +1,7 @@
 /* My World — per-stop scenery markers */
 
 import { GROUND_Y, groundLift, WORKS } from './data.js';
+import { useLang } from '../i18n/lang.jsx';
 
 // All wobble-filtered decor in this file gets `transform: translateZ(0)`.
 // That promotes each one to its own compositor layer, which lets WebKit
@@ -28,6 +29,7 @@ const SoftHint = ({ bottom, left = 0 }) => (
 );
 
 export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
+  const { t, pick, lang } = useLang();
   const baseY = GROUND_Y + groundLift(stop.x);
   switch (stop.type) {
     case "start":
@@ -41,7 +43,7 @@ export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
             whiteSpace: "nowrap"
           }}>
             <div className="mw-title" style={{ fontSize: 36, lineHeight: 1, letterSpacing: ".02em" }}>My&nbsp;World</div>
-            <div className="sk-hand" style={{ fontSize: 14, color: "#888", marginTop: 4, letterSpacing: ".08em" }}>by Arden &nbsp;·&nbsp; ↘ 往右走</div>
+            <div className="sk-hand" style={{ fontSize: 14, color: "#888", marginTop: 4, letterSpacing: ".08em" }}>by Arden &nbsp;·&nbsp; {t('marker.goRight')}</div>
           </div>
         </div>
       );
@@ -63,7 +65,7 @@ export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
         </div>
       );
     case "about":
-      return <Signpost x={stop.x} y={baseY} label="关于" sub="点一下了解我" tint="#fef3a3"/>;
+      return <Signpost x={stop.x} y={baseY} label={t('marker.about')} sub={t('marker.aboutSub')} tint="#fef3a3"/>;
     case "puddle":
       // You can walk straight through the puddle — but a star arc traces the
       // jump path overhead to nudge you into hopping over it instead.
@@ -95,7 +97,7 @@ export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
           {/* hint */}
           <div className="sk-hand" style={{
             position: "absolute", bottom: baseY + 112, left: stop.x - 34, fontSize: 15, color: "#1b1b1b"
-          }}>跳一下 ✦</div>
+          }}>{t('marker.jump')}</div>
         </>
       );
     case "work": {
@@ -127,9 +129,9 @@ export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
             transition: "transform .3s"
           }}>
             <div className="sk-mono" style={{ fontSize: 9, letterSpacing: ".2em", textTransform: "uppercase", opacity: .75 }}>
-              {w.en} · {w.tag}
+              {w.en} · {pick(w.tag)}
             </div>
-            <div className="mw-title" style={{ fontSize: 30, fontWeight: 600, lineHeight: 1, marginTop: 4 }}>{w.name}</div>
+            <div className="mw-title" style={{ fontSize: 30, fontWeight: 600, lineHeight: 1, marginTop: 4 }}>{lang === 'zh' ? w.name : w.en}</div>
             {/* mini preview screen — same trick */}
             <div style={{
               marginTop: 10, height: 56,
@@ -150,7 +152,7 @@ export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
             <div className="sk-hand" style={{
               position: "absolute", bottom: 100, left: 80, fontSize: 16,
               color: "#1b1b1b", animation: "mw-bob 1.2s ease-in-out infinite"
-            }}>↑ 点一下</div>
+            }}>{t('marker.tapMe')}</div>
           )}
         </div>
       );
@@ -163,7 +165,7 @@ export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
             <div style={{ position: "absolute", top: 14, left: 8, right: 8, height: 14, background: "#1b1b1b" }}/>
             <div className="sk-mono" style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", color: "#fffdf6", fontSize: 9, letterSpacing: ".1em" }}>NOTES</div>
           </div>
-          <div className="sk-hand" style={{ position: "absolute", bottom: 100, left: -20, fontSize: 16 }}>↓ 翻翻</div>
+          <div className="sk-hand" style={{ position: "absolute", bottom: 100, left: -20, fontSize: 16 }}>{t('marker.notesFlip')}</div>
         </div>
       );
     case "lantern":
@@ -188,7 +190,7 @@ export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
             <div className="sk-hand" style={{
               position: "absolute", bottom: 120, left: -32, fontSize: 16, whiteSpace: "nowrap",
               color: "#1b1b1b", animation: "mw-bob 1.2s ease-in-out infinite"
-            }}>↓ 点亮它</div>
+            }}>{t('marker.lightIt')}</div>
           )}
         </div>
       );
@@ -219,7 +221,7 @@ export const StopMarker = ({ stop, charNearby, lit, softHint }) => {
             <div style={{ position: "absolute", top: 8, left: 8, right: 8, height: 0, borderTop: "1.5px solid #fffdf6" }}/>
             <div className="sk-hand" style={{ position: "absolute", bottom: 4, left: 0, right: 0, textAlign: "center", fontSize: 12, color: "#fffdf6" }}>mail</div>
           </div>
-          <div className="sk-hand" style={{ position: "absolute", bottom: 80, left: -10, fontSize: 14 }}>给我写信 ✉︎</div>
+          <div className="sk-hand" style={{ position: "absolute", bottom: 80, left: -10, fontSize: 14 }}>{t('marker.writeMe')}</div>
         </div>
       );
     case "peak":
