@@ -169,26 +169,22 @@
     font-family: var(--hand); font-size: 18px; color: var(--muted); text-align: center;
   }
 
-  /* language toggle — shared 中 / EN pill */
+  /* language toggle — a slim integrated top row, matches the page */
+  .topbar { display: flex; justify-content: flex-end; margin-bottom: 8px; position: relative; z-index: 2; }
   .lang-toggle {
-    position: fixed; top: 16px; right: 16px; z-index: 60;
-    display: inline-flex; border: 2px solid #1b1b1b; background: #fffdf6;
-    overflow: hidden; box-shadow: 1px 2px 0 rgba(0,0,0,.12);
+    display: inline-flex; align-items: center;
+    border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
   }
   .lang-toggle button {
-    border: none; background: transparent; cursor: pointer; padding: 6px 11px;
-    font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: #1b1b1b;
+    border: none; background: transparent; cursor: pointer; padding: 4px 10px;
+    font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .04em;
+    color: var(--muted); transition: background .2s, color .2s;
   }
-  .lang-toggle button.on { background: #1b1b1b; color: #fffdf6; }
+  .lang-toggle button.on { background: var(--accent); color: #fff; }
+  .lang-toggle button:not(.on):hover { color: var(--ink); }
 </style>
 </head>
 <body>
-
-<!-- language toggle (defaults to the game's language via ?lang= or shared localStorage) -->
-<div class="lang-toggle" role="group" aria-label="language">
-  <button class="lang-btn" data-l="zh">中</button>
-  <button class="lang-btn" data-l="en">EN</button>
-</div>
 
 <!-- self-contained wobble filter (the parent app's #wobble lives outside this iframe) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -201,6 +197,14 @@
 <div class="motes" id="motes" aria-hidden="true"></div>
 
 <div class="wrap">
+
+  <!-- language toggle (defaults to the game's language via ?lang= or shared localStorage) -->
+  <div class="topbar">
+    <div class="lang-toggle" role="group" aria-label="language">
+      <button class="lang-btn" data-l="zh">中</button>
+      <button class="lang-btn" data-l="en">EN</button>
+    </div>
+  </div>
 
   <!-- HERO -->
   <header>

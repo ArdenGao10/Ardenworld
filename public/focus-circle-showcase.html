@@ -430,20 +430,18 @@
     .band p{font-size:14px;margin:13px auto 24px}
     footer{padding:42px 20px 48px}
   }
-  /* language toggle — shared 中 / EN pill */
-  .lang-toggle{position:fixed;top:14px;right:14px;z-index:200;display:inline-flex;
-    border:2px solid #1b1b1b;background:#fffdf6;overflow:hidden;box-shadow:1px 2px 0 rgba(0,0,0,.12);}
-  .lang-toggle button{border:none;background:transparent;cursor:pointer;padding:6px 11px;
-    font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;color:#1b1b1b;}
-  .lang-toggle button.on{background:#1b1b1b;color:#fffdf6;}
+  /* language toggle — integrated into the nav, matches the page */
+  .lang-toggle{display:inline-flex;align-items:center;border:1.5px solid rgba(27,27,27,.2);
+    border-radius:999px;overflow:hidden;}
+  .lang-toggle button{border:none;background:transparent;cursor:pointer;padding:4px 10px;
+    font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:12px;font-weight:600;
+    letter-spacing:.04em;color:var(--ink-2);transition:background .2s,color .2s;}
+  .lang-toggle button.on{background:var(--green-solid);color:#fff;}
+  .lang-toggle button:not(.on):hover{color:var(--ink);}
+  .menu-panel .lang-toggle{align-self:flex-start;margin-top:4px;}
 </style>
 </head>
 <body>
-
-<div class="lang-toggle" role="group" aria-label="language">
-  <button class="lang-btn" data-l="zh">中</button>
-  <button class="lang-btn" data-l="en">EN</button>
-</div>
 
 <div id="petals"></div>
 
@@ -464,6 +462,10 @@
     <a href="#community" data-en="Community">社群</a>
     <a href="#stack" data-en="Stack">技术</a>
     <a class="nav-cta" href="https://focus-circle.3214175397.workers.dev/" target="_blank" rel="noopener" data-en="Try it">立即体验</a>
+    <div class="lang-toggle" role="group" aria-label="language">
+      <button class="lang-btn" data-l="zh">中</button>
+      <button class="lang-btn" data-l="en">EN</button>
+    </div>
   </div>
   <button class="menu-btn" id="menuBtn" aria-label="目录" aria-expanded="false">
     <span></span><span></span><span></span>
@@ -478,6 +480,10 @@
   <a href="#community" data-en="Community">社群</a>
   <a href="#stack" data-en="Stack">技术栈</a>
   <a class="mp-cta" href="https://focus-circle.3214175397.workers.dev/" target="_blank" rel="noopener" data-en="Try Focus Circle →">立即体验专注圈 →</a>
+  <div class="lang-toggle" role="group" aria-label="language">
+    <button class="lang-btn" data-l="zh">中</button>
+    <button class="lang-btn" data-l="en">EN</button>
+  </div>
 </div>
 
 <header id="top">
