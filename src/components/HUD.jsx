@@ -12,31 +12,31 @@ export function HUD({ time, onSkip, stars, reached }) {
   const visited = COUNTED_STOPS.filter(s => reached[s.id]).length;
   return (
     <>
-      <div style={{
+      <div className="mw-hud" style={{
         position: "fixed", top: 16, left: 16, right: 16, display: "flex", justifyContent: "space-between",
         alignItems: "center", zIndex: 30, pointerEvents: "none"
       }}>
-        <div className="sk-mono" style={{
+        <div className="sk-mono mw-hud-status" style={{
           fontSize: 11, letterSpacing: ".15em", background: "#fffdf6",
           border: "2px solid #1b1b1b", padding: "6px 14px", filter: "url(#wobble)",
           boxShadow: "1px 2px 0 rgba(0,0,0,.1)", pointerEvents: "auto"
         }}>
           MY WORLD &nbsp;·&nbsp; {time.toUpperCase()} &nbsp;·&nbsp; {visited}/{COUNTED_STOPS.length}
         </div>
-        <div style={{ display: "flex", gap: 8, pointerEvents: "auto" }}>
-          <LangToggle/>
+        <div className="mw-hud-actions" style={{ display: "flex", gap: 8, pointerEvents: "auto" }}>
+          <LangToggle className="mw-hud-lang"/>
           {stars > 0 && (
-            <div className="sk-mono" style={{
+            <div className="sk-mono mw-hud-stars" style={{
               fontSize: 11, letterSpacing: ".15em", background: "#fef3a3",
               border: "2px solid #1b1b1b", padding: "6px 12px", filter: "url(#wobble)"
             }}>
               ✦ × {stars}
             </div>
           )}
-          <button onClick={onSkip} className="mw-skip">SKIP →</button>
+          <button onClick={onSkip} className="mw-skip mw-hud-skip">SKIP →</button>
         </div>
       </div>
-      <div style={{
+      <div className="mw-hud-progress" style={{
         position: "fixed", top: 56, left: 16, right: 16, display: "flex", gap: 4, zIndex: 30, pointerEvents: "none"
       }}>
         {COUNTED_STOPS.map(s => (

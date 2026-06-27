@@ -712,7 +712,7 @@ export default function WalkGame({ onRoom }) {
 
       {/* bottom-left controls — sound toggle, plus a how-to-play that
           re-opens the tap-zone tutorial */}
-      <div style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36, display: "flex", gap: 8 }}>
+      <div className="mw-walk-bottom" style={{ position: "fixed", bottom: 24, left: 24, zIndex: 36, display: "flex", gap: 8 }}>
         <button className="mw-skip" onClick={(e) => {
             e.stopPropagation();
             initAudio();
@@ -733,7 +733,7 @@ export default function WalkGame({ onRoom }) {
       {/* switch to the room version (indoor mode) — press R also works.
           The standalone climb mode is gone; climbing lives inside the room. */}
       {onRoom && (
-        <button className="mw-skip" onClick={(e) => { e.stopPropagation(); onRoom(); }}
+        <button className="mw-skip mw-room-switch" onClick={(e) => { e.stopPropagation(); onRoom(); }}
           style={{ position: "fixed", bottom: 24, right: 24, zIndex: 36 }}>
 <HouseIcon/>{t('walk.roomBtn')}
         </button>

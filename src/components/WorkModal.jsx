@@ -26,11 +26,11 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
   const demoBg = DEMO_BG[workId] || "#1E1711";
 
   return (
-    <div onClick={onClose} className="mw-themed-scroll" style={{
+    <div onClick={onClose} className="mw-themed-scroll mw-work-modal-backdrop" style={{
       position: "fixed", inset: 0, background: "rgba(27,27,27,.6)", zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto"
     }}>
-      <div onClick={(e) => e.stopPropagation()} className="mw-themed-scroll" style={{
+      <div onClick={(e) => e.stopPropagation()} className="mw-themed-scroll mw-work-modal" style={{
         width: "min(640px, 100%)", background: "#fffdf6", border: "3px solid #1b1b1b", filter: "url(#wobble)",
         padding: "28px 32px", boxShadow: "6px 8px 0 rgba(0,0,0,.2)", position: "relative",
         maxHeight: "90vh", overflowY: "auto"
@@ -38,13 +38,13 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
         <div className="sk-mono" style={{ fontSize: 10, letterSpacing: ".2em", color: "#888" }}>
           WORK · {work.en.toUpperCase()}
         </div>
-        <div className="mw-title" style={{ fontSize: 56, fontWeight: 600, marginTop: 6, lineHeight: 1 }}>
+        <div className="mw-title mw-work-modal-title" style={{ fontSize: 56, fontWeight: 600, marginTop: 6, lineHeight: 1 }}>
           {lang === 'zh' ? work.name : work.en}
         </div>
         <div className="mw-body" style={{ fontSize: 18, marginTop: 4, color: "#666" }}>{pick(work.tag)}</div>
 
         {/* === preview / live demo === */}
-        <div style={{
+        <div className={`mw-work-modal-preview${demoOn ? " is-demo" : ""}`} style={{
           marginTop: 20, border: "2.5px solid #1b1b1b", filter: "url(#wobble)",
           background: demoOn ? demoBg : work.bg, position: "relative", overflow: "hidden",
           minHeight: 220, transition: "background .4s ease",
@@ -148,15 +148,15 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
           </>)}
         </div>
 
-        <div className="mw-body" style={{ fontSize: 19, marginTop: 20, lineHeight: 1.5, color: "#1b1b1b" }}>
+        <div className="mw-body mw-work-modal-intro" style={{ fontSize: 19, marginTop: 20, lineHeight: 1.5, color: "#1b1b1b" }}>
           {pick(work.intro)}
         </div>
-        <div className="mw-body" style={{ fontSize: 17, marginTop: 10, lineHeight: 1.65, color: "#444" }}>
-          {pick(work.body).map((line, i) => <div key={i}>{line}</div>)}
+        <div className="mw-body mw-work-modal-body" style={{ fontSize: 17, marginTop: 10, lineHeight: 1.65, color: "#444" }}>
+          {pick(work.body).map((line, i) => <span key={i}>{line}</span>)}
         </div>
 
         {/* === three actions === */}
-        <div style={{ marginTop: 22, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <div className="mw-work-modal-actions" style={{ marginTop: 22, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <button className="mw-btn mw-btn-primary" onClick={() => setDemoOn(d => !d)}>
             {demoOn ? t('wm.collapseDemo') : t('wm.openDemo')}
           </button>
@@ -168,7 +168,7 @@ export default function WorkModal({ work, workId, onClose, onShowcase }) {
 
         {/* No wobble — parent modal already has it; stacking another on a
             small circle visibly ovals it on iOS. */}
-        <button onClick={onClose} aria-label="close" style={{
+        <button className="mw-work-modal-close" onClick={onClose} aria-label="close" style={{
           position: "absolute", top: 12, right: 12, width: 32, height: 32, border: "2px solid #1b1b1b",
           background: "#fffdf6", borderRadius: "50%", fontFamily: "Caveat", fontSize: 18, cursor: "pointer",
         }}>✕</button>

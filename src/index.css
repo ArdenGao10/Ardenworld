@@ -422,6 +422,137 @@ input, textarea {
   -ms-overflow-style: none;       /* old IE/Edge */
 }
 
+/* Work descriptions are authored as short display lines on wide screens. */
+.mw-work-modal-body > span { display: block; }
+
+/* Mobile chrome: keep the game controls readable without making the top bar
+   compete for one impossible row. The language switch becomes a small second-
+   row setting beside the progress rail. */
+@media (max-width: 640px) {
+  .mw-hud {
+    top: max(10px, env(safe-area-inset-top)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+  .mw-hud-status {
+    min-width: 0;
+    max-width: none;
+    padding: 7px 9px !important;
+    font-size: 9px !important;
+    line-height: 1.45;
+    letter-spacing: .11em !important;
+    white-space: normal;
+  }
+  .mw-hud-actions {
+    flex: 0 0 auto;
+    gap: 6px !important;
+    align-items: flex-start !important;
+  }
+  .mw-hud-lang {
+    position: absolute;
+    top: 44px;
+    right: 0;
+    font-size: 9px !important;
+  }
+  .mw-lang-toggle button {
+    min-width: 30px;
+    padding: 5px 7px !important;
+    font-size: 9px !important;
+  }
+  .mw-hud-stars {
+    padding: 6px 8px !important;
+    font-size: 9px !important;
+    letter-spacing: .08em !important;
+    white-space: nowrap;
+  }
+  .mw-hud-skip {
+    padding: 7px 10px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .mw-hud-progress {
+    top: 60px !important;
+    left: 12px !important;
+    right: 84px !important;
+  }
+  .mw-room-hud .mw-hud-status {
+    padding-right: 10px !important;
+  }
+
+  .mw-walk-bottom {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    gap: 6px !important;
+  }
+  .mw-walk-bottom .mw-skip,
+  .mw-room-switch {
+    padding: 8px 9px;
+    font-size: 9px;
+    letter-spacing: .08em;
+    white-space: nowrap;
+  }
+  .mw-room-switch {
+    right: 12px !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .mw-work-modal-backdrop {
+    align-items: flex-start !important;
+    padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom)) !important;
+  }
+  .mw-work-modal {
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    padding: 22px 18px 20px !important;
+    border-width: 2.5px !important;
+    box-shadow: 3px 5px 0 rgba(0,0,0,.18) !important;
+  }
+  .mw-work-modal-title {
+    max-width: calc(100% - 34px);
+    font-size: clamp(34px, 11vw, 46px) !important;
+    line-height: 1.05 !important;
+    overflow-wrap: anywhere;
+  }
+  .mw-work-modal-preview:not(.is-demo) {
+    height: 190px !important;
+    min-height: 190px !important;
+  }
+  .mw-work-modal-preview {
+    margin-top: 15px !important;
+  }
+  .mw-work-modal-intro {
+    margin-top: 16px !important;
+    font-size: 17px !important;
+    line-height: 1.45 !important;
+  }
+  .mw-work-modal-body {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+  .mw-work-modal-body > span { display: inline; }
+  .mw-work-modal-body > span:not(:last-child)::after { content: " "; }
+  .mw-work-modal-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+    margin-top: 18px !important;
+  }
+  .mw-work-modal-actions .mw-btn {
+    width: 100%;
+    padding: 10px 9px;
+    font-size: 15px;
+  }
+  .mw-work-modal-actions .mw-btn:last-child { grid-column: 1 / -1; }
+  .mw-work-modal-close {
+    top: 9px !important;
+    right: 9px !important;
+    width: 30px !important;
+    height: 30px !important;
+  }
+}
+
 /* Showcase overlay — speech bubble flashes every 5s (3s on, 2s off),
    so the hint keeps teaching without nagging. */
 @keyframes mw-peek-bubble {

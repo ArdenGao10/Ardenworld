@@ -800,12 +800,12 @@ export default function RoomGame({ onSwitch }) {
       </div>
 
       {/* === HUD === */}
-      <div style={{
+      <div className="mw-hud mw-room-hud" style={{
         position: "fixed", top: 16, left: 16, right: 16, display: "flex",
         justifyContent: "space-between", alignItems: "center", zIndex: 30,
         pointerEvents: "none",
       }}>
-        <div className="sk-mono" style={{
+        <div className="sk-mono mw-hud-status" style={{
           fontSize: 11, letterSpacing: ".15em", background: "#fffdf6",
           border: "2px solid #1b1b1b", padding: "6px 12px", filter: "url(#wobble)",
           pointerEvents: "auto",
@@ -815,9 +815,9 @@ export default function RoomGame({ onSwitch }) {
           {lying && <span style={{ marginLeft: 8 }}>{t('room.sleeping')}</span>}
         </div>
         {/* lang toggle + gallery shortcut — top right */}
-        <div style={{ display: "flex", gap: 8, alignItems: "center", pointerEvents: "auto" }}>
-          <LangToggle/>
-          <button className="mw-skip" onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}>
+        <div className="mw-hud-actions" style={{ display: "flex", gap: 8, alignItems: "center", pointerEvents: "auto" }}>
+          <LangToggle className="mw-hud-lang"/>
+          <button className="mw-skip mw-hud-skip" onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}>
             SKIP · {t('walk.seeWorks')} →
           </button>
         </div>
